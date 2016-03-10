@@ -1,0 +1,397 @@
+﻿<Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" x:Class="Microsoft.Samples.Kinect.SkeletonBasics.ConfigurationPanel"
+        Title="ConfigurationPanel" Height="774" Width="1312" WindowStartupLocation="CenterScreen" WindowState="Maximized" Closing="WindowClosing">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    </Window.Resources>
+    <ScrollViewer  HorizontalScrollBarVisibility="Auto"  VerticalScrollBarVisibility="Auto">
+        <Grid x:Name="Grid" Margin="0,0,0,0">
+
+            <Button Content="Save" HorizontalAlignment="Left" Margin="752,621,0,0" VerticalAlignment="Top" Width="69" Click="ButtonSave_Click" ToolTip="Memorizza la configurazione attuale"/>
+            <Button Content="Load" HorizontalAlignment="Left" Margin="678,621,0,0" VerticalAlignment="Top" Width="68" Click="ButtonLoad_Click" ToolTip="Carica l'ultima configurazione salvata"/>
+            <Label VerticalAlignment="Top" Margin="388,648,0,0" HorizontalAlignment="Left" Content="Vocal Command :"/>
+            <ComboBox Width="145" VerticalAlignment="Top" ToolTip="Funzioni vocali attivabili" SelectionChanged="VocalCommandComboBox_SelectionChanged" SelectedIndex="0" x:Name="VocalCommandComboBox" Margin="500,652,0,0" HorizontalAlignment="Left"/>
+            <Button Width="69" VerticalAlignment="Top" ToolTip="Aggiungi il nuovo comando vocale" Margin="676,681,0,0" HorizontalAlignment="Left" Content="Add" Click="ButtonAdd_Click"/>
+            <TextBox Width="146" VerticalAlignment="Top" TextWrapping="Wrap" x:Name="NewVocalCommandTextBox" Margin="676,653,0,0" Height="23" HorizontalAlignment="Left"/>
+            <Label VerticalAlignment="Top" Margin="390,619,0,0" HorizontalAlignment="Left" Content="Preset :"/>
+            <ListBox Width="117" ToolTip="Parole riconsciute associate al comando vocale selezionato" x:Name="ListCommand" Margin="829,653,0,13" HorizontalAlignment="Left"/>
+            <Button Width="69" VerticalAlignment="Top" ToolTip="Rimuovi il comando vocale selezionato" Margin="752,681,0,0" HorizontalAlignment="Left" Content="Remove" Click="ButtonRemove_Click"/>
+            <Label VerticalAlignment="Top" Margin="210,604,0,0" Height="26" HorizontalAlignment="Left" ContentStringFormat="{}{0:#}" Content="{Binding Value, ElementName=factorSlider}"/>
+            <CheckBox VerticalAlignment="Top" x:Name="VirtualArmatureCheckBox" Margin="1046,675,0,0" HorizontalAlignment="Left" Content="Virtual Armature" ToolTip="Abilita armatura virtuale"/>
+
+            <TabControl Margin="8,3,358,136" Background="White">
+                <TabItem Header="Body Tracking">
+                    <Canvas Width="780" VerticalAlignment="Top" x:Name="Canvas" Margin="52,22,0,0" Height="536" HorizontalAlignment="Left">
+                        <Canvas.Background>
+                            <ImageBrush ImageSource="Images/KinectSkel.png"/>
+                        </Canvas.Background>
+
+                        <Label VerticalAlignment="Top" Canvas.Top="-21" Canvas.Left="281" HorizontalAlignment="Left" Content="Head :"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="-14" x:Name="HeadLocX" Canvas.Left="325" HorizontalAlignment="Left" Content="L(x)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="-14" x:Name="HeadLocY" Canvas.Left="360" HorizontalAlignment="Left" Content="L(y)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="-14" x:Name="HeadLocZ" Canvas.Left="396" HorizontalAlignment="Left" Content="L(z)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="-14" x:Name="HeadRot" Canvas.Left="432" HorizontalAlignment="Left" Content="R"/>
+                        <ComboBox Width="120" Canvas.Top="22" x:Name="HeadBoneName" Canvas.Left="322"/>
+                        <Slider Width="30" Value="1" x:Name="HeadSlider" Minimum="-1" Maximum="1" Canvas.Left="427" Canvas.Top="1"/>
+
+                        <Label VerticalAlignment="Top" Canvas.Top="32" Canvas.Left="220" HorizontalAlignment="Left" Content="Shoulder_Right:"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="51" x:Name="ShoulderRLocX" Canvas.Left="230" HorizontalAlignment="Left" Content="L(x)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="51" x:Name="ShoulderRLocY" Canvas.Left="265" HorizontalAlignment="Left" Content="L(y)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="51" x:Name="ShoulderRLocZ" Canvas.Left="301" HorizontalAlignment="Left" Content="L(z)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="52" x:Name="ShoulderRRot" Canvas.Left="345" HorizontalAlignment="Left" Content="R"/>
+                        <ComboBox Width="120" Canvas.Top="85" x:Name="ShoulderRBoneName" Canvas.Left="225"/>
+                        <Slider Width="30" Value="1" Canvas.Top="66" x:Name="ShoulderRightSlider" Minimum="-1" Maximum="1" Canvas.Left="334"/>
+
+                        <Label VerticalAlignment="Top" Canvas.Top="111" Canvas.Left="155" HorizontalAlignment="Left" Content="ElbowRight:"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="132" x:Name="ElbowRLocX" Canvas.Left="159" HorizontalAlignment="Left" Content="L(x)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="132" x:Name="ElbowRLocY" Canvas.Left="194" HorizontalAlignment="Left" Content="L(y)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="132" x:Name="ElbowRLocZ" Canvas.Left="230" HorizontalAlignment="Left" Content="L(z)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="132" x:Name="ElbowRRot" Canvas.Left="271" HorizontalAlignment="Left" Content="R"/>
+                        <ComboBox Width="120" Canvas.Top="166" x:Name="ElbowRBoneName" Canvas.Left="154"/>
+
+                        <Slider Width="30" Value="1" Canvas.Top="147" x:Name="ElbowRightSlider" Minimum="-1" Maximum="1" Canvas.Left="264"/>
+                        <Label VerticalAlignment="Top" Canvas.Top="38" Canvas.Left="1" HorizontalAlignment="Left" Content="WristRight :"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="45" x:Name="WristRLocX" Canvas.Left="71" HorizontalAlignment="Left" Content="L(x)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="45" x:Name="WristRLocY" Canvas.Left="107" HorizontalAlignment="Left" Content="L(y)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="45" x:Name="WristRLocZ" Canvas.Left="143" HorizontalAlignment="Left" Content="L(z)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="45" x:Name="WristRRot" Canvas.Left="184" HorizontalAlignment="Left" Content="R"/>
+                        <ComboBox Width="120" Canvas.Top="81" x:Name="WristRBoneName" Canvas.Left="68"/>
+                        <Slider Width="30" Value="1" Canvas.Top="60" x:Name="WristRightSlider" Minimum="-1" Maximum="1" Canvas.Left="172"/>
+
+                        <Label VerticalAlignment="Top" Canvas.Top="108" Canvas.Left="-45" HorizontalAlignment="Left" Content="HandRight :"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="128" x:Name="HandRLocX" HorizontalAlignment="Left" Content="L(x)" Canvas.Left="-43"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="128" x:Name="HandRLocY" HorizontalAlignment="Left" Content="L(y)" Canvas.Left="-6"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="128" x:Name="HandRLocZ" Canvas.Left="31" HorizontalAlignment="Left" Content="L(z)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="128" x:Name="HandRRot" Canvas.Left="68" HorizontalAlignment="Left" Content="R"/>
+                        <ComboBox Width="120" Canvas.Top="162" x:Name="HandRBoneName" Canvas.Left="-49"/>
+                        <Slider Width="30" Value="1" Canvas.Top="143" x:Name="HandRightSlider" Minimum="-1" Maximum="1" Canvas.Left="62"/>
+
+                        <Label VerticalAlignment="Top" Canvas.Top="25" Canvas.Left="454" HorizontalAlignment="Left" Content="ShoulderLeft:"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="46" x:Name="ShoulderLLocX" Canvas.Left="433" HorizontalAlignment="Left" Content="L(x)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="46" x:Name="ShoulderLLocY" Canvas.Left="469" HorizontalAlignment="Left" Content="L(y)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="46" x:Name="ShoulderLLocZ" Canvas.Left="505" HorizontalAlignment="Left" Content="L(z)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="46" x:Name="ShoulderLRot" Canvas.Left="548" HorizontalAlignment="Left" Content="R"/>
+                        <ComboBox Width="120" Canvas.Top="81" x:Name="ShoulderLBoneName" Canvas.Left="436"/>
+                        <Slider Width="30" Value="1" Canvas.Top="62" x:Name="ShoulderLeftSlider" Minimum="-1" Maximum="1" Canvas.Left="542"/>
+
+                        <Label VerticalAlignment="Top" Canvas.Top="113" Canvas.Left="533" HorizontalAlignment="Left" Content="ElbowLeft :"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="134" x:Name="ElbowLLocX" Canvas.Left="529" HorizontalAlignment="Left" Content="L(x)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="134" x:Name="ElbowLLocY" Canvas.Left="565" HorizontalAlignment="Left" Content="L(y)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="134" x:Name="ElbowLLocZ" Canvas.Left="601" HorizontalAlignment="Left" Content="L(z)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="134" x:Name="ElbowLRot" Canvas.Left="640" HorizontalAlignment="Left" Content="R"/>
+                        <ComboBox Width="120" Canvas.Top="168" x:Name="ElbowLBoneName" Canvas.Left="527"/>
+                        <Slider Width="30" Value="1" Canvas.Top="149" x:Name="ElbowLeftSlider" Minimum="-1" Maximum="1" Canvas.Left="632"/>
+
+                        <Label VerticalAlignment="Top" Canvas.Top="28" Canvas.Left="622" HorizontalAlignment="Left" Content="WristLeft :"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="49" x:Name="WristLLocX" Canvas.Left="627" HorizontalAlignment="Left" Content="L(x)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="49" x:Name="WristLLocY" Canvas.Left="665" HorizontalAlignment="Left" Content="L(y)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="49" x:Name="WristLLocZ" Canvas.Left="704" HorizontalAlignment="Left" Content="L(z)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="49" x:Name="WristLRot" Canvas.Left="742" HorizontalAlignment="Left" Content="R"/>
+                        <ComboBox Width="120" Canvas.Top="83" x:Name="WristLBoneName" Canvas.Left="627"/>
+                        <Slider Width="30" Value="1" Canvas.Top="65" x:Name="WristLeftSlider" Minimum="-1" Maximum="1" Canvas.Left="737"/>
+
+                        <Label VerticalAlignment="Top" Canvas.Top="108" Canvas.Left="716" HorizontalAlignment="Left" Content="HandLeft :"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="128" x:Name="HandLLocX" Canvas.Left="712" HorizontalAlignment="Left" Content="L(x)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="128" x:Name="HandLLocY" Canvas.Left="748" HorizontalAlignment="Left" Content="L(y)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="128" x:Name="HandLLocZ" Canvas.Left="784" HorizontalAlignment="Left" Content="L(z)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="129" x:Name="HandLRot" Canvas.Left="824" HorizontalAlignment="Left" Content="R"/>
+                        <ComboBox Width="120" Canvas.Top="163" x:Name="HandLBoneName" Canvas.Left="708"/>
+                        <Slider Width="30" Value="1" Canvas.Top="144" x:Name="HandLeftSlider" Minimum="-1" Maximum="1" Canvas.Left="815"/>
+
+                        <Label VerticalAlignment="Top" Canvas.Top="229" Canvas.Left="400" HorizontalAlignment="Left" Content="HipCenter:"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="236" x:Name="HipLocX" Canvas.Left="464" HorizontalAlignment="Left" Content="L(x)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="236" x:Name="HipLocY" Canvas.Left="500" HorizontalAlignment="Left" Content="L(y)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="236" x:Name="HipLocZ" Canvas.Left="538" HorizontalAlignment="Left" Content="L(z)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="236" x:Name="HipRot" Canvas.Left="575" HorizontalAlignment="Left" Content="R"/>
+                        <ComboBox Width="120" Canvas.Top="237" x:Name="HipBoneName" Canvas.Left="610"/>
+                        <Slider Width="30" Value="1" Canvas.Top="252" x:Name="HipSlider" Minimum="-1" Maximum="1" Canvas.Left="569"/>
+
+                        <Label VerticalAlignment="Top" Canvas.Top="259" Canvas.Left="181" HorizontalAlignment="Left" Content="HipRight:"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="279" x:Name="HipRLocX" Canvas.Left="165" HorizontalAlignment="Left" Content="L(x)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="279" x:Name="HipRLocY" Canvas.Left="200" HorizontalAlignment="Left" Content="L(y)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="279" x:Name="HipRLocZ" Canvas.Left="236" HorizontalAlignment="Left" Content="L(z)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="280" x:Name="HipRRot" Canvas.Left="273" HorizontalAlignment="Left" Content="R"/>
+                        <ComboBox Width="120" Canvas.Top="314" x:Name="HipRBoneName" Canvas.Left="161"/>
+                        <Slider Width="30" Value="1" Canvas.Top="293" x:Name="HipRightSlider" Minimum="-1" Maximum="1" Canvas.Left="265"/>
+
+                        <Label VerticalAlignment="Top" Canvas.Top="366" Canvas.Left="72" HorizontalAlignment="Left" Content="KneeRight:"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="387" x:Name="KneeRLocX" Canvas.Left="59" HorizontalAlignment="Left" Content="L(x)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="387" x:Name="KneeRLocY" Canvas.Left="94" HorizontalAlignment="Left" Content="L(y)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="387" x:Name="KneeRLocZ" Canvas.Left="130" HorizontalAlignment="Left" Content="L(z)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="387" x:Name="KneeRRot" Canvas.Left="166" HorizontalAlignment="Left" Content="R"/>
+                        <ComboBox Width="120" Canvas.Top="384" x:Name="KneeRBoneName" Canvas.Left="197"/>
+                        <Slider Width="30" Value="1" Canvas.Top="402" x:Name="KneeRightSlider" Minimum="-1" Maximum="1" Canvas.Left="157"/>
+
+                        <Label VerticalAlignment="Top" Canvas.Top="446" Canvas.Left="-4" HorizontalAlignment="Left" Content="AnkleRight:"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="451" x:Name="AnkleRLocX" Canvas.Left="66" HorizontalAlignment="Left" Content="L(x)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="451" x:Name="AnkleRLocY" Canvas.Left="104" HorizontalAlignment="Left" Content="L(y)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="451" x:Name="AnkleRLocZ" Canvas.Left="140" HorizontalAlignment="Left" Content="L(z)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="452" x:Name="AnkleRRot" Canvas.Left="176" HorizontalAlignment="Left" Content="R"/>
+                        <ComboBox Width="120" Canvas.Top="449" x:Name="AnkleRBoneName" Canvas.Left="205"/>
+                        <Slider Width="30" Value="1" Canvas.Top="467" x:Name="AnkleRightSlider" Minimum="-1" Maximum="1" Canvas.Left="166"/>
+
+                        <Label VerticalAlignment="Top" Canvas.Top="483" Canvas.Left="-10" HorizontalAlignment="Left" Content="FootRight:"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="491" x:Name="FootRLocX" Canvas.Left="52" HorizontalAlignment="Left" Content="L(x)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="491" x:Name="FootRLocY" Canvas.Left="89" HorizontalAlignment="Left" Content="L(y)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="491" x:Name="FootRLocZ" Canvas.Left="126" HorizontalAlignment="Left" Content="L(z)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="492" x:Name="FootRRot" Canvas.Left="162" HorizontalAlignment="Left" Content="R"/>
+                        <ComboBox Width="120" Canvas.Top="489" x:Name="FootRBoneName" Canvas.Left="192"/>
+                        <Slider Width="30" Value="1" Canvas.Top="507" x:Name="FootRightSlider" Minimum="-1" Maximum="1" Canvas.Left="156"/>
+
+                        <Label VerticalAlignment="Top" Canvas.Top="273" Canvas.Left="456" HorizontalAlignment="Left" Content="HipLeft:"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="293" x:Name="HipLLocX" Canvas.Left="450" HorizontalAlignment="Left" Content="L(x)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="293" x:Name="HipLLocY" Canvas.Left="485" HorizontalAlignment="Left" Content="L(y)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="293" x:Name="HipLLocZ" Canvas.Left="521" HorizontalAlignment="Left" Content="L(z)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="293" x:Name="HipLRot" Canvas.Left="557" HorizontalAlignment="Left" Content="R"/>
+                        <ComboBox Width="120" Canvas.Top="290" x:Name="HipLBoneName" Canvas.Left="590"/>
+                        <Slider Width="30" Value="1" Canvas.Top="307" x:Name="HipLeftSlider" Minimum="-1" Maximum="1" Canvas.Left="552"/>
+
+                        <Label VerticalAlignment="Top" Canvas.Top="359" Canvas.Left="470" HorizontalAlignment="Left" Content="KneeLeft:"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="381" x:Name="KneeLLocX" Canvas.Left="463" HorizontalAlignment="Left" Content="L(x)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="381" x:Name="KneeLLocY" Canvas.Left="499" HorizontalAlignment="Left" Content="L(y)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="381" x:Name="KneeLLocZ" Canvas.Left="535" HorizontalAlignment="Left" Content="L(z)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="381" x:Name="KneeLRot" Canvas.Left="571" HorizontalAlignment="Left" Content="R"/>
+                        <ComboBox Width="120" Canvas.Top="378" x:Name="KneeLBoneName" Canvas.Left="602"/>
+                        <Slider Width="30" Value="1" Canvas.Top="397" x:Name="KneeLeftSlider" Minimum="-1" Maximum="1" Canvas.Left="565"/>
+
+                        <Label VerticalAlignment="Top" Canvas.Top="448" Canvas.Left="448" HorizontalAlignment="Left" Content="AnkleLeft:"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="455" x:Name="AnkleLLocX" Canvas.Left="508" HorizontalAlignment="Left" Content="L(x)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="455" x:Name="AnkleLLocY" Canvas.Left="544" HorizontalAlignment="Left" Content="L(y)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="455" x:Name="AnkleLLocZ" Canvas.Left="581" HorizontalAlignment="Left" Content="L(z)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="455" x:Name="AnkleLRot" Canvas.Left="617" HorizontalAlignment="Left" Content="R"/>
+                        <ComboBox Width="120" Canvas.Top="452" x:Name="AnkleLBoneName" Canvas.Left="646"/>
+                        <Slider Width="30" Value="1" Canvas.Top="470" x:Name="AnkleLeftSlider" Minimum="-1" Maximum="1" Canvas.Left="606"/>
+
+                        <Label VerticalAlignment="Top" Canvas.Top="489" Canvas.Left="459" HorizontalAlignment="Left" Content="FootLeft:"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="495" x:Name="FootLLocX" Canvas.Left="515" HorizontalAlignment="Left" Content="L(x)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="495" x:Name="FootLLocY" Canvas.Left="551" HorizontalAlignment="Left" Content="L(y)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="495" x:Name="FootLLocZ" Canvas.Left="588" HorizontalAlignment="Left" Content="L(z)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="495" x:Name="FootLRot" Canvas.Left="624" HorizontalAlignment="Left" Content="R"/>
+                        <ComboBox Width="120" Canvas.Top="492" x:Name="FootLBoneName" Canvas.Left="654"/>
+                        <Slider Width="30" Value="1" Canvas.Top="511" x:Name="FootLeftSlider" Minimum="-1" Maximum="1" Canvas.Left="614"/>
+
+                        <Label VerticalAlignment="Top" Canvas.Top="102" Canvas.Left="325" HorizontalAlignment="Left" Content="ShoulderCenter :"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="123" x:Name="ShoulderLocX" Canvas.Left="329" HorizontalAlignment="Left" Content="L(x)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="123" x:Name="ShoulderLocY" Canvas.Left="365" HorizontalAlignment="Left" Content="L(y)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="123" x:Name="ShoulderLocZ" Canvas.Left="401" HorizontalAlignment="Left" Content="L(z)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="123" x:Name="ShoulderRot" Canvas.Left="437" HorizontalAlignment="Left" Content="R"/>
+                        <ComboBox Width="120" Canvas.Top="157" x:Name="ShoulderBoneName" Canvas.Left="324"/>
+                        <Slider Width="30" Value="1" Canvas.Top="138" x:Name="ShoulderSlider" Minimum="-1" Maximum="1" Canvas.Left="431"/>
+
+                        <Label VerticalAlignment="Top" Canvas.Top="189" Canvas.Left="400" HorizontalAlignment="Left" Content="Spine :"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="197" x:Name="SpineLocX" Canvas.Left="444" HorizontalAlignment="Left" Content="L(x)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="197" x:Name="SpineLocY" Canvas.Left="479" HorizontalAlignment="Left" Content="L(y)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="197" x:Name="SpineLocZ" Canvas.Left="515" HorizontalAlignment="Left" Content="L(z)"/>
+                        <CheckBox VerticalAlignment="Top" Canvas.Top="197" x:Name="SpineRot" Canvas.Left="551" HorizontalAlignment="Left" Content="R"/>
+                        <ComboBox Width="120" Canvas.Top="198" x:Name="SpineBoneName" Canvas.Left="585"/>
+                        <Slider Width="30" Value="1" Canvas.Top="213" x:Name="SpineSlider" Minimum="-1" Maximum="1" Canvas.Left="547"/>
+                        <Canvas x:Name="KinectAxisCanvas" Height="536" Width="844" Canvas.Left="1">
+                            <ComboBox x:Name="HeadXfrom" Canvas.Left="309" Width="38" Height="18" Canvas.Top="3" SelectedIndex="1" FontSize="10"/>
+                            <ComboBox x:Name="HeadYfrom" Canvas.Left="347" Width="38" Height="18" Canvas.Top="3" SelectedIndex="2" FontSize="10"/>
+                            <ComboBox x:Name="HeadZfrom" Canvas.Left="385" Width="38" Height="18" Canvas.Top="3" SelectedIndex="3" FontSize="10"/>
+                            <ComboBox x:Name="WristRXfrom" Canvas.Left="58" Width="38" Height="18" Canvas.Top="62" SelectedIndex="1" FontSize="10"/>
+                            <ComboBox x:Name="WristRYfrom" Canvas.Left="96" Width="38" Height="18" Canvas.Top="62" SelectedIndex="2" FontSize="10"/>
+                            <ComboBox x:Name="WristRZfrom" Canvas.Left="134" Width="38" Height="18" Canvas.Top="62" SelectedIndex="3" FontSize="10"/>
+                            <ComboBox x:Name="ShoulderRXfrom" Canvas.Left="217" Width="38" Height="18" Canvas.Top="66" SelectedIndex="1" FontSize="10"/>
+                            <ComboBox x:Name="ShoulderRYfrom" Canvas.Left="255" Width="38" Height="18" Canvas.Top="66" SelectedIndex="2" FontSize="10"/>
+                            <ComboBox x:Name="ShoulderRZfrom" Canvas.Left="293" Width="38" Height="18" Canvas.Top="66" SelectedIndex="3" FontSize="10"/>
+                            <ComboBox x:Name="ShoulderLXfrom" Canvas.Left="428" Width="38" Height="18" Canvas.Top="62" SelectedIndex="1" FontSize="10"/>
+                            <ComboBox x:Name="ShoulderLYfrom" Canvas.Left="466" Width="38" Height="18" Canvas.Top="62" SelectedIndex="2" FontSize="10"/>
+                            <ComboBox x:Name="ShoulderLZfrom" Canvas.Left="504" Width="38" Height="18" Canvas.Top="62" SelectedIndex="3" FontSize="10"/>
+                            <ComboBox x:Name="WristLXfrom" Canvas.Left="618" Width="38" Height="18" Canvas.Top="64" SelectedIndex="1" FontSize="10"/>
+                            <ComboBox x:Name="WristLYfrom" Canvas.Left="656" Width="38" Height="18" Canvas.Top="64" SelectedIndex="2" FontSize="10"/>
+                            <ComboBox x:Name="WristLZfrom" Canvas.Left="694" Width="38" Height="18" Canvas.Top="64" SelectedIndex="3" FontSize="10"/>
+                            <ComboBox x:Name="HandLXfrom" Canvas.Left="700" Width="38" Height="18" Canvas.Top="144" SelectedIndex="1" FontSize="10"/>
+                            <ComboBox x:Name="HandLYfrom" Canvas.Left="738" Width="38" Height="18" Canvas.Top="144" SelectedIndex="2" FontSize="10"/>
+                            <ComboBox x:Name="HandLZfrom" Canvas.Left="776" Width="38" Height="18" Canvas.Top="144" SelectedIndex="3" FontSize="10"/>
+                            <ComboBox x:Name="ElbowLXfrom" Canvas.Left="517" Width="38" Height="18" Canvas.Top="149" SelectedIndex="1" FontSize="10"/>
+                            <ComboBox x:Name="ElbowLYfrom" Canvas.Left="555" Width="38" Height="18" Canvas.Top="149" SelectedIndex="2" FontSize="10"/>
+                            <ComboBox x:Name="ElbowLZfrom" Canvas.Left="593" Width="38" Height="18" Canvas.Top="149" SelectedIndex="3" FontSize="10"/>
+                            <ComboBox x:Name="ShoulderXfrom" Canvas.Left="315" Width="38" Height="18" Canvas.Top="138" SelectedIndex="1" FontSize="10"/>
+                            <ComboBox x:Name="ShoulderYfrom" Canvas.Left="353" Width="38" Height="18" Canvas.Top="138" SelectedIndex="2" FontSize="10"/>
+                            <ComboBox x:Name="ShoulderZfrom" Canvas.Left="391" Width="38" Height="18" Canvas.Top="138" SelectedIndex="3" FontSize="10"/>
+                            <ComboBox x:Name="ElbowRXfrom" Canvas.Left="147" Width="38" Height="18" Canvas.Top="147" SelectedIndex="1" FontSize="10"/>
+                            <ComboBox x:Name="ElbowRYfrom" Canvas.Left="185" Width="38" Height="18" Canvas.Top="147" SelectedIndex="2" FontSize="10"/>
+                            <ComboBox x:Name="ElbowRZfrom" Canvas.Left="223" Width="38" Height="18" Canvas.Top="147" SelectedIndex="3" FontSize="10"/>
+                            <ComboBox x:Name="HandRXfrom" Canvas.Left="-53" Width="38" Height="18" Canvas.Top="143" SelectedIndex="1" FontSize="10"/>
+                            <ComboBox x:Name="HandRYfrom" Width="38" Height="18" Canvas.Top="143" SelectedIndex="2" FontSize="10" Canvas.Left="-15"/>
+                            <ComboBox x:Name="HandRZfrom" Canvas.Left="23" Width="38" Height="18" Canvas.Top="143" SelectedIndex="3" FontSize="10"/>
+                            <ComboBox x:Name="SpineXfrom" Canvas.Left="433" Width="38" Height="18" Canvas.Top="214" SelectedIndex="1" FontSize="10"/>
+                            <ComboBox x:Name="SpineYfrom" Canvas.Left="471" Width="38" Height="18" Canvas.Top="214" SelectedIndex="2" FontSize="10"/>
+                            <ComboBox x:Name="SpineZfrom" Canvas.Left="509" Width="38" Height="18" Canvas.Top="214" SelectedIndex="3" FontSize="10"/>
+                            <ComboBox x:Name="HipXfrom" Canvas.Left="453" Width="38" Height="18" Canvas.Top="251" SelectedIndex="1" FontSize="10"/>
+                            <ComboBox x:Name="HipYfrom" Canvas.Left="491" Width="38" Height="18" Canvas.Top="251" SelectedIndex="2" FontSize="10"/>
+                            <ComboBox x:Name="HipZfrom" Canvas.Left="529" Width="38" Height="18" Canvas.Top="251" SelectedIndex="3" FontSize="10"/>
+                            <ComboBox x:Name="HipLXfrom" Canvas.Left="437" Width="38" Height="18" Canvas.Top="309" SelectedIndex="1" FontSize="10"/>
+                            <ComboBox x:Name="HipLYfrom" Canvas.Left="475" Width="38" Height="18" Canvas.Top="309" SelectedIndex="2" FontSize="10"/>
+                            <ComboBox x:Name="HipLZfrom" Canvas.Left="513" Width="38" Height="18" Canvas.Top="309" SelectedIndex="3" FontSize="10"/>
+                            <ComboBox x:Name="HipRXfrom" Canvas.Left="151" Width="38" Height="18" Canvas.Top="295" SelectedIndex="1" FontSize="10"/>
+                            <ComboBox x:Name="HipRYfrom" Canvas.Left="189" Width="38" Height="18" Canvas.Top="295" SelectedIndex="2" FontSize="10"/>
+                            <ComboBox x:Name="HipRZfrom" Canvas.Left="227" Width="38" Height="18" Canvas.Top="295" SelectedIndex="3" FontSize="10"/>
+                            <ComboBox x:Name="KneeLXfrom" Canvas.Left="451" Width="38" Height="18" Canvas.Top="397" SelectedIndex="1" FontSize="10"/>
+                            <ComboBox x:Name="KneeLYfrom" Canvas.Left="489" Width="38" Height="18" Canvas.Top="397" SelectedIndex="2" FontSize="10"/>
+                            <ComboBox x:Name="KneeLZfrom" Canvas.Left="527" Width="38" Height="18" Canvas.Top="397" SelectedIndex="3" FontSize="10"/>
+                            <ComboBox x:Name="AnkleLXfrom" Canvas.Left="493" Width="38" Height="18" Canvas.Top="471" SelectedIndex="1" FontSize="10"/>
+                            <ComboBox x:Name="AnkleLYfrom" Canvas.Left="531" Width="38" Height="18" Canvas.Top="471" SelectedIndex="2" FontSize="10"/>
+                            <ComboBox x:Name="AnkleLZfrom" Canvas.Left="569" Width="38" Height="18" Canvas.Top="471" SelectedIndex="3" FontSize="10"/>
+                            <ComboBox x:Name="FootLXfrom" Canvas.Left="500" Width="38" Height="18" Canvas.Top="512" SelectedIndex="1" FontSize="10"/>
+                            <ComboBox x:Name="FootLYfrom" Canvas.Left="538" Width="38" Height="18" Canvas.Top="512" SelectedIndex="2" FontSize="10"/>
+                            <ComboBox x:Name="FootLZfrom" Canvas.Left="576" Width="38" Height="18" Canvas.Top="512" SelectedIndex="3" FontSize="10"/>
+                            <ComboBox x:Name="KneeRXfrom" Canvas.Left="44" Width="38" Height="18" Canvas.Top="403" SelectedIndex="1" FontSize="10"/>
+                            <ComboBox x:Name="KneeRYfrom" Canvas.Left="82" Width="38" Height="18" Canvas.Top="403" SelectedIndex="2" FontSize="10"/>
+                            <ComboBox x:Name="KneeRZfrom" Canvas.Left="120" Width="38" Height="18" Canvas.Top="403" SelectedIndex="3" FontSize="10"/>
+                            <ComboBox x:Name="AnkleRXfrom" Canvas.Left="52" Width="38" Height="18" Canvas.Top="468" SelectedIndex="1" FontSize="10"/>
+                            <ComboBox x:Name="AnkleRYfrom" Canvas.Left="90" Width="38" Height="18" Canvas.Top="468" SelectedIndex="2" FontSize="10"/>
+                            <ComboBox x:Name="AnkleRZfrom" Canvas.Left="128" Width="38" Height="18" Canvas.Top="468" SelectedIndex="3" FontSize="10"/>
+                            <ComboBox x:Name="FootRXfrom" Width="38" Height="18" Canvas.Top="509" SelectedIndex="1" FontSize="10" Canvas.Left="43"/>
+                            <ComboBox x:Name="FootRYfrom" Canvas.Left="81" Width="38" Height="18" Canvas.Top="509" SelectedIndex="2" FontSize="10"/>
+                            <ComboBox x:Name="FootRZfrom" Canvas.Left="119" Width="38" Height="18" Canvas.Top="509" SelectedIndex="3" FontSize="10"/>
+                        </Canvas>
+                    </Canvas>
+                </TabItem>
+
+                <TabItem Header="Tangible User Interface">
+                    <Canvas Margin="50,50,0,0" x:Name="LocRotCanvas" HorizontalAlignment="Left">
+                        <Label Content="RotationOrder" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="14" Canvas.Left="461" Canvas.Top="-20"/>
+                        <Label Content="Axes" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="14" Canvas.Left="401" Canvas.Top="-20"/>
+                        <Label Content="Slot" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="14" Canvas.Left="110" Canvas.Top="-20"/>
+
+                        <Label x:Name="ALabel" Content="A :" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="14" Canvas.Left="63" Canvas.Top="7"/>
+                        <CheckBox x:Name="ALoc" Content="L" HorizontalAlignment="Left" VerticalAlignment="Top" Canvas.Left="192" Canvas.Top="14"/>
+                        <CheckBox x:Name="ARot" Content="R" HorizontalAlignment="Left" VerticalAlignment="Top" Canvas.Left="227" Canvas.Top="14"/>
+                        <Label x:Name="AValueLabel" Content="Label" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Canvas.Left="63" Canvas.Top="27"/>
+
+                        <Label x:Name="BLabel" Content="B :" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="14" Canvas.Left="63" Canvas.Top="73"/>
+                        <CheckBox  x:Name="BLoc" Content="L" HorizontalAlignment="Left" VerticalAlignment="Top" Canvas.Left="192" Canvas.Top="80"/>
+                        <CheckBox  x:Name="BRot" Content="R" HorizontalAlignment="Left" VerticalAlignment="Top" Canvas.Left="227" Canvas.Top="80"/>
+                        <Label x:Name="BValueLabel" Content="Label" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Canvas.Left="63" Canvas.Top="93"/>
+
+                        <Label x:Name="CLabel" Content="C :" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="14" Canvas.Left="63" Canvas.Top="138"/>
+                        <CheckBox  x:Name="CLoc" Content="L" HorizontalAlignment="Left" VerticalAlignment="Top" Canvas.Left="192" Canvas.Top="145"/>
+                        <CheckBox  x:Name="CRot" Content="R" HorizontalAlignment="Left" VerticalAlignment="Top" Canvas.Left="227" Canvas.Top="145"/>
+                        <Label x:Name="CValueLabel" Content="Label" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Canvas.Left="63" Canvas.Top="158"/>
+
+                        <Label x:Name="DLabel" Content="D :" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="14" Canvas.Left="63" Canvas.Top="203"/>
+                        <CheckBox x:Name="DLoc" Content="L" HorizontalAlignment="Left" VerticalAlignment="Top" Canvas.Left="192" Canvas.Top="210"/>
+                        <CheckBox x:Name="DRot" Content="R" HorizontalAlignment="Left" VerticalAlignment="Top" Canvas.Left="227" Canvas.Top="210"/>
+                        <Label x:Name="DValueLabel" Content="Label" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Canvas.Left="63" Canvas.Top="223"/>
+
+                        <Label x:Name="OneLabel" Content="One :" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="14" Canvas.Left="63" Canvas.Top="268"/>
+                        <CheckBox x:Name="OneLoc" Content="L" HorizontalAlignment="Left" VerticalAlignment="Top" Canvas.Left="192" Canvas.Top="275"/>
+                        <CheckBox x:Name="OneRot" Content="R" HorizontalAlignment="Left" VerticalAlignment="Top" Canvas.Left="227" Canvas.Top="275"/>
+                        <Label x:Name="OneValueLabel" Content="Label" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Canvas.Left="63" Canvas.Top="288"/>
+
+                        <Label x:Name="TwoLabel" Content="Two :" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="14" Canvas.Left="63" Canvas.Top="333"/>
+                        <CheckBox x:Name="TwoLoc" Content="L" HorizontalAlignment="Left" VerticalAlignment="Top" Canvas.Left="192" Canvas.Top="340"/>
+                        <CheckBox x:Name="TwoRot" Content="R" HorizontalAlignment="Left" VerticalAlignment="Top" Canvas.Left="227" Canvas.Top="340"/>
+                        <Label x:Name="TwoValueLabel" Content="Label" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Canvas.Left="63" Canvas.Top="353"/>
+
+                        <Label x:Name="ThreeLabel" Content="Three :" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="14" Canvas.Left="63" Canvas.Top="397"/>
+                        <CheckBox x:Name="ThreeLoc" Content="L" HorizontalAlignment="Left" VerticalAlignment="Top" Canvas.Left="192" Canvas.Top="404"/>
+                        <CheckBox x:Name="ThreeRot" Content="R" HorizontalAlignment="Left" VerticalAlignment="Top" Canvas.Left="227" Canvas.Top="404"/>
+                        <Label x:Name="ThreeValueLabel" Content="Label" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Canvas.Left="63" Canvas.Top="417"/>
+
+                        <Label x:Name="FourLabel" Content="Four :" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="14" Canvas.Left="63" Canvas.Top="462"/>
+                        <CheckBox x:Name="FourLoc" Content="L" HorizontalAlignment="Left" VerticalAlignment="Top" Canvas.Left="192" Canvas.Top="469"/>
+                        <CheckBox x:Name="FourRot" Content="R" HorizontalAlignment="Left" VerticalAlignment="Top" Canvas.Left="227" Canvas.Top="469"/>
+                        <Label x:Name="FourValueLabel" Content="Label" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Canvas.Left="63" Canvas.Top="482"/>
+
+                        <Grid x:Name="RotationOrderGrid" Height="497" Width="100" Canvas.Left="461" Canvas.Top="4">
+                            <ComboBox x:Name="ARotOrder" HorizontalAlignment="Center" VerticalAlignment="Top" Width="52" Margin="0,5,0,0" IsEnabled="{Binding IsChecked, ElementName=ARot}"/>
+                            <ComboBox x:Name="BRotOrder" HorizontalAlignment="Center" VerticalAlignment="Top" Width="52" Margin="24,72,24,0" IsEnabled="{Binding IsChecked, ElementName=BRot}"/>
+                            <ComboBox x:Name="CRotOrder" HorizontalAlignment="Center" VerticalAlignment="Top" Width="52" Margin="24,136,24,0" IsEnabled="{Binding IsChecked, ElementName=CRot}"/>
+                            <ComboBox x:Name="DRotOrder" HorizontalAlignment="Center" VerticalAlignment="Top" Width="52" Margin="24,201,24,0" IsEnabled="{Binding IsChecked, ElementName=DRot}"/>
+                            <ComboBox x:Name="OneRotOrder" HorizontalAlignment="Center" VerticalAlignment="Top" Width="52" Margin="24,267,24,0" IsEnabled="{Binding IsChecked, ElementName=OneRot}"/>
+                            <ComboBox x:Name="TwoRotOrder" HorizontalAlignment="Center" VerticalAlignment="Top" Width="52" Margin="24,331,24,0" IsEnabled="{Binding IsChecked, ElementName=TwoRot}"/>
+                            <ComboBox x:Name="ThreeRotOrder" HorizontalAlignment="Center" VerticalAlignment="Top" Width="52" Margin="24,395,24,0" IsEnabled="{Binding IsChecked, ElementName=ThreeRot}"/>
+                            <ComboBox x:Name="FourRotOrder" HorizontalAlignment="Center" VerticalAlignment="Top" Width="52" Margin="24,460,24,0" IsEnabled="{Binding IsChecked, ElementName=FourRot}"/>
+                        </Grid>
+
+                        <Grid x:Name="AxisGrid" Margin="1058,69,138,125">
+                            <ComboBox x:Name="AAxis" HorizontalAlignment="Left" VerticalAlignment="Top" Width="51" Margin="-663,-60,0,0"/>
+                            <ComboBox x:Name="BAxis" HorizontalAlignment="Left" Margin="-663,6,0,0" VerticalAlignment="Top" Width="51"/>
+                            <ComboBox x:Name="CAxis" HorizontalAlignment="Left" Margin="-663,71,0,0" VerticalAlignment="Top" Width="51"/>
+                            <ComboBox x:Name="DAxis" HorizontalAlignment="Left" Margin="-663,136,0,0" VerticalAlignment="Top" Width="51"/>
+                            <ComboBox x:Name="OneAxis" HorizontalAlignment="Left" Margin="-663,202,0,0" VerticalAlignment="Top" Width="51"/>
+                            <ComboBox x:Name="TwoAxis" HorizontalAlignment="Left" Margin="-663,266,0,0" VerticalAlignment="Top" Width="51"/>
+                            <ComboBox x:Name="ThreeAxis" HorizontalAlignment="Left" Margin="-663,330,0,-4" VerticalAlignment="Top" Width="51"/>
+                            <ComboBox x:Name="FourAxis" HorizontalAlignment="Left" Margin="-663,395,0,-69" VerticalAlignment="Top" Width="51"/>
+                        </Grid>
+
+                        <Grid x:Name="BoneNameGrid" HorizontalAlignment="Left" Height="570" VerticalAlignment="Top" Width="139" Canvas.Left="266" Canvas.Top="-5">
+                            <ComboBox x:Name="ABoneName" HorizontalAlignment="Left" Margin="0,14,0,0" VerticalAlignment="Top" Width="120"/>
+                            <ComboBox x:Name="BBoneName" HorizontalAlignment="Left" Margin="0,80,0,0" VerticalAlignment="Top" Width="120"/>
+                            <ComboBox x:Name="CBoneName" HorizontalAlignment="Left" Margin="0,145,0,0" VerticalAlignment="Top" Width="120"/>
+                            <ComboBox x:Name="DBoneName" HorizontalAlignment="Left" Margin="0,210,0,0" VerticalAlignment="Top" Width="120"/>
+                            <ComboBox x:Name="OneBoneName" HorizontalAlignment="Left" Margin="0,275,0,0" VerticalAlignment="Top" Width="120"/>
+                            <ComboBox x:Name="TwoBoneName" HorizontalAlignment="Left" Margin="0,340,0,0" VerticalAlignment="Top" Width="120"/>
+                            <ComboBox x:Name="ThreeBoneName" HorizontalAlignment="Left" Margin="0,404,0,0" VerticalAlignment="Top" Width="120"/>
+                            <ComboBox x:Name="FourBoneName" HorizontalAlignment="Left" Margin="0,469,0,0" VerticalAlignment="Top" Width="120"/>
+                            <Label Content="Reference Bone" HorizontalAlignment="Left" Margin="7,-15,0,0" VerticalAlignment="Top" FontSize="14"/>
+                        </Grid>
+
+                        <Image x:Name="SlotAImage" HorizontalAlignment="Left" Height="60" VerticalAlignment="Top" Width="79" Canvas.Left="579" Canvas.Top="-12"/>
+                        <Image x:Name="SlotBImage" HorizontalAlignment="Left" Height="60" VerticalAlignment="Top" Width="79" Canvas.Left="579" Canvas.Top="56"/>
+                        <Image x:Name="SlotCImage" HorizontalAlignment="Left" Height="60" VerticalAlignment="Top" Width="79" Canvas.Left="579" Canvas.Top="120"/>
+                        <Image x:Name="SlotDImage" HorizontalAlignment="Left" Height="60" VerticalAlignment="Top" Width="79" Canvas.Left="579" Canvas.Top="185"/>
+                        <Image x:Name="SlotOneImage" HorizontalAlignment="Left" Height="60" VerticalAlignment="Top" Width="79" Canvas.Left="579" Canvas.Top="251"/>
+                        <Image x:Name="SlotTwoImage" HorizontalAlignment="Left" Height="60" VerticalAlignment="Top" Width="79" Canvas.Left="579" Canvas.Top="316"/>
+                        <Image x:Name="SlotThreeImage" HorizontalAlignment="Left" Height="60" VerticalAlignment="Top" Width="79" Canvas.Left="579" Canvas.Top="380"/>
+                        <Image x:Name="SlotFourImage" HorizontalAlignment="Left" Height="60" VerticalAlignment="Top" Width="79" Canvas.Left="579" Canvas.Top="446"/>
+                    </Canvas>
+                </TabItem>
+                <TabItem Header="Automatic Configuration">
+                    <Canvas Margin="50,50,0,0" x:Name="AutoConfigCanvas" HorizontalAlignment="Left">
+                        <Button Content="Generate" Width="68" Click="ButtonAutoConfig_Click" Canvas.Left="780" Canvas.Top="471"/>
+                        <Label Content="Preference" HorizontalAlignment="Left" Margin="7,-15,0,0" VerticalAlignment="Top" FontSize="14"/>
+                        <CheckBox x:Name="UseSensorCheckBox" Content="Use Sensor" Canvas.Top="30" Canvas.Left="30"/>
+                        <CheckBox x:Name="SplitDofCheckBox" Content="Split DoF" Canvas.Top="60" Canvas.Left="30"/>
+                        <!-- <CheckBox x:Name="LeftHandedCheckBox" Content="Left-Handed" Canvas.Top="90" Canvas.Left="30"/> -->
+                        <Label  HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Canvas.Top="126" Width="48" Canvas.Left="-9">
+                            <TextBlock Text="Body Tracking" TextWrapping="Wrap" TextAlignment="Center" FontSize="10" />
+                        </Label>
+                        <Label HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Canvas.Left="95" Canvas.Top="127" Width="72">
+                            <TextBlock Text="Tangible User Interface" TextWrapping="Wrap" TextAlignment="Center" FontSize="10" />
+                        </Label>
+                        <Slider x:Name="UserPreferenceSlider" Height="24" Width="60" Canvas.Left="37" Canvas.Top="134" Minimum="-1" Maximum="1" SmallChange="1" IsSnapToTickEnabled="True" Ticks="-1,0,1"/>
+                    </Canvas >
+                </TabItem>
+
+
+
+            </TabControl>
+            <Button Content="OK" HorizontalAlignment="Left" Margin="1184,672,0,0" VerticalAlignment="Top" Width="68" Click="ButtonOk_Click"/>
+            <Label Content="Factor :" Margin="28,619,1207,0" VerticalAlignment="Top" ToolTip="Fattore moltiplicativo per la posizione"/>
+            <Slider x:Name="factorSlider" HorizontalAlignment="Left" VerticalAlignment="Top" Width="113" Minimum="1" Value="1" SmallChange="1" ValueChanged="Slider_ValueChanged" Margin="162,621,0,0" Maximum="100"/>
+            <ComboBox x:Name="PresetComboBox" HorizontalAlignment="Left" Margin="501,621,0,0" VerticalAlignment="Top" Width="146" SelectionChanged="PresetComboBox_SelectionChanged" ToolTip="Configurazioni pre-impostate per alcuni modelli"/>
+            <Button Content="+" HorizontalAlignment="Left" Margin="1030,224,0,0" VerticalAlignment="Top" Width="68" Click="ButtonAddSetting_Click"/>
+            <Label Content="Configuration :" HorizontalAlignment="Left" Margin="1029,31,0,0" VerticalAlignment="Top"/>
+            <ListBox x:Name="PresetListBox" HorizontalAlignment="Left" Height="100" Margin="1030,62,0,0" VerticalAlignment="Top" Width="180" SelectionChanged="PresetListBox_SelectionChanged"/>
+            <TextBox x:Name="PresetName" HorizontalAlignment="Left" Height="23" Margin="1030,196,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="180"/>
+            <Button Content="-" HorizontalAlignment="Left" Margin="1138,224,0,0" VerticalAlignment="Top" Width="68" Click="ButtonRemoveSetting_Click"/>
+            <Label Content="Name:" HorizontalAlignment="Left" Margin="1030,165,0,0" VerticalAlignment="Top"/>
+            <Label Content="ConfidenceThreshold:" Margin="28,652,1149,0" VerticalAlignment="Top" ToolTip="Soglia per il riconoscitore vocale"/>
+            <Slider x:Name="ConfidenceThresholdSlider" HorizontalAlignment="Left" Margin="162,654,0,0" VerticalAlignment="Top" Width="113" Value="0.5" Maximum="1" SmallChange="0.1"/>
+            <Label VerticalAlignment="Top" Margin="205,632,0,0" Height="26" HorizontalAlignment="Left" Content="{Binding Value, ElementName=ConfidenceThresholdSlider}"/>
+            <Image HorizontalAlignment="Left" Height="202" Margin="952,375,0,0" VerticalAlignment="Top" Width="345" Source="Images/Axis.png" Stretch="Fill" RenderTransformOrigin="0.5,0.5">
+                <Image.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform AngleY="0.029"/>
+                        <RotateTransform/>
+                        <TranslateTransform Y="0.083"/>
+                    </TransformGroup>
+                </Image.RenderTransform>
+            </Image>
+            <Label Content="Coordinate system" HorizontalAlignment="Left" Margin="1067,582,0,0" VerticalAlignment="Top"/>
+            <Label Content="Range:" Margin="54,703,1207,0" VerticalAlignment="Top" ToolTip="Soglia per il riconoscitore vocale" FontSize="10"/>
+            <Label Content="Step:" Margin="185,703,1086,0" VerticalAlignment="Top" ToolTip="Soglia per il riconoscitore vocale" FontSize="10"/>
+            <Label Content="Frame ghost:" Margin="28,679,1149,0" VerticalAlignment="Top" ToolTip="Soglia per il riconoscitore vocale"/>
+            <TextBox x:Name="RangeTextBox" HorizontalAlignment="Left" Height="19" Margin="94,706,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="59" FontSize="10" Text="0"/>
+            <TextBox x:Name="StepTextBox" HorizontalAlignment="Left" Height="19" Margin="216,706,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="59" FontSize="10" Text="0"/>
+
+        </Grid>
+    </ScrollViewer>
+</Window>

@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>QuickGraphPCL</id>
+    <version>3.6.61114.2</version>
+    <title>QuickGraph for .NET</title>
+    <authors>panthernet</authors>
+    <owners>panthernet</owners>
+    <licenseUrl>http://quickgraph.codeplex.com/license</licenseUrl>
+    <projectUrl>http://quickgraph.codeplex.com/</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Correct QuickGraph version for projects such as GraphX that use cross-platform PCL libraries.
+
+QuickGraph provides generic directed/undirected graph datastructures and algorithms for .Net, Silverlight, Windows Phone and Win 8. 
+      QuickGraph comes with algorithms such as depth first seach, breath first search, A* search, shortest path, k-shortest path, maximum flow, minimum spanning tree, least common ancestors, etc...</description>
+    <summary>Correctly portable (PCL) version of QuickGraph library.</summary>
+    <language>en-US</language>
+    <tags>algorithms graph directed undirected dfs bfs graphviz graphml data structure</tags>
+    <references>
+      <reference file="QuickGraph.dll" />
+      <reference file="QuickGraph.Serialization.dll" />
+      <reference file="QuickGraph.Data.dll" />
+      <reference file="QuickGraph.Graphviz.dll" />
+    </references>
+  </metadata>
+</package>

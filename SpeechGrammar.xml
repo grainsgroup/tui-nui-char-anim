@@ -1,0 +1,53 @@
+﻿<grammar version="1.0" xml:lang="it-IT" root="rootRule" tag-format="semantics/1.0-literals" xmlns="http://www.w3.org/2001/06/grammar">
+  <rule id="rootRule">
+    <one-of>
+      <item>
+        <tag>POSITION</tag>
+        <one-of>
+          <item> posa </item>
+          <item> posizione </item>
+          <item> pos </item>
+        </one-of>
+      </item>
+      <item>
+        <tag>FRAME</tag>
+        <one-of>
+          <item> frame </item>
+          <item> cattura </item>          
+        </one-of>
+      </item>
+      <item>
+        <tag>PLAY</tag>
+        <one-of>
+          <item> avvia </item>  
+         </one-of>
+      </item>
+      <item>
+        <tag>STOP</tag>
+        <one-of>
+          <item> stop </item>
+          <item> pausa </item>
+        </one-of>
+      </item>
+      <item>
+        <tag>FORWARD</tag>
+        <one-of>
+          <item> avanti </item>          
+        </one-of>
+      </item>
+      <item>
+        <tag>BACKWARD</tag>
+        <one-of>
+          <item> indietro </item>
+        </one-of>
+      </item>
+    <item>
+        <tag>DELETE</tag>
+        <one-of>
+          <item> elimina </item>
+          <item> cancella </item>                  
+        </one-of>
+      </item>
+    </one-of>
+  </rule>
+</grammar>

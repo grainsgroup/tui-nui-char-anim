@@ -1,0 +1,14 @@
+﻿<Window x:Class="Microsoft.Samples.Kinect.SkeletonBasics.LegoConnectionSetup"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="LEGO Connection Setup" Height="190.951" Width="439" ResizeMode="NoResize">
+    <Grid>
+        <Label Content="Connection Type:" HorizontalAlignment="Left" Margin="167,36,0,0" VerticalAlignment="Top" Width="130"/>
+        <ComboBox x:Name="ConnectionTypeCheckBox" HorizontalAlignment="Left" Margin="291,40,0,0" VerticalAlignment="Top" Width="120" SelectionChanged="ConnectionTypeCheckBox_SelectionChanged" />
+        <Label x:Name="IpAddressLabel" Content="IP Address:" HorizontalAlignment="Left" Margin="167,77,0,0" VerticalAlignment="Top"/>
+        <TextBox x:Name="IpAddressTextBox" HorizontalAlignment="Left" Height="23" Margin="291,79,0,0" TextWrapping="Wrap" Text="192.168.43.116" VerticalAlignment="Top" Width="120"/>
+        <Button Content="OK" HorizontalAlignment="Left" Margin="336,119,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click"/>
+        <Image x:Name="ConnectionImage" HorizontalAlignment="Left" Height="100" Margin="30,29,0,0" VerticalAlignment="Top" Width="100" Source="Images/Usb.png"/>
+
+    </Grid>
+</Window>

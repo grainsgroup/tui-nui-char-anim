@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>Lego.Ev3</id>
+    <version>1.0.0</version>
+    <title>LEGO Mindstorms EV3 API</title>
+    <authors>Brian Peek, Clint Rutkas, Dan Fernandez</authors>
+    <owners>Brian Peek, Clint Rutkas, Dan Fernandez</owners>
+    <licenseUrl>https://legoev3.codeplex.com/license</licenseUrl>
+    <projectUrl>http://legoev3.codeplex.com/</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Control your LEGO Mindstorms EV3 kit! With this API, you can connect to and control your LEGO EV3 brick over Bluetooth, WiFi, or USB. This project provides libraries that are usable from the Windows desktop, Windows Phone 8, and WinRT (via .NET, WinJS and C++), along with full source code.</description>
+    <summary>API for the LEGO Mindstorms EV3 brick usable from desktop, Windows Phone and WinRT.</summary>
+    <releaseNotes>Initial release!</releaseNotes>
+    <copyright>2013</copyright>
+    <language>en-US</language>
+    <tags>lego ev3 mindstorms winrt phone wp8 wpf .net c#</tags>
+  </metadata>
+</package>
