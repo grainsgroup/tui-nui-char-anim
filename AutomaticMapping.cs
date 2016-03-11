@@ -570,7 +570,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 for (int col = 0; col < kinectSkeleton.Count * currentPartition.Count;
                     col += currentPartition.Count)
                 {
-                    KinectPieces kinectBones = ChainSimilarityScore(currentPartition[row], kinectSkeleton[col / currentPartition.Count]);                           int cost = kinectBones.Score + currentPartition.Count;
+                    KinectPieces kinectBones = ChainSimilarityScore(currentPartition[row], kinectSkeleton[col / currentPartition.Count]);
+                    int cost = kinectBones.Score + currentPartition.Count;
                     motorDecomposition.Add(kinectBones.Bones);
 
                     for (int index = 0; index < currentPartition.Count; index++)
@@ -597,9 +598,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
         private static KinectPieces ChainSimilarityScore(List<Bone> subPartition, List<Bone> kinectPartition)
         {
-            Bone kinectBone = new Bone("");
             
-
             // solves assignment problem with Hungarian Algorithm                                        
             int[,] costsMatrix = new int[subPartition.Count, kinectPartition.Count];
             // initialize costMatrix
@@ -618,7 +617,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
             int[] assignment = HungarianAlgorithm.FindAssignments(costsMatrix);
             
+            Bone kinectBone = new Bone("");
             int totalCost = 0;
+            
             // computes cost for this assignment
             for (int ass = 0; ass < assignment.Length; ass++)
             {
@@ -1249,33 +1250,24 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         public static AxisArrangement ComputeLocRotKinectAssignement(List<Bone> uniquePartition)
         {
 
-            List<Bone> handler = new List<Bone>();
-            foreach (List<Bone> kinectPart in GetKinectSkeleton())
-            {
-                foreach (Bone bone in GetOneDofBones(kinectPart, true, true))
-                {
-                    handler.Add(bone);
-                }
-            }
+            List<Bone> kinectPart = new List<Bone>();
+            foreach (List<Bone> lb in GetKinectSkeleton())
+                foreach (Bone b in lb)
+                    kinectPart.Add(b);
             
-            List<Bone> boneOneDof = GetOneDofBones(uniquePartition, true, true);
-
             // solves assignment problem with Hungarian Algorithm                                        
-            int[,] costsMatrix = new int[boneOneDof.Count, handler.Count];
+            int[,] costsMatrix = new int[uniquePartition.Count, kinectPart.Count];
             // initialize costMatrix
-            for (int row = 0; row < boneOneDof.Count; row++)
+            for (int row = 0; row < uniquePartition.Count; row++)
             {
-                for (int col = 0; col < handler.Count; col++)
+                for (int col = 0; col < kinectPart.Count; col++)
                 {
-                    costsMatrix[row, col] = 
-                        RotDofSimilarityScore(boneOneDof[row], handler[col]) +
-                        LocDoFSimilarityScore(boneOneDof[row], handler[col]) +
-                        ComponentRangeScore(handler[col]) +
-                        SymmetryScore(boneOneDof[row], handler[col]) +
-                        PiecesPreferenceScore(boneOneDof[row], handler[col]);
-
-                    ///////////////////////////////////////////////////////
-
+                    costsMatrix[row, col] =
+                        RotDofSimilarityScore(uniquePartition[row], kinectPart[col]) +
+                        LocDoFSimilarityScore(uniquePartition[row], kinectPart[col]) +
+                        SymmetryScore(uniquePartition[row], kinectPart[col]) +
+                        Math.Abs(uniquePartition[row].level - kinectPart[col].level)/* +
+                        DofAnalysisScore(uniquePartition[row], kinectPart[col]) */;
                 }
             }
 
@@ -1288,16 +1280,63 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             }
 
             List<List<Bone>> partition = new List<List<Bone>>();
-            partition.Add(boneOneDof);
-            AxisArrangement result = new AxisArrangement("Kinect_Configuration", assignment, partition, handler, score);
-            if(kinectAssignmentConsistency(result))
+            partition.Add(uniquePartition);
+           AxisArrangement bestArrangement = new AxisArrangement("Kinect_Configuration", assignment, partition, kinectPart, score);               
+            
+            
+            // Gets oneBone-mode mapping representation
+
+            List<Bone> oneDofBone = GetOneDofBones(uniquePartition, true, true);
+            List<Bone> oneDofHandler = GetOneDofBones(bestArrangement.MotorDecomposition, true, true);
+            List<int> dofAssignament = new List<int>();            
+
+            for (int handlerIndex = 0; handlerIndex < bestArrangement.Assignment.Length; handlerIndex++)
             {
-                return result;
+                foreach (char dof in uniquePartition[handlerIndex].rot_DoF) 
+                {
+                    string boneToFind = 
+                        bestArrangement.MotorDecomposition[bestArrangement.Assignment[handlerIndex]].name +
+                        "_ROT(" + dof + ")";
+
+                    dofAssignament.Add(oneDofHandler.FindIndex(x => x.name.Equals(boneToFind)));
+
+                }
+                foreach (char dof in uniquePartition[handlerIndex].loc_DoF)
+                {
+                    string boneToFind =
+                        bestArrangement.MotorDecomposition[bestArrangement.Assignment[handlerIndex]].name +
+                        "_LOC(" + dof + ")";
+
+                    dofAssignament.Add(oneDofHandler.FindIndex(x => x.name.Equals(boneToFind)));
+                }
+
             }
-            else
+
+            List<List<Bone>> oneDofPartition = new List<List<Bone>>();
+            oneDofPartition.Add(oneDofBone);
+            return new AxisArrangement("Kinect_Configuration", dofAssignament.ToArray(), oneDofPartition, oneDofHandler, bestArrangement.Score);/* arrangements[0];*/
+        }
+
+        private static int DofAnalysisScore(Bone bone, Bone handler)
+        {
+            int rotCost = 0;
+            int locCost = 0;
+            if(bone.rot_DoF.Count > 0)
             {
-                return null;
-            }                        
+                foreach (Bone oneDofHandler in GetOneDofBones(new List<Bone>() { handler }, true, false))
+                {
+                    rotCost += ComponentRangeScore(oneDofHandler) + PiecesPreferenceScore(bone, oneDofHandler);
+                }
+            }
+            if (bone.loc_DoF.Count > 0)
+            {
+                foreach (Bone oneDofHandler in GetOneDofBones(new List<Bone>() { handler }, false, true))
+                {
+                    locCost += ComponentRangeScore(oneDofHandler) + PiecesPreferenceScore(bone, oneDofHandler);
+                }
+            }
+
+            return rotCost + locCost;
         }
     }
 }

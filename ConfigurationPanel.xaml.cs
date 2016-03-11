@@ -822,7 +822,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         private void ButtonAutoConfig_Click(object sender, RoutedEventArgs e)
         {
 
-            List<Bone> armature = RequestArmatureInfo();
+            string armatureName = RequestArmatureSelected();
+            List<Bone> armature = RequestArmatureInfo(armatureName);
 
             int motors = AutomaticMapping.CountComponentAvailable(new List<string>(){ "LMotor","MMotor" }, brick);
             if (this.UseSensorCheckBox.IsChecked.Value)
@@ -859,7 +860,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 if (locRotArrangements[0]!= null) 
                 {
                     locRotArrangements.Sort();
-                    CreateConfiguration(locRotArrangements[0]);
+                    CreateConfiguration(locRotArrangements[0], armatureName);
                     configurationCreated = true;
                 }
                 
@@ -901,7 +902,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 }
 
                 rotArrangements.Sort();
-                CreateConfiguration(rotArrangements);
+                CreateConfiguration(rotArrangements,"_Rotation",armatureName);
 
                 // LOCATION ASSIGNMENT
                 
@@ -911,14 +912,14 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     List<AxisArrangement> locArrangements = 
                         AutomaticMapping.ComputeLocAssignment(new List<Bone>() { locBones }, locHandler/*, this.LeftHandedCheckBox.IsChecked.Value*/);
                     locArrangements.Sort();
-                    //CreateConfiguration(locArrangements[0]);
+                    CreateConfiguration(locArrangements[0], armatureName);
                 }
                                                           
             }            
             
         }
 
-        private void CreateConfiguration(List<AxisArrangement> arrangements)
+        private void CreateConfiguration(List<AxisArrangement> arrangements, string text, string armatureName)
         {
             AxisArrangement bestArrangement = arrangements[0];            
             // Create configuration from computeTuiAssignment
@@ -944,7 +945,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         if (name.Contains('.'))
                             name = name.Remove(name.IndexOf('.'), 1);
                         settingToAdd.CheckBoxStatus.Add(new SettingItem(name + "Rot", "true"));
-                        settingToAdd.ComboBoxStatus.Add(new SettingItem(name + "BoneName", currentBone.name + ":Armature.002"));
+                        settingToAdd.ComboBoxStatus.Add(new SettingItem(name + "BoneName", currentBone.name + ":" + armatureName));
                         indexComponent++;
 
                     }
@@ -962,7 +963,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     List<string> componentName = GetComponentsName(components);
 
                     int indexComponent = 0;
-                    Setting settingToAdd = new Setting(bestArrangement.Partition[i][0].name);
+                    Setting settingToAdd = new Setting(bestArrangement.Partition[i][0].name + text);
 
                     //foreach bone in partition
                     for (int indexCurrentBone = 0; indexCurrentBone < bestArrangement.Partition[i].Count; indexCurrentBone++)
@@ -976,7 +977,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                             string axis = components.rot_DoF[indexComponent].ToString().ToUpper();
 
                             settingToAdd.CheckBoxStatus.Add(new SettingItem(port + "Rot", "true"));
-                            settingToAdd.ComboBoxStatus.Add(new SettingItem(port + "BoneName", currentBone.name + ":Armature.002"));
+                            settingToAdd.ComboBoxStatus.Add(new SettingItem(port + "BoneName", currentBone.name + ":" + armatureName));
                             settingToAdd.ComboBoxStatus.Add(new SettingItem(port + "Axis", axis));
                             settingToAdd.ComboBoxStatus.Add(new SettingItem(port + "RotOrder", Convert.ToString(dof)));
                             indexComponent++;
@@ -997,7 +998,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             */
         }
 
-        private void CreateConfiguration(AxisArrangement arrangement) 
+        private void CreateConfiguration(AxisArrangement arrangement, string armatureName) 
         {
             Setting settingToAdd = new Setting(arrangement.Name);
             List<Setting> settings = new List<Setting>();
@@ -1018,7 +1019,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     if (boneDof.Contains("LOC")) 
                     {
                         settingToAdd.CheckBoxStatus.Add(new SettingItem(port + "Loc", "true"));
-                        settingToAdd.ComboBoxStatus.Add(new SettingItem(port + "BoneName", boneName + ":Armature.002"));
+                        settingToAdd.ComboBoxStatus.Add(new SettingItem(port + "BoneName", boneName + ":" + armatureName));
                         settingToAdd.ComboBoxStatus.Add(new SettingItem(port + "Axis", axis));                        
                     }
                     
@@ -1026,7 +1027,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     {                                                
                         string order = GetOrderFromAxis(axis);
                         settingToAdd.CheckBoxStatus.Add(new SettingItem(port + "Rot", "true"));
-                        settingToAdd.ComboBoxStatus.Add(new SettingItem(port + "BoneName", boneName + ":Armature.002"));
+                        settingToAdd.ComboBoxStatus.Add(new SettingItem(port + "BoneName", boneName + ":" + armatureName));
                         settingToAdd.ComboBoxStatus.Add(new SettingItem(port + "Axis", axis));
                         settingToAdd.ComboBoxStatus.Add(new SettingItem(port + "RotOrder", order));
                     }                                        
@@ -1036,21 +1037,21 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     string[] splittedStringComponent = component.name.Split('_');
                     string jointName = splittedStringComponent[0];
                     if (jointName.Contains('.'))
-                        jointName.Remove(jointName.IndexOf('.'), 1);
+                        jointName = jointName.Remove(jointName.IndexOf('.'), 1);
                     string jointDoF = splittedStringComponent[1];
                     string axis = boneDof.Substring(boneDof.IndexOf('(') + 1, 1).ToUpper();
                     
                     if (boneDof.Contains("LOC"))
                     {
                         settingToAdd.CheckBoxStatus.Add(new SettingItem(jointName + "Loc" + axis, "true"));
-                        settingToAdd.ComboBoxStatus.Add(new SettingItem(jointName + "BoneName", boneName + ":Armature.002"));
+                        settingToAdd.ComboBoxStatus.Add(new SettingItem(jointName + "BoneName", boneName + ":" + armatureName));
                         settingToAdd.ComboBoxStatus.Add(new SettingItem(jointName + axis + "from", axis));
                     }
 
                     if (boneDof.Contains("ROT"))
                     {
                         settingToAdd.CheckBoxStatus.Add(new SettingItem(jointName + "Rot", "true"));
-                        settingToAdd.ComboBoxStatus.Add(new SettingItem(jointName + "BoneName", currentBone.name + ":Armature.002"));
+                        settingToAdd.ComboBoxStatus.Add(new SettingItem(jointName + "BoneName", boneName + ":" + armatureName));
                     }
                 }
             }
@@ -1127,18 +1128,29 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             return new List<Bone>();            
         }
 
-        private List<Bone> RequestArmatureInfo()
+        private List<Bone> RequestArmatureInfo(string armatureName)
         {
+            List<Bone> armature = new List<Bone>();            
             Packet packet = new Packet();
             packet.header = Command.AUTO_CONFIG;
-            packet.payload.Add("Armature.002");
+            packet.payload.Add(armatureName);
             mw.SendPacket(packet);
 
             // Receives armature info from Blender
             string stringReceived = AsynSocket.SyncReceiver();
-            List<Bone> armature = JsonManager.GetBoneList(stringReceived);
-            return armature;
+            return JsonManager.GetBoneList(stringReceived);                        
         }
+
+        private string RequestArmatureSelected() 
+        {
+            Packet packet = new Packet();
+            packet.header = Command.ARMATURE_SELECTED;
+            mw.SendPacket(packet);
+
+            string stringReceived = AsynSocket.SyncReceiver();
+            return JsonManager.GetString(stringReceived);
+        }
+        
 
         public List<int> AllIndexOf(string str, string value)
         {

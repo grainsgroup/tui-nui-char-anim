@@ -215,6 +215,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         public int Score { get; set; }
         
         
+
         public AxisArrangement(string name, int[] assignment, List<List<Bone>> partition, List<Bone>motorDeomposition, int score) 
         {
             this.Name = name;

@@ -44,7 +44,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         public const string LOAD_POSE = "LOAD_POSE";
         public const string UNLOCK_POSE = "UNLOCK_POSE";
 
-        public static string AUTO_CONFIG = "AUTO_CONFIG";
+        public const string AUTO_CONFIG = "AUTO_CONFIG";
+        public const string ARMATURE_SELECTED = "ARMATURE_SELECTED";
     }
     public class FrameType
     {

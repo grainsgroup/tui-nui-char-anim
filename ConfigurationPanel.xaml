@@ -349,11 +349,11 @@
                         <CheckBox x:Name="UseSensorCheckBox" Content="Use Sensor" Canvas.Top="30" Canvas.Left="30"/>
                         <CheckBox x:Name="SplitDofCheckBox" Content="Split DoF" Canvas.Top="60" Canvas.Left="30"/>
                         <!-- <CheckBox x:Name="LeftHandedCheckBox" Content="Left-Handed" Canvas.Top="90" Canvas.Left="30"/> -->
-                        <Label  HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Canvas.Top="126" Width="48" Canvas.Left="-9">
-                            <TextBlock Text="Body Tracking" TextWrapping="Wrap" TextAlignment="Center" FontSize="10" />
+                        <Label  HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Canvas.Top="126" Width="55" Canvas.Left="-16">
+                            <TextBlock Text="Body Tracking" TextWrapping="Wrap" TextAlignment="Center" FontSize="12" />
                         </Label>
-                        <Label HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Canvas.Left="95" Canvas.Top="127" Width="72">
-                            <TextBlock Text="Tangible User Interface" TextWrapping="Wrap" TextAlignment="Center" FontSize="10" />
+                        <Label HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Canvas.Left="95" Canvas.Top="127" Width="84">
+                            <TextBlock Text="Tangible User Interface" TextWrapping="Wrap" TextAlignment="Center" FontSize="12" />
                         </Label>
                         <Slider x:Name="UserPreferenceSlider" Height="24" Width="60" Canvas.Left="37" Canvas.Top="134" Minimum="-1" Maximum="1" SmallChange="1" IsSnapToTickEnabled="True" Ticks="-1,0,1"/>
                     </Canvas >

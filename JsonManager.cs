@@ -64,5 +64,10 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         {
             return JsonConvert.DeserializeObject<List<Bone>>(stringJson);
         }
+
+        internal static string GetString(string stringJson)
+        {
+            return JsonConvert.DeserializeObject<string>(stringJson);
+        }
     }
 }
