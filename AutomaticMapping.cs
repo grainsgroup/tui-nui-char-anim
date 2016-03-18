@@ -1310,8 +1310,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             List<Bone> kinectSkeleton = new List<Bone>();
             foreach (List<Bone> lb in GetKinectSkeleton())
                 foreach (Bone b in lb)
-                    kinectSkeleton.Add(b);            
-            
+                    kinectSkeleton.Add(b);                        
 
             // solves assignment problem with Hungarian Algorithm                                        
             int[,] costsMatrix = NodeEdgeSimilarity(uniquePartition, kinectSkeleton);
