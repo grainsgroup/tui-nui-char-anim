@@ -106,8 +106,10 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     bones.Add(vertex);
                     motorAvailable -= vertex.rot_DoF.Count;
                 }
-                //else if(bones[bones.Count - 1].name.Equals(vertex.parent) && (motorAvailable - vertex.rot_DoF.Count >= 0))            
-                else if ((bones[bones.Count - 1].name.Equals(vertex.parent) || vertex.children.Contains(bones[bones.Count - 1].name)) && (motorAvailable - vertex.rot_DoF.Count >= 0))
+                
+                //else if(bones[bones.Count - 1].name.Equals(vertex.parent) && (motorAvailable - vertex.rot_DoF.Count >= 0))           
+                else if ((bones[bones.Count - 1].name.Equals(vertex.parent) || vertex.children.Contains(bones[bones.Count - 1].name)) && (motorAvailable - vertex.rot_DoF.Count >= 0))                
+                
                 {
                     bones.Add(vertex);
                     motorAvailable -= vertex.rot_DoF.Count;

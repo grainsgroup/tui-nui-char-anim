@@ -356,8 +356,10 @@
                             <TextBlock Text="Tangible User Interface" TextWrapping="Wrap" TextAlignment="Center" FontSize="12" />
                         </Label>
                         <Slider x:Name="UserPreferenceSlider" Height="24" Width="60" Canvas.Left="37" Canvas.Top="134" Minimum="-1" Maximum="1" SmallChange="1" IsSnapToTickEnabled="True" Ticks="-1,0,1"/>
+                        <Label x:Name="ArrangementsOrderLabel" Content="Arrangment: " Canvas.Left="27" Canvas.Top="200"/>
                     </Canvas >
                 </TabItem>
+
 
 
 

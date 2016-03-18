@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using QuickGraph;
 using Lego.Ev3.Core;
 
+
 namespace Microsoft.Samples.Kinect.SkeletonBasics
 {
     public class KinectPieces
@@ -415,7 +416,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             return components;
         }
 
-        public static BidirectionalGraph<Bone, Edge<Bone>> CreateGraph(List<Bone> armature)
+        public static BidirectionalGraph<Bone, Edge<Bone>> CreateDirectedGraph(List<Bone> armature)
         {
 
             var graph = new BidirectionalGraph<Bone, Edge<Bone>>();
@@ -431,7 +432,25 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 }
             }
             return graph;
-        }       
+        }
+
+        public static UndirectedGraph<Bone, Edge<Bone>> CreateUndirectedGraph(List<Bone> armature)
+        {
+
+            var graph = new UndirectedGraph<Bone, Edge<Bone>>();
+
+            // Creates directed graph 
+            foreach (Bone b in armature)
+            {
+                graph.AddVertex(b);
+                foreach (string child in b.children)
+                {
+                    graph.AddVerticesAndEdge(new Edge<Bone>(b, GetBoneFromName(child, armature)));                    
+                }
+            }
+            return graph;
+        }
+
 
         private static List<List<Bone>> GetKinectSkeleton()
         {
@@ -442,18 +461,30 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             shoulder_right.rot_DoF = new List<char>() { 'z' };
             shoulder_right.loc_DoF = axis;
             shoulder_right.level = 0;
+            shoulder_right.parent = "Shoulder";
+            shoulder_right.children = new List<string>() { "Elbow.R" };
+
             Bone elbow_right = new Bone("Elbow.R");
             elbow_right.rot_DoF = new List<char>() { 'x', 'y', 'z' };
             elbow_right.loc_DoF = axis;
             elbow_right.level = 1;
+            elbow_right.parent = "Shoulder.R";
+            elbow_right.children = new List<string>() {"Wrist.R"};
+            
             Bone wrist_right = new Bone("Wrist.R");
             wrist_right.rot_DoF = new List<char>() { 'x' };
             wrist_right.loc_DoF = axis;
             wrist_right.level = 2;
+            wrist_right.parent = "Elbow.R";
+            wrist_right.children = new List<string>() { "Hand.R" };
+            
             Bone hand_right = new Bone("Hand.R");
             hand_right.rot_DoF = new List<char>() { 'x', 'z' };
             hand_right.loc_DoF = axis;
             hand_right.level = 3;
+            hand_right.parent = "Wrist.R";
+            hand_right.children = new List<string>() { };
+            
             List<Bone> upper_right = new List<Bone>();
             upper_right.Add(shoulder_right);
             upper_right.Add(elbow_right);
@@ -461,22 +492,35 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             upper_right.Add(hand_right);
             skeleton.Add(upper_right);
 
+            
+
             Bone shoulder_left = new Bone("Shoulder.L");
             shoulder_left.rot_DoF = new List<char>() { 'z' };
             shoulder_left.loc_DoF = axis;
             shoulder_left.level = 0;
+            shoulder_left.parent = "Shoulder";
+            shoulder_left.children = new List<string>() { "Elbow.L"};
+
             Bone elbow_left = new Bone("Elbow.L");
             elbow_left.rot_DoF = new List<char>() { 'x', 'y', 'z' };
             elbow_left.loc_DoF = axis;
             elbow_left.level = 1 ;
+            elbow_left.parent = "Shoulder.L";
+            elbow_left.children = new List<string>() { "Wrist.L" };
+
             Bone wrist_left = new Bone("Wrist.L");
             wrist_left.rot_DoF = new List<char>() { 'x' };
             wrist_left.loc_DoF = axis;
             wrist_left.level = 2;
+            wrist_left.parent = "Elbow.L";
+            wrist_left.children = new List<string>() { "Hand.L" };
+
             Bone hand_left = new Bone("Hand.L");
             hand_left.rot_DoF = new List<char>() { 'x', 'z' };
             hand_left.loc_DoF = axis;
             hand_left.level = 3;
+            hand_left.parent = "Wrist.L";
+            hand_left.children = new List<string>() { };
 
             List<Bone> upper_left = new List<Bone>();
             upper_left.Add(shoulder_left);
@@ -485,22 +529,36 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             upper_left.Add(hand_left);
             skeleton.Add(upper_left);
 
+
+
             Bone head = new Bone("Head");
             head.rot_DoF = new List<char>() { 'x', 'z' };
             head.loc_DoF = axis;
             head.level = 3;
+            head.parent = "Shoulder";
+            head.children = new List<string>() { };
+
             Bone shoulder_center = new Bone("Shoulder");
             shoulder_center.rot_DoF = new List<char>() { '0' };
             shoulder_center.loc_DoF = axis;
             shoulder_center.level = 2;
+            shoulder_center.parent = "Spine";
+            shoulder_center.children = new List<string>() {"Shoulder.R", "Shoulder.L", "Head" };
+
             Bone spine = new Bone("Spine");
             spine.rot_DoF = new List<char>() { '0' };
             spine.loc_DoF = axis;
             spine.level = 1;
+            spine.parent = "Hip";
+            spine.children = new List<string>() { "Shoulder" };
+            
             Bone hip_center = new Bone("Hip");
             hip_center.rot_DoF = new List<char>() { 'x', 'y', 'z' };
             hip_center.loc_DoF = axis;
             hip_center.level = 0;
+            hip_center.parent = "";
+            hip_center.children = new List<string>() { "Spine"};
+            
             List<Bone> center = new List<Bone>();
             center.Add(head);
             center.Add(shoulder_center);
@@ -571,7 +629,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     col += currentPartition.Count)
                 {
                     KinectPieces kinectBones = ChainSimilarityScore(currentPartition[row], kinectSkeleton[col / currentPartition.Count]);
-                    int cost = kinectBones.Score + currentPartition.Count;
+                    int cost = kinectBones.Score /*+ currentPartition.Count*/;
                     motorDecomposition.Add(kinectBones.Bones);
 
                     for (int index = 0; index < currentPartition.Count; index++)
@@ -1219,7 +1277,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
         private static bool kinectAssignmentConsistency(AxisArrangement result)
         {
-            bool IsConsistent = true;
+           
             for (int i = 1; i < result.Assignment.Length; i++)
             {
                 string componentName1 = result.MotorDecomposition[result.Assignment[i - 1]].name;
@@ -1249,25 +1307,29 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
         public static AxisArrangement ComputeLocRotKinectAssignement(List<Bone> uniquePartition)
         {
-
-            List<Bone> kinectPart = new List<Bone>();
+            List<Bone> kinectSkeleton = new List<Bone>();
             foreach (List<Bone> lb in GetKinectSkeleton())
                 foreach (Bone b in lb)
-                    kinectPart.Add(b);
+                    kinectSkeleton.Add(b);
+
             
+            
+
             // solves assignment problem with Hungarian Algorithm                                        
-            int[,] costsMatrix = new int[uniquePartition.Count, kinectPart.Count];
+            int[,] costsMatrix = NodeEdgeSimilarity(uniquePartition, kinectSkeleton);
+
             // initialize costMatrix
             for (int row = 0; row < uniquePartition.Count; row++)
             {
-                for (int col = 0; col < kinectPart.Count; col++)
+                for (int col = 0; col < kinectSkeleton.Count; col++)
                 {
-                    costsMatrix[row, col] =
-                        RotDofSimilarityScore(uniquePartition[row], kinectPart[col]) +
-                        LocDoFSimilarityScore(uniquePartition[row], kinectPart[col]) +
-                        SymmetryScore(uniquePartition[row], kinectPart[col]) +
-                        Math.Abs(uniquePartition[row].level - kinectPart[col].level)/* +
-                        DofAnalysisScore(uniquePartition[row], kinectPart[col]) */;
+                    costsMatrix[row, col] +=
+                        RotDofSimilarityScore(uniquePartition[row], kinectSkeleton[col]) +
+                        LocDoFSimilarityScore(uniquePartition[row], kinectSkeleton[col]) +                        
+                        DofAnalysisScore(uniquePartition[row], kinectSkeleton[col]);
+
+                    if (uniquePartition[row].name.Contains(".R") || uniquePartition[row].name.Contains(".L"))
+                        costsMatrix[row, col] += SymmetryScore(uniquePartition[row], kinectSkeleton[col]);
                 }
             }
 
@@ -1281,7 +1343,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
             List<List<Bone>> partition = new List<List<Bone>>();
             partition.Add(uniquePartition);
-           AxisArrangement bestArrangement = new AxisArrangement("Kinect_Configuration", assignment, partition, kinectPart, score);               
+            AxisArrangement bestArrangement = new AxisArrangement("Kinect_Configuration", assignment, partition, kinectSkeleton, score);               
             
             
             // Gets oneBone-mode mapping representation
@@ -1315,7 +1377,144 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             List<List<Bone>> oneDofPartition = new List<List<Bone>>();
             oneDofPartition.Add(oneDofBone);
             return new AxisArrangement("Kinect_Configuration", dofAssignament.ToArray(), oneDofPartition, oneDofHandler, bestArrangement.Score);/* arrangements[0];*/
+            
         }
+
+        private static int[,] NodeEdgeSimilarity(List<Bone> uniquePartition, List<Bone> kinectSkeleton)
+        {
+            var graphKinectArmature = CreateUndirectedGraph(kinectSkeleton);
+            var graphControlledArmature = CreateUndirectedGraph(uniquePartition);
+
+            
+            int[,] A = Matrix.GetAdjacencyMatrix(uniquePartition, graphControlledArmature);
+            int[,] B = Matrix.GetAdjacencyMatrix(kinectSkeleton, graphKinectArmature);
+            
+            int[,] AT = Matrix.TransposeMatrix(A);
+            int[,] BT = Matrix.TransposeMatrix(B);
+
+            int[,] DAs = Matrix.GetSourceDiagonalMatrix(uniquePartition, graphControlledArmature);
+            int[,] DAt = Matrix.GetTerminalDiagonalMatrix(uniquePartition, graphControlledArmature);
+            int[,] DBs = Matrix.GetSourceDiagonalMatrix(kinectSkeleton, graphKinectArmature);
+            int[,] DBt = Matrix.GetTerminalDiagonalMatrix(kinectSkeleton, graphKinectArmature);
+            
+            /*
+            int[,] A = new int[,] { 
+            { 0, 1, 0 }, 
+            { 0, 0, 1 }, 
+            { 0, 0, 0 } };
+
+            int[,] B = new int[,]{ 
+            { 0, 1, 0, 0, 0, 0 }, 
+            { 0, 0, 0, 1, 1, 0 },
+            { 0, 0, 0, 1, 0, 0 },
+            { 0, 0, 0, 0, 1, 0 },
+            { 0, 0, 0, 0, 0, 1 },
+            { 0, 0, 0, 0, 0, 0 } };
+
+
+            int[,] AT = Matrix.TransposeMatrix(A);
+            int[,] BT = Matrix.TransposeMatrix(B);
+
+            int[,] DAs = new int[,] { 
+            { 1, 0, 0 }, 
+            { 0, 1, 0 }, 
+            { 0, 0, 0 } 
+            };
+
+            int[,] DAt = new int[,] { 
+            { 0, 0, 0 }, 
+            { 0, 1, 0 }, 
+            { 0, 0, 1 } 
+            };
+
+            int[,] DBs = new int[,] { 
+            { 1, 0, 0, 0, 0, 0 }, 
+            { 0, 2, 0, 0, 0, 0 },
+            { 0, 0, 1, 0, 0, 0 },
+            { 0, 0, 0, 1, 0, 0 },
+            { 0, 0, 0, 0, 1, 0 },
+            { 0, 0, 0, 0, 0, 0 },
+            };
+            
+            int[,] DBt = new int[,] {
+            { 0, 0, 0, 0, 0, 0 }, 
+            { 0, 1, 0, 0, 0, 0 },
+            { 0, 0, 0, 0, 0, 0 },
+            { 0, 0, 0, 2, 0, 0 },
+            { 0, 0, 0, 0, 2, 0 },
+            { 0, 0, 0, 0, 0, 1 },
+            };
+            
+                  */
+     
+            Matrix.PrintMatrix(A, "A");
+            Matrix.PrintMatrix(B, "B");
+            Matrix.PrintMatrix(AT, "AT");
+            Matrix.PrintMatrix(BT, "BT");
+            Matrix.PrintMatrix(DAs, "DAs");
+            Matrix.PrintMatrix(DAt, "DAt");
+            Matrix.PrintMatrix(DBs, "DBs");
+            Matrix.PrintMatrix(DBt, "DBt");
+
+            int[,] kroneckerAxB = Matrix.KroneckerProduct(A, B);
+            //Matrix.PrintMatrix(kroneckerAxB, "kroneckerAxB");
+            
+            int[,] kroneckerATxBT = Matrix.KroneckerProduct(AT, BT);
+            //Matrix.PrintMatrix(kroneckerATxBT, "kroneckerATxBT");
+            
+            int[,] kroneckerDAsxDBs = Matrix.KroneckerProduct(DAs, DBs);
+            //Matrix.PrintMatrix(kroneckerDAsxDBs, "kroneckerDAsxDBs");
+            
+            int[,] kroneckerDAtxDBt = Matrix.KroneckerProduct(DAt, DBt);
+            //Matrix.PrintMatrix(kroneckerDAtxDBt, "kroneckerDAtxDBt");
+
+            int[,] MatricesSummation = Matrix.ComputeMatricesSummation
+                (new List<int[,]>() { kroneckerAxB, kroneckerATxBT, kroneckerDAsxDBs, kroneckerDAtxDBt});
+            //Matrix.PrintMatrix(MatricesSummation, "MatricesSummation");
+
+
+            // Start iterating procedure
+            double[] costVector = Matrix.GetAllOneVector(MatricesSummation.GetLength(0));
+            
+            for (int step = 0; step < 20 ; step++)
+            {
+                costVector = Matrix.Product(MatricesSummation, costVector);
+                costVector = Matrix.NormalizeVector(costVector);
+                Console.WriteLine(" ===========================================");
+                Console.WriteLine("  STEP n." + step);
+                int[,] costMatrix = Matrix.VectorToCostMatrix(costVector, B.GetLength(0), A.GetLength(0), 10);
+            }
+
+            Console.WriteLine("KINECT COMPONENT");
+            for (int i = 0; i < kinectSkeleton.Count; i++)
+            {
+                Console.Write("[" + i + "] = " + kinectSkeleton[i].name + "; ");
+            }
+            Console.WriteLine("\nBLENDER BONE");
+            for (int i = 0; i < uniquePartition.Count; i++)
+            {
+                Console.Write("[" + i + "] = " + uniquePartition[i].name + "; ");
+            }
+
+
+
+            
+            //double[] vector = new double[] {1,2,3,4,5,6,7,8,9 }; 
+            //int[,] costMatrixProva = Matrix.VectorToCostMatrix(vector,3,3,10);
+            //Matrix.PrintMatrix(costMatrixProva, "PROVA");
+
+
+
+            //int[,] costMatrix = Matrix.VectorToCostMatrix(costVector, A.GetLength(0), B.GetLength(0), 10);
+            
+
+            //Matrix.PrintMatrix(costMatrix, "cost");            
+
+
+            //return costMatrix;
+            return null;
+        }
+       
 
         private static int DofAnalysisScore(Bone bone, Bone handler)
         {

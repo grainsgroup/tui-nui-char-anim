@@ -824,34 +824,48 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
             string armatureName = RequestArmatureSelected();
             List<Bone> armature = RequestArmatureInfo(armatureName);
+            int componentAvailable = 0;
+            List<Bone> uniquePartition = new List<Bone>();
 
-            int motors = AutomaticMapping.CountComponentAvailable(new List<string>(){ "LMotor","MMotor" }, brick);
-            if (this.UseSensorCheckBox.IsChecked.Value)
-            {
-                motors += AutomaticMapping.CountComponentAvailable(new List<string>()
-                    {"Gyroscope","Ultrasonic"}, brick);
-            }
-            
-            var graph = AutomaticMapping.CreateGraph(armature);  
+            var graph = AutomaticMapping.CreateDirectedGraph(armature);
             // Obtaints the graph connected component 
-            List<List<Bone>> components = AutomaticMapping.GetConnectedComponentList(graph);
-            
+            List<List<Bone>> graphComponents = AutomaticMapping.GetConnectedComponentList(graph);
+
+            if (this.UserPreferenceSlider.Value > 0)
+            {
+                componentAvailable = AutomaticMapping.CountComponentAvailable
+                    (new List<string>() { "LMotor", "MMotor" }, brick);
+
+                if (this.UseSensorCheckBox.IsChecked.Value)
+                {
+                    componentAvailable += AutomaticMapping.CountComponentAvailable
+                        (new List<string>() { "Gyroscope", "Ultrasonic" }, brick);
+                }
+                
+                // TEST INTEGRAL CONTROL
+                uniquePartition = GetOnePartition(componentAvailable, graph, graphComponents);
+            }
+            else 
+            {
+                if (armature.Count < 20 && graphComponents.Count < 2)
+                {
+                    uniquePartition = armature;
+                }
+            }
+
             // Gives alternative representation
             Dictionary<string, List<List<char>>> dictionary = AutomaticMapping.initDoFDictionary();
-
-            // TEST - INTEGRAL CONTROL -            
-            List<Bone> uniquePartition = integralAramatureControl(motors, graph, components);
             bool configurationCreated = false;
             if (uniquePartition.Count > 0) 
             {                
                 List<AxisArrangement> locRotArrangements = new List<AxisArrangement>();
-                if (this.UserPreferenceSlider.Value >= 0)
+                if (this.UserPreferenceSlider.Value > 0)
                 {
                     // Computes Tui + Hip score assignement                
                     locRotArrangements.Add(AutomaticMapping.ComputeLocRotTuiAssigneme(uniquePartition, brick, dictionary));
                     
                 }
-                if (this.UserPreferenceSlider.Value <= 0)
+                if (this.UserPreferenceSlider.Value < 0)
                 {
                     // Computes kinect score assignment
                     locRotArrangements.Add(AutomaticMapping.ComputeLocRotKinectAssignement(uniquePartition));                    
@@ -861,21 +875,21 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 {
                     locRotArrangements.Sort();
                     CreateConfiguration(locRotArrangements[0], armatureName);
+                    SetArrangmentLabel(locRotArrangements[0]);
                     configurationCreated = true;
-                }
-                
+                }                
             }
 
-            if(!(uniquePartition.Count>0) || !configurationCreated ) 
+            if(!(uniquePartition.Count > 0) || !configurationCreated ) 
             {
                 // CREATES PARTITION
                 List<List<List<Bone>>> graphPartitions = new List<List<List<Bone>>>();
                 graphPartitions = AutomaticMapping.GraphPartitioning
-                    (motors, graph, components, graphPartitions, this.SplitDofCheckBox.IsChecked.Value,true);
+                    (componentAvailable, graph, graphComponents, graphPartitions, this.SplitDofCheckBox.IsChecked.Value,true);
 
                 // Creates combination with repetition of n element (x,y,z) choose k (number of motor available) 
                 List<char[]> combination = new List<char[]>();
-                foreach (var c in AutomaticMapping.CombinationsWithRepetition(new char[] { 'x', 'y', 'z' }, motors))
+                foreach (var c in AutomaticMapping.CombinationsWithRepetition(new char[] { 'x', 'y', 'z' }, componentAvailable))
                 {
                     char[] array = c.ToCharArray();
                     combination.Add(array);
@@ -892,7 +906,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     {
                         foreach (char[] comb in combination)
                         {
-                            rotArrangements.Add(AutomaticMapping.ComputeTUIAssignmentScore(motors, dictionary, currentPartition, comb, this.UseSensorCheckBox.IsChecked.Value, brick));
+                            rotArrangements.Add(AutomaticMapping.ComputeTUIAssignmentScore(componentAvailable, dictionary, currentPartition, comb, this.UseSensorCheckBox.IsChecked.Value, brick));
                         }
                     }
                     if (this.UserPreferenceSlider.Value <= 0)
@@ -902,7 +916,10 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 }
 
                 rotArrangements.Sort();
-                CreateConfiguration(rotArrangements,"_Rotation",armatureName);
+                CreateConfiguration(rotArrangements, "_Rotation", armatureName);
+                SetArrangmentLabel(rotArrangements[0]);
+
+
 
                 // LOCATION ASSIGNMENT
                 
@@ -916,6 +933,30 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 }
                                                           
             }            
+            
+        }
+
+        private void SetArrangmentLabel(AxisArrangement axisArrangement)
+        {
+            this.ArrangementsOrderLabel.Content= "Arrangments: ";
+            switch (axisArrangement.Name)
+            { 
+                
+                case "TuiHip_Configuration":
+                    foreach (int handlerIndex in axisArrangement.Assignment)
+                        this.ArrangementsOrderLabel.Content += axisArrangement.MotorDecomposition[handlerIndex].name + "_";
+                    break;
+
+                case "Kinect_Configuration":
+                    this.ArrangementsOrderLabel.Content += axisArrangement.Name;
+                    break;
+
+                default:
+                    this.ArrangementsOrderLabel.Content += axisArrangement.MotorDecomposition[axisArrangement.MotorDecomposition.Count-1].name;
+                    break;
+            }
+                       
+                
             
         }
 
@@ -935,7 +976,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     List<string> componentName = GetComponentsName(components);
 
                     int indexComponent = 0;
-                    Setting settingToAdd = new Setting(bestArrangement.Partition[i][0].name);
+                    Setting settingToAdd = new Setting(bestArrangement.Partition[i][0].name + text);
 
                     //foreach bone in partition
                     for (int indexCurrentBone = 0; indexCurrentBone < bestArrangement.Partition[i].Count; indexCurrentBone++)
@@ -1111,7 +1152,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             return componentName;
         }
 
-        private List<Bone> integralAramatureControl(int motors, BidirectionalGraph<Bone, Edge<Bone>> graph, List<List<Bone>> components)
+        private List<Bone> GetOnePartition(int motors, BidirectionalGraph<Bone, Edge<Bone>> graph, List<List<Bone>> components)
         {
             List<List<List<Bone>>> graphPartitions = new List<List<List<Bone>>>();
             // 
