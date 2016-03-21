@@ -1381,7 +1381,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         {
             var graphKinectArmature = CreateUndirectedGraph(kinectSkeleton);
             var graphControlledArmature = CreateUndirectedGraph(uniquePartition);
-
             
             int[,] A = Matrix.GetAdjacencyMatrix(uniquePartition, graphControlledArmature);
             int[,] B = Matrix.GetAdjacencyMatrix(kinectSkeleton, graphKinectArmature);
@@ -1441,8 +1440,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             { 0, 0, 0, 0, 2, 0 },
             { 0, 0, 0, 0, 0, 1 },
             };
-            
-                  */
+             */
      
             Matrix.PrintMatrix(A, "A");
             Matrix.PrintMatrix(B, "B");
@@ -1473,15 +1471,18 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             // Start iterating procedure
             double[] costVector = Matrix.GetAllOneVector(MatricesSummation.GetLength(0));
             
-            for (int step = 0; step < 20 ; step++)
+            for (int step = 0; step < 30 ; step++)
             {
                 costVector = Matrix.Product(MatricesSummation, costVector);
                 costVector = Matrix.NormalizeVector(costVector);
                 Console.WriteLine(" ===========================================");
                 Console.WriteLine("  STEP n." + step);
-                int[,] costMatrix = Matrix.VectorToCostMatrix(costVector, B.GetLength(0), A.GetLength(0), 10);
+                
+                
+                int[,] costMatrix = Matrix.VectorToCostMatrix(costVector, B.GetLength(0), A.GetLength(0), 10);   
             }
 
+            
             Console.WriteLine("KINECT COMPONENT");
             for (int i = 0; i < kinectSkeleton.Count; i++)
             {
@@ -1492,23 +1493,10 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             {
                 Console.Write("[" + i + "] = " + uniquePartition[i].name + "; ");
             }
-
-
-
             
-            //double[] vector = new double[] {1,2,3,4,5,6,7,8,9 }; 
-            //int[,] costMatrixProva = Matrix.VectorToCostMatrix(vector,3,3,10);
-            //Matrix.PrintMatrix(costMatrixProva, "PROVA");
-
-
-
-            //int[,] costMatrix = Matrix.VectorToCostMatrix(costVector, A.GetLength(0), B.GetLength(0), 10);
-            
-
-            //Matrix.PrintMatrix(costMatrix, "cost");            
-
-
-            //return costMatrix;
+            //int[,] costMatrix = Matrix.VectorToCostMatrix(costVector, B.GetLength(0), A.GetLength(0), 10);
+            //Matrix.PrintMatrix(costMatrix,"COST");
+            //return costMatrix;            
             return null;
         }
        
@@ -1521,7 +1509,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             {
                 foreach (Bone oneDofHandler in GetOneDofBones(new List<Bone>() { handler }, true, false))
                 {
-                    rotCost += ComponentRangeScore(oneDofHandler) + PiecesPreferenceScore(bone, oneDofHandler);
+                    rotCost += /*ComponentRangeScore(oneDofHandler)*/ + PiecesPreferenceScore(bone, oneDofHandler);
                 }
             }
             if (bone.loc_DoF.Count > 0)

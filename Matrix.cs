@@ -169,18 +169,14 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 {
                     //matrix[row, col] = range - (int)Math.Round((costVector[index] / max) * range);
                     matrix[row, col] = Math.Round(costVector[index], 3);
-                    //matrix[row, col] = (int)Math.Round(costVector[index]);
+                    //matrix[row, col] = (int)Math.Ceiling(costVector[index] * 100);
                     index++;
                 }
             }
 
-
+            matrix = Matrix.TransposeMatrix(matrix);                        
             PrintCostMatrix(matrix, "COST");
-            // Print Matrix
-            matrix = Matrix.TransposeMatrix(matrix);
-            PrintCostMatrix(matrix, "COST_TRASPOSTO");
-            
-            //return matrix;
+            //return matrix;            
             return null;
         }
 
