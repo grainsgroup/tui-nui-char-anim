@@ -1440,7 +1440,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 throw e;
             }
             
-            await legoBrick.DirectCommand.PlayToneAsync(1, 1000, 150);                                
+            //await legoBrick.DirectCommand.PlayToneAsync(1, 1000, 150);                                
 
         }
 

@@ -830,7 +830,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             var graph = AutomaticMapping.CreateDirectedGraph(armature);
             // Obtaints the graph connected component 
             List<List<Bone>> graphComponents = AutomaticMapping.GetConnectedComponentList(graph);
-
+            int maxLevelBone = AutomaticMapping.GetMaxLengthChain(armature);
+             
             if (this.UserPreferenceSlider.Value > 0)
             {
                 componentAvailable = AutomaticMapping.CountComponentAvailable
@@ -862,13 +863,13 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 if (this.UserPreferenceSlider.Value > 0)
                 {
                     // Computes Tui + Hip score assignement                
-                    locRotArrangements.Add(AutomaticMapping.ComputeLocRotTuiAssigneme(uniquePartition, brick, dictionary));
+                    locRotArrangements.Add(AutomaticMapping.ComputeLocRotTuiAssignement(uniquePartition, brick, dictionary, maxLevelBone));
                     
                 }
                 if (this.UserPreferenceSlider.Value < 0)
                 {
                     // Computes kinect score assignment
-                    locRotArrangements.Add(AutomaticMapping.ComputeLocRotKinectAssignement(uniquePartition));                    
+                    locRotArrangements.Add(AutomaticMapping.ComputeLocRotKinectAssignement(uniquePartition, maxLevelBone));                    
                 }
                 
                 if (locRotArrangements[0]!= null) 
@@ -889,7 +890,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
                 // Creates combination with repetition of n element (x,y,z) choose k (number of motor available) 
                 List<char[]> combination = new List<char[]>();
-                foreach (var c in AutomaticMapping.CombinationsWithRepetition(new char[] { 'x', 'y', 'z' }, componentAvailable))
+                foreach (var c in Combinatorics.CombinationsWithRepetition(new string[] { "x", "y", "z" }, componentAvailable))
                 {
                     char[] array = c.ToCharArray();
                     combination.Add(array);
@@ -908,10 +909,16 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         {
                             rotArrangements.Add(AutomaticMapping.ComputeTUIAssignmentScore(componentAvailable, dictionary, currentPartition, comb, this.UseSensorCheckBox.IsChecked.Value, brick));
                         }
+                        
+                        rotArrangements.Sort();
+
+                        AutomaticMapping.CreateArmaturesFromComb(rotArrangements[0].Name.ToCharArray());
+
                     }
+
                     if (this.UserPreferenceSlider.Value <= 0)
                     {
-                        rotArrangements.Add(AutomaticMapping.ComputeKinectAssignmentScore(dictionary, currentPartition));
+                        rotArrangements.Add(AutomaticMapping.ComputeKinectAssignmentScore(dictionary, currentPartition, maxLevelBone));
                     }
                 }
 
@@ -926,8 +933,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 List<Bone> locHandler = AutomaticMapping.GetLocHandler(brick);
                 foreach (Bone locBones in AutomaticMapping.GetLocBone(armature))
                 {
-                    List<AxisArrangement> locArrangements = 
-                        AutomaticMapping.ComputeLocAssignment(new List<Bone>() { locBones }, locHandler/*, this.LeftHandedCheckBox.IsChecked.Value*/);
+                    List<AxisArrangement> locArrangements =
+                        AutomaticMapping.ComputeLocAssignment(new List<Bone>() { locBones }, locHandler, maxLevelBone/*, this.LeftHandedCheckBox.IsChecked.Value*/);
                     locArrangements.Sort();
                     CreateConfiguration(locArrangements[0], armatureName);
                 }
@@ -1155,11 +1162,11 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         private List<Bone> GetOnePartition(int motors, BidirectionalGraph<Bone, Edge<Bone>> graph, List<List<Bone>> components)
         {
             List<List<List<Bone>>> graphPartitions = new List<List<List<Bone>>>();
-            // 
+            
             graphPartitions = AutomaticMapping.GraphPartitioning
                 (motors + 3, graph, components, graphPartitions, this.SplitDofCheckBox.IsChecked.Value, false);
             
-            for (int i = 0; i < graphPartitions.Count;i++)
+            for (int i = 0; i < graphPartitions.Count; i++)
             {
                 if (graphPartitions[i].Count == 1)
                 {

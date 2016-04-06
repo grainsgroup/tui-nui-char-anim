@@ -108,7 +108,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 }
                 
                 //else if(bones[bones.Count - 1].name.Equals(vertex.parent) && (motorAvailable - vertex.rot_DoF.Count >= 0))           
-                else if ((bones[bones.Count - 1].name.Equals(vertex.parent) || vertex.children.Contains(bones[bones.Count - 1].name)) && (motorAvailable - vertex.rot_DoF.Count >= 0))                
+                //else if ((bones[bones.Count - 1].name.Equals(vertex.parent) || vertex.children.Contains(bones[bones.Count - 1].name)) && (motorAvailable - vertex.rot_DoF.Count >= 0))
+
+                else if (motorAvailable - vertex.rot_DoF.Count >= 0)
                 
                 {
                     bones.Add(vertex);
@@ -125,8 +127,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         }
         
         public void dfs_DiscoverVertex_MaxLocRotDoF(Bone vertex)
-        {
-            if (vertex.rot_DoF.Count > 0||vertex.loc_DoF.Count > 0)
+        {                    
+            if (vertex.rot_DoF.Count > 0 || vertex.loc_DoF.Count > 0)
             {
                 // first element for parent checking
                 if (bones.Count < 1)
@@ -134,8 +136,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     bones.Add(vertex);
                     motorAvailable = motorAvailable - (vertex.rot_DoF.Count + vertex.loc_DoF.Count);
                 }
-                //else if(bones[bones.Count - 1].name.Equals(vertex.parent) && (motorAvailable - vertex.rot_DoF.Count >= 0))            
-                else if ((bones[bones.Count - 1].name.Equals(vertex.parent) || vertex.children.Contains(bones[bones.Count - 1].name)) && (motorAvailable - (vertex.rot_DoF.Count + vertex.loc_DoF.Count)>= 0))
+                //else if(bones[bones.Count - 1].name.Equals(vertex.parent) && (motorAvailable - vertex.rot_DoF.Count >= 0))  
+                //else if ((bones[bones.Count - 1].name.Equals(vertex.parent) || vertex.children.Contains(bones[bones.Count - 1].name)) && (motorAvailable - (vertex.rot_DoF.Count + vertex.loc_DoF.Count)>= 0))
+                else if (motorAvailable - (vertex.rot_DoF.Count + vertex.loc_DoF.Count) >= 0)
                 {
                     bones.Add(vertex);
                     motorAvailable = motorAvailable - (vertex.rot_DoF.Count + vertex.loc_DoF.Count);
@@ -148,6 +151,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     bones.Add(vertex);
                 } 
             }
+
         }
         
         public void dfs_DiscoverVertex_CostDof(Bone vertex)
@@ -214,11 +218,11 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         public int[] Assignment { get; set;}
         public List<List<Bone>> Partition { get; set;}
         public List<Bone> MotorDecomposition { get; set; }        
-        public int Score { get; set; }
+        public float Score { get; set; }
         
         
 
-        public AxisArrangement(string name, int[] assignment, List<List<Bone>> partition, List<Bone>motorDeomposition, int score) 
+        public AxisArrangement(string name, int[] assignment, List<List<Bone>> partition, List<Bone>motorDeomposition, float score) 
         {
             this.Name = name;
             this.Assignment = assignment;

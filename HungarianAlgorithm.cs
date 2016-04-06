@@ -20,8 +20,13 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         /// task for the agent.</param>
         /// <returns>An array of assignments; element <em>i</em> is the index of the assigned task (column) for agent
         /// (row) <em>i</em>.</returns>
-        public static int[] FindAssignments(int[,] costsMatrix)
+        public static int[] FindAssignments(float[,] Matrix)
         {
+            int[,] costsMatrix = new int[Matrix.GetLength(0), Matrix.GetLength(1)];
+            for (int row = 0; row < Matrix.GetLength(0); row++)
+                for (int col = 0; col < Matrix.GetLength(1); col++)
+                    costsMatrix[row, col] = (int)Math.Round(Matrix[row, col]);
+            
             int[,] costs = (int[,])costsMatrix.Clone();
 
             var h = costs.GetLength(0);

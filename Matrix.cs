@@ -60,10 +60,10 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             return transposeMatrix;
         }
 
-        public static double[,] TransposeMatrix(double[,] matrix)
+        public static float[,] TransposeMatrix(float[,] matrix)
         {
 
-            double[,] transposeMatrix = new double[matrix.GetLength(1), matrix.GetLength(0)];
+            float[,] transposeMatrix = new float[matrix.GetLength(1), matrix.GetLength(0)];
             for (int i = 0; i < matrix.GetLength(0); i++)
                 for (int j = 0; j < matrix.GetLength(1); j++)
                     transposeMatrix[j, i] = matrix[i, j];
@@ -154,12 +154,12 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         }
 
 
-        internal static int[,] VectorToCostMatrix(double[] costVector, int controlledBones, int kinectBones, int range)
+        internal static float[,] VectorToCostMatrix(double[] costVector, int controlledBones, int kinectBones, int range)
         {        
             // verifica che il vettore viene incolonnato bene nella matrice
             double max = costVector.Max();
 
-            double[,] matrix = new double[controlledBones, kinectBones];
+            float[,] matrix = new float[controlledBones, kinectBones];
             //int[,] matrix = new int[controlledBones, kinectBones];
             
             int index = 0;
@@ -168,20 +168,19 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 for (int row = 0; row < controlledBones; row++)
                 {
                     //matrix[row, col] = range - (int)Math.Round((costVector[index] / max) * range);
-                    matrix[row, col] = Math.Round(costVector[index], 3);
-                    //matrix[row, col] = (int)Math.Ceiling(costVector[index] * 100);
+                    matrix[row, col] = AutomaticMapping.MAX_COST - ((float)Math.Round(costVector[index], 3) * AutomaticMapping.MAX_COST);
                     index++;
                 }
             }
 
-            matrix = Matrix.TransposeMatrix(matrix);                        
+            matrix = Matrix.TransposeMatrix(matrix);
             PrintCostMatrix(matrix, "COST");
-            //return matrix;            
-            return null;
+            return matrix;            
+            
         }
 
         
-        public static void PrintCostMatrix(double[,] matrix, string text)
+        public static void PrintCostMatrix(float[,] matrix, string text)
         {
             // Print Matrix
             Console.WriteLine(text);
@@ -203,14 +202,14 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
         internal static double[] NormalizeVector(double[] vector)
         {
-            
+
             double[] normalizedVector = new double[vector.Length];
             double sum = 0;
             for (int i = 0; i < vector.Length; i++) 
             {
                 sum += Math.Pow(vector[i], 2.0);
             }
-            
+
             double squaredSum = Math.Sqrt(sum);
 
             for (int i = 0; i < vector.Length; i++)
