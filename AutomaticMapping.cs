@@ -21,6 +21,16 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         }
     }
 
+    public class PartialArmature
+    {
+        public List<Bone> virtualArmature { get; set; }
+                
+        public PartialArmature(List<Bone> virtualArmature)
+        {
+            this.virtualArmature = virtualArmature;            
+        }
+    }
+
 
     public static class AutomaticMapping
     {
@@ -363,7 +373,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 }
                 if (bone.rot_DoF.Count > 0)
                 {
-                    cost = ComponentAssignment(bone.rot_DoF[0], componentName);
+                    cost = ComponentAssignment("ROT(" + bone.rot_DoF[0].ToString() + ")", componentName);
                 }
             }
 
@@ -803,7 +813,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             return new AxisArrangement(GetDofString(comb.ToList()), assignment, currentPartition, motorDecomposition, totalCost);
         }
 
-        public static void CreateArmaturesFromComb(char[] comb)
+        public static List<List<Bone>> CreateArmaturesFromComb(char[] comb, Brick brick, string[] doFType)
         {
 
             // Implementation with Parents Representation (PR)
@@ -880,13 +890,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
             // Implementation with OperatorSequence ()
 
-            /* Type of DoFs
-             * R = ROTATION
-             * L = LOCATION
-            */
-
-            string[] doFType = { "_(ROT)", "_(LOC)" };
-
             // List of possible bone type ()
             List<string[]> dofTypeSequence = new List<string[]>();
 
@@ -900,7 +903,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
             // Permutation of Dof 
             List<string[]> permutations = new List<string[]>();
-            var result = Combinatorics.GetPermutations(Enumerable.Range(1, comb.Length), comb.Length);
+            var result = Combinatorics.GetPermutations(Enumerable.Range(0, comb.Length), comb.Length);
             foreach (var perm in result)
             {
                 string[] g = new string[comb.Length];
@@ -913,18 +916,29 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 permutations.Add(g);
             }
 
-            List<string[]> typedDoFSequence = new List<string[]>();
-            // combines combPermutation with c
+            List<List<string>> typedSequence_Dof = new List<List<string>>();
+            // combines combPermutation with types of dof
             foreach (string[] cp in permutations)
             {
                 foreach (string[] dt in dofTypeSequence)
                 {
-                    string[] sequenceToAdd = new string[comb.Length];
+                    List<string> sequenceToAdd = new List<string>();
+
                     for (int i = 0; i < comb.Length; i++)
                     {
-                        sequenceToAdd[i] = cp[i].ToString() + dt[i];
+                        sequenceToAdd.Add(dt[i] + "(" + comb[Int32.Parse(cp[i])] + ")");
                     }
-                    typedDoFSequence.Add(sequenceToAdd);
+
+                    // Assigns the best componet for each dof in the sequence
+                    int index = 0;
+                    foreach (string assignedComp in AssignName(sequenceToAdd.ToList(), true, brick))
+                    {
+                        sequenceToAdd[index] = assignedComp + sequenceToAdd[index];
+                        index++;
+                    }
+
+                    typedSequence_Dof.Add(sequenceToAdd);
+
                 }
             }
 
@@ -945,40 +959,177 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 operationsOrder.Add(array);
             }
 
+            List<List<string>> dofSequences = new List<List<string>>();
 
-            List<List<string>> bonesSequences = new List<List<string>>();
 
-
-            // Combines dof permutation with all possible operation order
-            foreach (string[] dofPerm in typedDoFSequence)
+            // Combines dof and componentes permutation with all possible operation order to obtain armature
+            for (int seq = 0; seq < typedSequence_Dof.Count; seq++)
             {
+                List<string> dofs = typedSequence_Dof[seq];
+
                 foreach (char[] order in operationsOrder)
                 {
-                    List<string> arm = new List<string>();
+                    List<string> arm_dof = new List<string>();
 
                     for (int i = 0; i < comb.Length - 1; i++)
                     {
-                        arm.Add(dofPerm[i]);
-                        arm.Add(order[i].ToString());
+                        // Adds dof
+                        arm_dof.Add(dofs[i]);
+                        // Adds operation
+                        arm_dof.Add(order[i].ToString());
                     }
 
-                    arm.Add(dofPerm[comb.Length - 1]);
-                    bonesSequences.Add(arm);
+                    //Adds the last dof
+                    arm_dof.Add(dofs[comb.Length - 1]);
+                    dofSequences.Add(arm_dof);
+
+
                 }
             }
-
 
             List<List<Bone>> armatures = new List<List<Bone>>();
-            foreach (List<string> bones in bonesSequences)
+
+            // For each sequence creates the armor which represent it
+            for (int i = 0; i < dofSequences.Count; i++)
             {
-                
-                for (int i = 0; i < bones.Count; i++) 
+                // initialization
+                List<string> sequenceItem = dofSequences[i];
+                List<Bone> virtualArmature = new List<Bone>();
+                List<PartialArmature> partialArmatures = new List<PartialArmature>();
+                int level = 0;
+
+                // Adds the first bone of the sequence
+                Bone firstBone = InitializeBoneFromItem(sequenceItem[0]);
+                // DEBUG TEST:
+                firstBone.name += "[seqID: " + i + "]";
+                firstBone.level = level;
+                partialArmatures.Add(new PartialArmature(new List<Bone>() { firstBone }));
+
+                // For each item of the sequence
+                for (int j = 1; j < sequenceItem.Count; j = j + 2)
                 {
-                    
+                    // Gets operation type: S = series; P = parallel; B = bone;
+                    if (sequenceItem[j].Equals("S"))
+                    {
+                        for (int k = 0; k < partialArmatures.Count; k++)
+                        {
+                            PartialArmature pa = partialArmatures[k];
+
+                            level++;
+                            Bone boneToAdd = InitializeBoneFromItem(sequenceItem[j + 1]);
+                            // DEBUG TEST:
+                            boneToAdd.name += "[seqID: " + i + "]";
+                            boneToAdd.level = level;
+                            boneToAdd.parent = pa.virtualArmature[pa.virtualArmature.Count - 1].name;
+                            pa.virtualArmature[pa.virtualArmature.Count - 1].children.Add(boneToAdd.name);
+                            pa.virtualArmature.Add(boneToAdd);
+                        }
+                    }
+
+                    if (sequenceItem[j].Equals("P"))
+                    {
+                        int iterations = partialArmatures.Count;
+                        for (int k = 0; k < iterations; k++)
+                        {
+                            PartialArmature pa = partialArmatures[k];
+                            Bone lastBoneAnalyzed = pa.virtualArmature[pa.virtualArmature.Count - 1];
+
+                            if (lastBoneAnalyzed.level > 0)
+                            {
+
+                                for (int l = lastBoneAnalyzed.level; l >= 0; l--)
+                                {
+                                    
+                                    PartialArmature newPartialArmature = new PartialArmature(pa.virtualArmature.ToList());
+                                    
+                                    //Initializes new bone
+                                    Bone boneToAdd = InitializeBoneFromItem(sequenceItem[j + 1]);
+                                    // DEBUG TEST:
+                                    boneToAdd.name += "[seqID: " + i + "]";
+                                    boneToAdd.level = l;
+                                    if (l > 0)
+                                    {
+                                        boneToAdd.parent = lastBoneAnalyzed.parent; //Updates parents info
+                                        Bone ParentToUpdate =
+                                            GetBoneFromName(boneToAdd.parent, newPartialArmature.virtualArmature);
+                                        newPartialArmature.virtualArmature.Remove(ParentToUpdate);
+                                        ParentToUpdate.children.Add(boneToAdd.name);
+                                        newPartialArmature.virtualArmature.Add(ParentToUpdate);
+                                        lastBoneAnalyzed = ParentToUpdate;
+                                    }
+
+                                    newPartialArmature.virtualArmature.Add(boneToAdd);
+
+                                    partialArmatures.Add(newPartialArmature);
+                                }
+
+                                partialArmatures.RemoveAt(k);
+                            }                            
+
+                            else
+                            {
+                                Bone boneToAdd = InitializeBoneFromItem(sequenceItem[j + 1]);
+                                boneToAdd.level = 0;
+                                pa.virtualArmature.Add(boneToAdd);
+                            }
+                        }                    
+                    } 
+                       
+                    if (sequenceItem[j].Equals("B"))
+                    {
+                        Bone boneToAdd = InitializeBoneFromItem(sequenceItem[j + 1]);
+
+                        for (int k = 0; k < partialArmatures.Count; k++)
+                        {
+                            PartialArmature pa = partialArmatures[k];
+                            Bone parentToUpdate = 
+                                GetBoneFromName(pa.virtualArmature[pa.virtualArmature.Count-1].name, pa.virtualArmature);
+                            pa.virtualArmature.Remove(parentToUpdate);
+
+                            foreach (char dof in boneToAdd.rot_DoF)
+                            {
+                                if(!parentToUpdate.rot_DoF.Contains(dof))
+                                {
+                                    parentToUpdate.rot_DoF.Add(dof);
+                                }
+                            }
+                            foreach (char dof in boneToAdd.loc_DoF)
+                            {
+                                if (!parentToUpdate.loc_DoF.Contains(dof))
+                                {
+                                    parentToUpdate.loc_DoF.Add(dof);
+                                }
+                            }
+                            pa.virtualArmature.Add(parentToUpdate);
+                        }
+                    }                   
                 }
 
+                foreach (PartialArmature pa in partialArmatures)
+                {
+                    armatures.Add(pa.virtualArmature);
+                }
             }
 
+            return armatures;
+        }
+
+        
+
+        private static Bone InitializeBoneFromItem(string item)
+        {
+            Bone bone = new Bone(item);
+            if (item.Contains("ROT")) 
+            {
+                char[] dof = item.Substring(item.IndexOf("ROT") + 4, 1).ToCharArray();
+                bone.rot_DoF.Add(dof[0]);
+            }
+            if (item.Contains("LOC")) 
+            {
+                char[] dof = item.Substring(item.IndexOf("LOC") + 4, 1).ToCharArray();
+                bone.loc_DoF.Add(dof[0]);
+            }
+            return bone;
         }
 
         
@@ -1048,7 +1199,16 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 list.Add(i.ToString());
             }
 
-            List<string> portAssignment = AssignName(comb.ToList(), useSensor, brick);
+
+            // ADDS for VERS.2 //
+            List<string> combin = new List<string>();
+            foreach (char c in comb)
+                combin.Add(c.ToString());
+            // // // // // // //
+
+            // EDIT for VERS.2
+            //List<string> portAssignment = AssignName(comb.ToList(), useSensor, brick);
+            List<string> portAssignment = AssignName(combin, useSensor, brick);
 
             int index = 0;
 
@@ -1076,7 +1236,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             return configurations;
         }
 
-        private static List<string> AssignName(List<char> boneDoF, bool useSensor, Brick brick)
+        private static List<string> AssignName(List<string> boneDoF, bool useSensor, Brick brick)
         {            
             List<string> result = new List<string>();
             List<string> tuiPieces = GetTuiComponent(useSensor,brick);
@@ -1084,7 +1244,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             // initialize costsMatrix
             for (int row = 0; row < boneDoF.Count; row++)
             {
-                for (int col = 0; col < tuiPieces.Count; col++)
+                for (int col = 0; col < tuiPieces.Count; col++) 
                 {
                     costsMatrix[row, col] = ComponentAssignment(boneDoF[row], tuiPieces[col]);
                 }
@@ -1099,11 +1259,11 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             return result;            
         }
 
-        private static Bone GetBoneFromName(string childName, List<Bone> armature)
+        private static Bone GetBoneFromName(string boneName, List<Bone> armature)
         {
             foreach (Bone b in armature)
             {
-                if (b.name.Equals(childName))
+                if (b.name.Equals(boneName))
                 {
                     return b;
                 }
@@ -1231,7 +1391,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             {
                 for (int col = 0; col < tuiPieces.Count; col++)
                 {
-                    costsMatrix[row, col] = ComponentAssignment(motorDecomposition[row], tuiPieces[col]);
+                    costsMatrix[row, col] = ComponentAssignment("ROT(" + motorDecomposition[row].ToString() + ")", tuiPieces[col]);
                 }
             }
 
@@ -1247,32 +1407,49 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             return totalCost/(motorDecomposition.Count * MAX_COST) * MAX_COST;
         }
 
-        private static int ComponentAssignment(char DoF, string ComponentType)
+        private static int ComponentAssignment(string DoF, string ComponentType)
         {
-            if ((DoF.Equals('x') || DoF.Equals('z')) && ComponentType.Contains(DeviceType.LMotor.ToString()))
+            if ((DoF.Equals("ROT(x)") || DoF.Equals("ROT(z)")) && ComponentType.Contains(DeviceType.LMotor.ToString()))
                 //return 0;
                 return 0;
-            if ((DoF.Equals('x') || DoF.Equals('z')) && ComponentType.Contains(DeviceType.MMotor.ToString()))
+            if ((DoF.Equals("ROT(x)") || DoF.Equals("ROT(z)")) && ComponentType.Contains(DeviceType.MMotor.ToString()))
                 //return 1;
                 return MAX_COST / 5;
-            if ((DoF.Equals('x') || DoF.Equals('z')) && ComponentType.Contains(DeviceType.Gyroscope.ToString()))
+            if ((DoF.Equals("ROT(x)") || DoF.Equals("ROT(z)")) && ComponentType.Contains(DeviceType.Gyroscope.ToString()))
                 //return 2;
                 return MAX_COST / 5 * 2;
-            if ((DoF.Equals('x') || DoF.Equals('z')) && ComponentType.Contains(DeviceType.Ultrasonic.ToString()))
+            if ((DoF.Equals("ROT(x)") || DoF.Equals("ROT(z)")) && ComponentType.Contains(DeviceType.Ultrasonic.ToString()))
                 //return 5;
                 return MAX_COST;
-            if (DoF.Equals('y') && ComponentType.Contains(DeviceType.MMotor.ToString()))
+            
+            if (DoF.Equals("ROT(y)") && ComponentType.Contains(DeviceType.MMotor.ToString()))
                 //return 0;
                 return 0;
-            if (DoF.Equals('y') && ComponentType.Contains(DeviceType.LMotor.ToString()))
+            if (DoF.Equals("ROT(y)") && ComponentType.Contains(DeviceType.LMotor.ToString()))
                 //return 1;
                 return MAX_COST / 5;
-            if (DoF.Equals('y') && ComponentType.Contains(DeviceType.Gyroscope.ToString()))
+            if (DoF.Equals("ROT(y)") && ComponentType.Contains(DeviceType.Gyroscope.ToString()))
                 //return 2;
                 return MAX_COST / 5 * 2;
-            if (DoF.Equals('y') && ComponentType.Contains(DeviceType.Ultrasonic.ToString()))
+            if (DoF.Equals("ROT(y)") && ComponentType.Contains(DeviceType.Ultrasonic.ToString()))
                 //return 5;
                 return MAX_COST;
+
+            if ((DoF.Equals("LOC(x)") || DoF.Equals("LOC(y)") || DoF.Equals("LOC(z)")) &&
+                ComponentType.Contains(DeviceType.LMotor.ToString()))
+                return MAX_COST;
+
+            if ((DoF.Equals("LOC(x)") || DoF.Equals("LOC(y)") || DoF.Equals("LOC(z)")) &&
+                ComponentType.Contains(DeviceType.MMotor.ToString()))
+                return MAX_COST;
+
+            if ((DoF.Equals("LOC(x)") || DoF.Equals("LOC(y)") || DoF.Equals("LOC(z)")) &&
+                ComponentType.Contains(DeviceType.Gyroscope.ToString()))
+                return MAX_COST;
+
+            if ((DoF.Equals("LOC(x)") || DoF.Equals("LOC(y)") || DoF.Equals("LOC(z)")) &&
+                ComponentType.Contains(DeviceType.Ultrasonic.ToString()))
+                return 0;
 
             return MAX_COST;
         }
@@ -1311,7 +1488,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             return components;
         }
         
-        public static Dictionary<string, List<List<char>>> initDoFDictionary()
+        public static Dictionary<string, List<List<char>>> InitDoFDictionary()
         {
             Dictionary<string, List<List<char>>> dictionary = new Dictionary<string, List<List<char>>>();
 
@@ -1372,9 +1549,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 DoF += c;
             }
             return DoF;
-        }
-
-       
+        }       
 
         public static int CountComponentAvailable(List<string> componentType, Brick brick)
         {
@@ -1706,5 +1881,11 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             float locWorseCase = MAX_COST * 3;
             return (rotCost/rotWorseCase + locCost/locWorseCase)/2 * MAX_COST;
         }
+
+
+        
     }
+
+
+
 }

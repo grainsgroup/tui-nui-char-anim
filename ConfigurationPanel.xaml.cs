@@ -821,17 +821,23 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
         private void ButtonAutoConfig_Click(object sender, RoutedEventArgs e)
         {
+            
 
+            // Requires the topologies information to Blender 
             string armatureName = RequestArmatureSelected();
             List<Bone> armature = RequestArmatureInfo(armatureName);
-            int componentAvailable = 0;
+            int maxLevelBone = AutomaticMapping.GetMaxLengthChain(armature);
+            
+            // Create graph from armature
             List<Bone> uniquePartition = new List<Bone>();
-
             var graph = AutomaticMapping.CreateDirectedGraph(armature);
             // Obtaints the graph connected component 
             List<List<Bone>> graphComponents = AutomaticMapping.GetConnectedComponentList(graph);
-            int maxLevelBone = AutomaticMapping.GetMaxLengthChain(armature);
-             
+
+            // Counts component available
+            int componentAvailable = 0;
+
+            // User chooses the Tui Interface
             if (this.UserPreferenceSlider.Value > 0)
             {
                 componentAvailable = AutomaticMapping.CountComponentAvailable
@@ -842,10 +848,13 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     componentAvailable += AutomaticMapping.CountComponentAvailable
                         (new List<string>() { "Gyroscope", "Ultrasonic" }, brick);
                 }
+                // To consider Hip joints
+                componentAvailable++;
                 
                 // TEST INTEGRAL CONTROL
                 uniquePartition = GetOnePartition(componentAvailable, graph, graphComponents);
             }
+            // User chooses the Nui Interface
             else 
             {
                 if (armature.Count < 20 && graphComponents.Count < 2)
@@ -855,7 +864,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             }
 
             // Gives alternative representation
-            Dictionary<string, List<List<char>>> dictionary = AutomaticMapping.initDoFDictionary();
+            Dictionary<string, List<List<char>>> dictionary = AutomaticMapping.InitDoFDictionary();
             bool configurationCreated = false;
             if (uniquePartition.Count > 0) 
             {                
@@ -864,6 +873,10 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 {
                     // Computes Tui + Hip score assignement                
                     locRotArrangements.Add(AutomaticMapping.ComputeLocRotTuiAssignement(uniquePartition, brick, dictionary, maxLevelBone));
+                    /* NEW VERSION
+                    AutomaticMapping.CreateArmaturesFromComb
+                            (rotArrangements[0].Name.ToCharArray(), brick, new string[] { "_ROT", "_LOC" });
+                    */
                     
                 }
                 if (this.UserPreferenceSlider.Value < 0)
@@ -912,7 +925,12 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         
                         rotArrangements.Sort();
 
-                        AutomaticMapping.CreateArmaturesFromComb(rotArrangements[0].Name.ToCharArray());
+                        foreach (List<Bone> virtualArmature in AutomaticMapping.CreateArmaturesFromComb
+                            (rotArrangements[0].Name.ToCharArray(), brick, new string[] { "_ROT" }))
+                        {
+                            // compute assignment
+                        }
+                       
 
                     }
 
