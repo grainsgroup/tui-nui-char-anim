@@ -110,8 +110,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 //else if(bones[bones.Count - 1].name.Equals(vertex.parent) && (motorAvailable - vertex.rot_DoF.Count >= 0))           
                 //else if ((bones[bones.Count - 1].name.Equals(vertex.parent) || vertex.children.Contains(bones[bones.Count - 1].name)) && (motorAvailable - vertex.rot_DoF.Count >= 0))
 
-                else if (motorAvailable - vertex.rot_DoF.Count >= 0)
-                
+
+                //else if (motorAvailable - vertex.rot_DoF.Count >= 0)
+                else if (IsConnectedBone(bones, vertex) && (motorAvailable - vertex.rot_DoF.Count >= 0))
                 {
                     bones.Add(vertex);
                     motorAvailable -= vertex.rot_DoF.Count;
@@ -125,6 +126,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 } 
             }
         }
+
+        
         
         public void dfs_DiscoverVertex_MaxLocRotDoF(Bone vertex)
         {                    
@@ -138,7 +141,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 }
                 //else if(bones[bones.Count - 1].name.Equals(vertex.parent) && (motorAvailable - vertex.rot_DoF.Count >= 0))  
                 //else if ((bones[bones.Count - 1].name.Equals(vertex.parent) || vertex.children.Contains(bones[bones.Count - 1].name)) && (motorAvailable - (vertex.rot_DoF.Count + vertex.loc_DoF.Count)>= 0))
-                else if (motorAvailable - (vertex.rot_DoF.Count + vertex.loc_DoF.Count) >= 0)
+                //else if (motorAvailable - (vertex.rot_DoF.Count + vertex.loc_DoF.Count) >= 0)
+                else if (IsConnectedBone(bones, vertex) && (motorAvailable - (vertex.rot_DoF.Count + vertex.loc_DoF.Count) >= 0))
                 {
                     bones.Add(vertex);
                     motorAvailable = motorAvailable - (vertex.rot_DoF.Count + vertex.loc_DoF.Count);
@@ -153,7 +157,26 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             }
 
         }
-        
+
+        private bool IsConnectedBone(List<Bone> bones, Bone vertex)
+        {
+            bool connectedElement = false;
+            foreach (Bone b in bones)
+            {
+                if (b.parent.Equals(vertex.name))
+                {
+                    connectedElement = true;
+                    break;
+                }
+                if (b.children.Contains(vertex.name))
+                {
+                    connectedElement = true;
+                    break;
+                }
+            }
+            return connectedElement;
+        }
+
         public void dfs_DiscoverVertex_CostDof(Bone vertex)
         {
             // first element for parent checking
@@ -207,6 +230,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 bones.Add(vertex);
             }
         }
+
     }
 
   

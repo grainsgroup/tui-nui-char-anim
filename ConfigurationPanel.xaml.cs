@@ -929,7 +929,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         (componentAvailable, graph, graphComponents, graphPartitions, this.SplitDofCheckBox.IsChecked.Value, true);
                     
                     
-
                     // ROTATION ASSIGNMENT
                     // Computes ROT -> TUI Assignment
                     List<DecompositionAssignment> decAssign = new List<DecompositionAssignment>();

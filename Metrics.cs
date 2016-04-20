@@ -175,9 +175,112 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
         public static float DofCoverageScore(Bone bone, Bone handler, Dictionary<string, List<List<char>>> dictionary)
         {
-            
+            // Vers 3.0
             float rotCost = 0;
             float locCost = 0;
+
+            List<char> handlerDof = handler.rot_DoF;
+
+            if (bone.rot_DoF.Count > 0)
+            {
+                // Degrees of fredom of bones which belong to the actual partition
+                List<List<char>> boneDoF = new List<List<char>>();
+                foreach (List<char> alternative in dictionary[GetDofString(bone.rot_DoF)])
+                {
+                    boneDoF.Add(alternative);
+                }
+
+                // Adds padding 
+                List<List<char>> boneDoFPadded = new List<List<char>>();
+
+                if (boneDoF[0].Count == handlerDof.Count)
+                {
+                    // padding not needed
+                    boneDoFPadded = boneDoF;
+                }
+                else if (boneDoF[0].Count < handlerDof.Count)
+                {
+                    // Adds padding for a better comparison
+                    foreach (List<char> alternativeRepr in boneDoF)
+                    {
+                        // list of possible position
+                        var list = new List<string>();
+                        for (int i = 0; i < handlerDof.Count; i++)
+                        {
+                            list.Add(i.ToString());
+                        }
+                        // Calculates permutation of list to identify padding position
+                        var result = Combinatorics.GetDispositions(list, boneDoF[0].Count);
+
+                        int index = 0;
+                        foreach (var perm in result)
+                        {
+                            char[] g = new char[handlerDof.Count];
+                            index = 0;
+                            foreach (var c in perm)
+                            {
+                                g[Convert.ToInt32(c)] = alternativeRepr[index];
+                                //Console.Write(c + " ");
+                                index++;
+                            }
+                            boneDoFPadded.Add(g.ToList());
+                        }
+                    }
+                }
+                else
+                {
+                    // this motorDisposition is not able to control this partition
+                    return MAX_COST;
+                }
+
+
+                // compute min score for all alterantives representation of this partition
+                float minScore = float.MaxValue;
+
+                foreach (List<char> item in boneDoFPadded)
+                {
+                    float tempScore = 0;
+                    for (int j = 0; j < item.Count; j++)
+                    {
+                        if (item[j] == 0) { tempScore += 0.5f; continue; }
+                        if (item[j] == 'x' && handlerDof[j] != 'x') { tempScore++; continue; }
+                        if (item[j] == 'y' && handlerDof[j] != 'y') { tempScore++; continue; }
+                        if (item[j] == 'z' && handlerDof[j] != 'z') { tempScore++; continue; }
+                    }
+
+                    if (tempScore < minScore)
+                    {
+                        minScore = tempScore;
+                    }
+                }
+
+                rotCost = minScore / boneDoFPadded.Count * MAX_COST;
+            }
+
+            if (bone.loc_DoF.Count > 0)
+            {
+                foreach (char dof in bone.loc_DoF)
+                {
+                    if (!handler.loc_DoF.Contains(dof))
+                    {
+                        locCost++;
+                    }
+                }
+
+                locCost = locCost / bone.loc_DoF.Count * MAX_COST; 
+            }
+
+            return rotCost + locCost;
+
+/* 
+// Version 1/2
+            float rotCost = 0;
+            float locCost = 0;
+*/
+            
+/* 
+// Version 1
+ 
 
             if (bone.rot_DoF.Count > 0)
             {
@@ -222,7 +325,10 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
            }
 
            return (rotCost + locCost) / (bone.rot_DoF.Count + bone.loc_DoF.Count) * MAX_COST;
-/*
+*/
+
+/* 
+// Version 2
 
             if (bone.rot_DoF.Count > 0)
             {           
