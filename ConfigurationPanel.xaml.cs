@@ -38,7 +38,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
         string TouchComboBoxName;
         
-        string[] axis = new string[] { "", "X", "Y", "Z", "-X", "-Y", "-Z" };
+        string[] axes = new string[] { "", "X", "Y", "Z", "-X", "-Y", "-Z" };
         string[] rotOrder = new string[] { "", "0", "1", "2" };
 
         public string[] VocalCommand = new string[] { Command.POSITION, Command.FRAME, Command.FRAME_LOC, Command.FRAME_ROT, Command.REC, Command.STOP, Command.FORWARD, Command.BACKWARD, Command.DELETE, Command.DELETE_CURRENT, Command.PLAY_ANIMATION, Command.RESET, Command.FAST_FORWARD, Command.FAST_BACKWARD, Command.HIDE_CAPTURE, Command.BONES_ASSOCIATION, Command.TRANSLATE_COORDINATE_SYSTEM, Command.RESET_ORIGIN, Command.FIRST_FRAME, Command.ACTIVE_GHOST_FRAME, Command.DISABLE_GHOST_FRAME, Command.LAST_FRAME, Command.START_POSE, Command.END_POSE, Command.COMPUTE_FACTOR, Command.LESS_ACCURACY, Command.MORE_ACCURACY, Command.LOCK_POSE, Command.LOAD_POSE, Command.UNLOCK_POSE};        
@@ -100,7 +100,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             {
                 if (ctrl.GetType() == typeof(ComboBox))
                 {
-                    ((ComboBox)ctrl).ItemsSource = axis;
+                    ((ComboBox)ctrl).ItemsSource = axes;
                 }
             }
            
@@ -145,7 +145,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             {
                 case "LMotor":
                     image.Source = new BitmapImage(new Uri(@"/Images/L-Motor.png", UriKind.Relative));
-                    comboBoxAxis.ItemsSource = axis;
+                    comboBoxAxis.ItemsSource = axes;
                     comboBoxBones.ItemsSource = objects;
                     comboBoxRotOrder.ItemsSource = rotOrder;
                     comboBoxRotOrder.SelectedIndex = 0;
@@ -153,7 +153,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
                 case "MMotor":
                     image.Source = new BitmapImage(new Uri(@"/Images/M-Motor.png", UriKind.Relative));
-                    comboBoxAxis.ItemsSource = axis;
+                    comboBoxAxis.ItemsSource = axes;
                     comboBoxBones.ItemsSource = objects;
                     comboBoxRotOrder.ItemsSource = rotOrder;
                     comboBoxRotOrder.SelectedIndex = 0;
@@ -161,7 +161,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
                 case "Gyroscope":
                     image.Source = new BitmapImage(new Uri(@"/Images/Gyroscope.png", UriKind.Relative));
-                    comboBoxAxis.ItemsSource = axis;
+                    comboBoxAxis.ItemsSource = axes;
                     comboBoxBones.ItemsSource = objects;
                     comboBoxRotOrder.ItemsSource = rotOrder;
                     comboBoxRotOrder.SelectedIndex = 0;
@@ -169,7 +169,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
                 case "Ultrasonic":
                     image.Source = new BitmapImage(new Uri(@"/Images/Ultrasonic.png", UriKind.Relative));
-                    comboBoxAxis.ItemsSource = axis;
+                    comboBoxAxis.ItemsSource = axes;
                     comboBoxBones.ItemsSource = objects;
                     comboBoxRotOrder.ItemsSource = rotOrder;
                     comboBoxRotOrder.SelectedIndex = 0;
@@ -353,42 +353,59 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             // LEGO SENSOR //
             if ((this.ALoc.IsChecked.Value || this.ARot.IsChecked.Value) && (this.ABoneName.SelectedIndex >= 0) && (this.AAxis.SelectedIndex >= 0))
             {
+                if (!ARot.IsChecked.Value)
+                    ARotOrder.SelectedIndex = 1;
                 // Add the data read from the panel to the currentSensorLegoInfo 
                 SetSensorLegoInfo(InputPort.A, this.ABoneName.SelectedItem.ToString(), this.ALoc.IsChecked.Value, this.ARot.IsChecked.Value, this.AAxis.SelectedItem.ToString(), Convert.ToInt32(ARotOrder.SelectedItem.ToString()));
+
             }
 
             if ((this.BLoc.IsChecked.Value || this.BRot.IsChecked.Value) && (this.BBoneName.SelectedIndex >= 0) && (this.BAxis.SelectedIndex >= 0))
             {
+                if (!BRot.IsChecked.Value)
+                    BRotOrder.SelectedIndex = 1;
                 SetSensorLegoInfo(InputPort.B, this.BBoneName.SelectedItem.ToString(), this.BLoc.IsChecked.Value, this.BRot.IsChecked.Value, this.BAxis.SelectedItem.ToString(), Convert.ToInt32(BRotOrder.SelectedItem.ToString()));
             }
 
             if ((this.CLoc.IsChecked.Value || this.CRot.IsChecked.Value) && (this.CBoneName.SelectedIndex >= 0) && (this.CAxis.SelectedIndex >= 0))
             {
+                if (!CRot.IsChecked.Value)
+                    CRotOrder.SelectedIndex = 1;
                 SetSensorLegoInfo(InputPort.C, this.CBoneName.SelectedItem.ToString(), this.CLoc.IsChecked.Value, this.CRot.IsChecked.Value, this.CAxis.SelectedItem.ToString(), Convert.ToInt32(CRotOrder.SelectedItem.ToString()));
             }
 
             if ((this.DLoc.IsChecked.Value || this.DRot.IsChecked.Value) && (this.DBoneName.SelectedIndex >= 0) && (this.DAxis.SelectedIndex >= 0))
             {
+                if (!DRot.IsChecked.Value)
+                    DRotOrder.SelectedIndex = 1;
                 SetSensorLegoInfo(InputPort.D, this.DBoneName.SelectedItem.ToString(), this.DLoc.IsChecked.Value, this.DRot.IsChecked.Value, this.DAxis.SelectedItem.ToString(), Convert.ToInt32(DRotOrder.SelectedItem.ToString()));
             }
 
             if ((this.OneLoc.IsChecked.Value || this.OneRot.IsChecked.Value) && (this.OneBoneName.SelectedIndex >= 0) && (this.OneAxis.SelectedIndex >= 0))
             {
+                if (!OneRot.IsChecked.Value)
+                    OneRotOrder.SelectedIndex = 1;
                 SetSensorLegoInfo(InputPort.One, this.OneBoneName.SelectedItem.ToString(), this.OneLoc.IsChecked.Value, this.OneRot.IsChecked.Value, this.OneAxis.SelectedItem.ToString(), Convert.ToInt32(OneRotOrder.SelectedItem.ToString()));
             }
 
             if ((this.TwoLoc.IsChecked.Value || this.TwoRot.IsChecked.Value) && (this.TwoBoneName.SelectedIndex >= 0) && (this.TwoAxis.SelectedIndex >= 0))
             {
+                if (!TwoRot.IsChecked.Value)
+                    TwoRotOrder.SelectedIndex = 1;
                 SetSensorLegoInfo(InputPort.Two, this.TwoBoneName.SelectedItem.ToString(), this.TwoLoc.IsChecked.Value, this.TwoRot.IsChecked.Value, this.TwoAxis.SelectedItem.ToString(), Convert.ToInt32(TwoRotOrder.SelectedItem.ToString()));
             }
 
             if ((this.ThreeLoc.IsChecked.Value || this.ThreeRot.IsChecked.Value) && (this.ThreeBoneName.SelectedIndex >= 0) && (this.ThreeAxis.SelectedIndex >= 0))
             {
+                if (!ThreeRot.IsChecked.Value)
+                    ThreeRotOrder.SelectedIndex = 1;
                 SetSensorLegoInfo(InputPort.Three, this.ThreeBoneName.SelectedItem.ToString(), this.ThreeLoc.IsChecked.Value, this.ThreeRot.IsChecked.Value, this.ThreeAxis.SelectedItem.ToString(), Convert.ToInt32(ThreeRotOrder.SelectedItem.ToString()));
             }
 
             if ((this.FourLoc.IsChecked.Value || this.FourRot.IsChecked.Value) && (this.FourBoneName.SelectedIndex >= 0) && (this.FourAxis.SelectedIndex >= 0))
             {
+                if (!FourRot.IsChecked.Value)
+                    FourRotOrder.SelectedIndex = 1;
                 SetSensorLegoInfo(InputPort.Four, this.FourBoneName.SelectedItem.ToString(), this.FourLoc.IsChecked.Value, this.FourRot.IsChecked.Value, this.FourAxis.SelectedItem.ToString(), /*Convert.ToInt32(FourRotOrder.SelectedItem.ToString())*/-1);
             }
 
@@ -821,7 +838,10 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
         private void ButtonAutoConfig_Click(object sender, RoutedEventArgs e)
         {
-            
+
+            // Alternative representation of dof sequence
+            Dictionary<string, List<List<char>>> dictionary = AutomaticMapping.InitDoFDictionary();
+            int componentAvailable = 0;
 
             // Requires the topologies information to Blender 
             string armatureName = RequestArmatureSelected();
@@ -833,10 +853,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             var graph = AutomaticMapping.CreateDirectedGraph(armature);
             // Obtaints the graph connected component 
             List<List<Bone>> graphComponents = AutomaticMapping.GetConnectedComponentList(graph);
-
-            // Counts component available
-            int componentAvailable = 0;
-
+            
             // User chooses the Tui Interface
             if (this.UserPreferenceSlider.Value > 0)
             {
@@ -848,120 +865,363 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     componentAvailable += AutomaticMapping.CountComponentAvailable
                         (new List<string>() { "Gyroscope", "Ultrasonic" }, brick);
                 }
-                // To consider Hip joints
-                componentAvailable++;
-                
-                // TEST INTEGRAL CONTROL
-                uniquePartition = GetOnePartition(componentAvailable, graph, graphComponents);
+
+
+                // componentAvailable is increased in order to consider the hip joint
+                if ((AutomaticMapping.CountArmatureDofs(armature) <= componentAvailable + 3) &&
+                    (graphComponents.Count < 2))
+                {
+                    uniquePartition = armature;
+                }
             }
             // User chooses the Nui Interface
             else 
             {
+                componentAvailable = 20;
                 if (armature.Count < 20 && graphComponents.Count < 2)
                 {
                     uniquePartition = armature;
                 }
             }
 
-            // Gives alternative representation
-            Dictionary<string, List<List<char>>> dictionary = AutomaticMapping.InitDoFDictionary();
-            bool configurationCreated = false;
+            // Tries to create a configuration for the armature which contains only one partition
+            bool configurationCreated = false;            
             if (uniquePartition.Count > 0) 
             {                
-                List<AxisArrangement> locRotArrangements = new List<AxisArrangement>();
+                List<PartitionAssignment> locRotArrangements = new List<PartitionAssignment>();
                 if (this.UserPreferenceSlider.Value > 0)
                 {
                     // Computes Tui + Hip score assignement                
-                    locRotArrangements.Add(AutomaticMapping.ComputeLocRotTuiAssignement(uniquePartition, brick, dictionary, maxLevelBone));
-                    /* NEW VERSION
-                    AutomaticMapping.CreateArmaturesFromComb
-                            (rotArrangements[0].Name.ToCharArray(), brick, new string[] { "_ROT", "_LOC" });
-                    */
+                    List<Bone> virtualArmature = AutomaticMapping.GetTuiArmature
+                        (uniquePartition, this.UseSensorCheckBox.IsChecked.Value, brick);
                     
+                    // Computes assignement
+                    locRotArrangements.Add(ComputeAssignement
+                        (uniquePartition, virtualArmature, maxLevelBone, dictionary,"TUI+HIP_CONFIG"));                    
+
                 }
                 if (this.UserPreferenceSlider.Value < 0)
                 {
                     // Computes kinect score assignment
-                    locRotArrangements.Add(AutomaticMapping.ComputeLocRotKinectAssignement(uniquePartition, maxLevelBone));                    
+                    List<Bone> virtualArmature = AutomaticMapping.GetKinectSkeleton();
+                    locRotArrangements.Add(ComputeAssignement
+                        (uniquePartition, virtualArmature, maxLevelBone, dictionary, "KINECT_CONFIG"));
+
                 }
                 
+                // Creates configuration
                 if (locRotArrangements[0]!= null) 
                 {
                     locRotArrangements.Sort();
                     CreateConfiguration(locRotArrangements[0], armatureName);
-                    SetArrangmentLabel(locRotArrangements[0]);
+                    //SetArrangmentLabel(locRotArrangements[0]);
                     configurationCreated = true;
                 }                
             }
-
-            if(!(uniquePartition.Count > 0) || !configurationCreated ) 
-            {
-                // CREATES PARTITION
-                List<List<List<Bone>>> graphPartitions = new List<List<List<Bone>>>();
-                graphPartitions = AutomaticMapping.GraphPartitioning
-                    (componentAvailable, graph, graphComponents, graphPartitions, this.SplitDofCheckBox.IsChecked.Value,true);
-
-                // Creates combination with repetition of n element (x,y,z) choose k (number of motor available) 
-                List<char[]> combination = new List<char[]>();
-                foreach (var c in Combinatorics.CombinationsWithRepetition(new string[] { "x", "y", "z" }, componentAvailable))
+            
+            if(!configurationCreated) 
+            {                                                                            
+                if (this.UserPreferenceSlider.Value >= 0)
                 {
-                    char[] array = c.ToCharArray();
-                    combination.Add(array);
-                }                
+                    // CREATES PARTITION
+                    List<List<List<Bone>>> graphPartitions = new List<List<List<Bone>>>();
+                    graphPartitions = AutomaticMapping.GraphPartitioning
+                        (componentAvailable, graph, graphComponents, graphPartitions, this.SplitDofCheckBox.IsChecked.Value, true);
+                    
+                    
 
-                // ROTATION ASSIGNEMENT
-                List<AxisArrangement> rotArrangements = new List<AxisArrangement>();
+                    // ROTATION ASSIGNMENT
+                    // Computes ROT -> TUI Assignment
+                    List<DecompositionAssignment> decAssign = new List<DecompositionAssignment>();
 
-                // Computes assignment score
-                foreach (List<List<Bone>> currentPartition in graphPartitions)
-                {
-
-                    if (this.UserPreferenceSlider.Value >= 0)
+                    // Creates combination with repetition of n element (x,y,z) choose k (number of motor available) 
+                    List<char[]> combination = new List<char[]>();
+                    foreach (var c in Combinatorics.CombinationsWithRepetition(new string[] { "x", "y", "z" }, componentAvailable))
                     {
+                        char[] array = c.ToCharArray();
+                        combination.Add(array);
+                    }   
+
+                    // Search the best sequence
+                    foreach (List<List<Bone>> decomposition in graphPartitions)                    
+                    {                        
+                        // Finds the most frequent axis arrangement in the partition
+                        List<AxisArrangement> arrangements = new List<AxisArrangement>();
                         foreach (char[] comb in combination)
                         {
-                            rotArrangements.Add(AutomaticMapping.ComputeTUIAssignmentScore(componentAvailable, dictionary, currentPartition, comb, this.UseSensorCheckBox.IsChecked.Value, brick));
+                            arrangements.Add(Metrics.GetBestAxisArrangement
+                                (componentAvailable, dictionary, decomposition, comb, 
+                                this.UseSensorCheckBox.IsChecked.Value, brick));
+                        }                        
+                        
+                        arrangements.Sort();
+                        
+                        float bestScore = arrangements[0].Score;
+
+                        //////////////////////////////////////////////////////////////
+                        foreach (AxisArrangement axisArr in arrangements)
+                        {
+                            if (axisArr.Score <= bestScore)
+                            {
+                                // Creates all possible armature generated by the current axis arrangements
+                                List<List<Bone>> virtualArmatures = AutomaticMapping.CreateArmaturesFromComb
+                                    (axisArr.AxisCombination, brick, new string[] { "_ROT" });
+                                
+                                /*List<List<Bone>> virtualArmatures = AutomaticMapping.CreateArmaturesFromComb
+                                    (arrangements[0].AxisCombination, brick, new string[] { "_ROT" });*/
+
+                                /*List<List<Bone>> virtualArmatures = AutomaticMapping.CreateArmaturesFromComb
+                                    (new char[]{'x','y','z'}, brick, new string[] { "_ROT" });*/
+
+                                List<List<Bone>> sequntialArmature = new List<List<Bone>>();
+                                List<List<Bone>> splittedArmature = new List<List<Bone>>();
+                                // Subdivides armatures into two groups: sequential and  splitted
+                                foreach (List<Bone> arm in virtualArmatures)
+                                {
+                                    if (IsSplittedArmature(arm))
+                                    {
+                                        splittedArmature.Add(arm);
+                                    }
+                                    else
+                                    {
+                                        sequntialArmature.Add(arm);
+                                    }
+                                }
+
+                                DecompositionAssignment partialDecAssign =
+                                    new DecompositionAssignment(new List<PartitionAssignment>(), 0);
+
+                                // Computes assignment with sequential armature
+                                foreach (List<Bone> currentPartition in decomposition)
+                                {
+                                    List<PartitionAssignment> partAssign = new List<PartitionAssignment>();
+
+                                    foreach (List<Bone> currentVirtualArmature in sequntialArmature)
+                                    {
+                                        // For all the sequential armatures can be used the same component arrangement        
+                                        
+                                        // Virtual armature is able to control the current partition
+                                        List<Bone> rotCurrentPartition = GetRotBones(currentPartition);                                
+                                        if (rotCurrentPartition.Count <= currentVirtualArmature.Count)
+                                        {                                                                                        
+                                            partAssign.Add(ComputeAssignement
+                                                (rotCurrentPartition, currentVirtualArmature, maxLevelBone,
+                                                 dictionary, rotCurrentPartition[0].name + "_ROT"));
+                                        }
+                                    }
+                                    partAssign.Sort();
+                                    partialDecAssign.PartitionAss.Add(partAssign[0]);
+                                }
+
+                                //Aggiornamento del costo
+                                decAssign.Add(GetDecompositionAssignment(partialDecAssign.PartitionAss));
+
+
+                                // Computes assignment with splitted armature
+                                foreach (List<Bone> currentVirtualArmature in splittedArmature)
+                                {
+                                    List<PartitionAssignment> partAssign = new List<PartitionAssignment>();
+                                    bool validVirtualArm = true;
+
+                                    foreach (List<Bone> currentPartition in decomposition)
+                                    {
+                                        List<Bone> rotCurrentPartition = GetRotBones(currentPartition);
+                                        if (rotCurrentPartition.Count <= currentVirtualArmature.Count)
+                                        {
+                                            partAssign.Add(ComputeAssignement
+                                                (rotCurrentPartition, currentVirtualArmature, maxLevelBone,
+                                                 dictionary, currentPartition[0].name + "_ROT"));
+                                        }
+                                        else 
+                                        {
+                                            validVirtualArm = false;
+                                            break;
+                                        }
+                                    }
+
+                                    if(validVirtualArm)
+                                        decAssign.Add(GetDecompositionAssignment(partAssign));
+                                }
+                            }
+
+                            else 
+                            {
+                                break;
+                            }
+                        }                        
+                        //////////////////////////////////////////////////////////////                                               
+                    }
+
+                    decAssign.Sort();
+                    foreach (PartitionAssignment partAssi in decAssign[0].PartitionAss) 
+                    {
+                        CreateConfiguration(partAssi, armatureName);
+                    }
+
+                    // LOCATION ASSIGNMENT
+                    // Computes LOC -> TUI Assignment
+                    //List<Bone> locHandler = AutomaticMapping.GetLocHandler(brick);
+                    List<Bone> locBones = GetLocBones(armature);
+                    List<Bone> virtualArmature = 
+                        AutomaticMapping.GetTuiArmature(locBones, this.UseSensorCheckBox.IsChecked.Value, brick);
+
+                    foreach (Bone bone in locBones)
+                    {
+                        PartitionAssignment locArrangements =
+                            ComputeAssignement(new List<Bone>() { bone }, virtualArmature, 
+                             maxLevelBone, dictionary, bone.name + "_LOC");
+                        
+                        CreateConfiguration(locArrangements, armatureName);
+                    }
+                }
+                                
+                if (this.UserPreferenceSlider.Value <= 0)
+                {
+                    List<DecompositionAssignment> decAssign = new List<DecompositionAssignment>();
+                    
+                    // CREATES PARTITION
+                    List<List<List<Bone>>> graphPartitions = new List<List<List<Bone>>>();
+                    graphPartitions = AutomaticMapping.GraphPartitioning
+                        (componentAvailable, graph, graphComponents, graphPartitions, 
+                         this.SplitDofCheckBox.IsChecked.Value, false);
+
+                    List<Bone> virtualArmature = AutomaticMapping.GetKinectSkeleton();
+                    foreach (List<List<Bone>> decomposition in graphPartitions)
+                    {
+                        List<PartitionAssignment> partAssign = new List<PartitionAssignment>();
+                        foreach (List<Bone> currentPartition in decomposition)
+                        {                                                        
+                            partAssign.Add(ComputeAssignement
+                                (currentPartition, virtualArmature, maxLevelBone, dictionary, currentPartition[0].name));              
                         }
                         
-                        rotArrangements.Sort();
-
-                        foreach (List<Bone> virtualArmature in AutomaticMapping.CreateArmaturesFromComb
-                            (rotArrangements[0].Name.ToCharArray(), brick, new string[] { "_ROT" }))
-                        {
-                            // compute assignment
-                        }
-                       
-
+                        decAssign.Add(GetDecompositionAssignment(partAssign));
+                        
                     }
 
-                    if (this.UserPreferenceSlider.Value <= 0)
+                    decAssign.Sort();
+                    foreach (PartitionAssignment partAssi in decAssign[0].PartitionAss)
                     {
-                        rotArrangements.Add(AutomaticMapping.ComputeKinectAssignmentScore(dictionary, currentPartition, maxLevelBone));
-                    }
+                        CreateConfiguration(partAssi, armatureName);
+                    }                                          
                 }
-
-                rotArrangements.Sort();
-                CreateConfiguration(rotArrangements, "_Rotation", armatureName);
-                SetArrangmentLabel(rotArrangements[0]);
-
-
-
-                // LOCATION ASSIGNMENT
                 
-                List<Bone> locHandler = AutomaticMapping.GetLocHandler(brick);
-                foreach (Bone locBones in AutomaticMapping.GetLocBone(armature))
+                //SetArrangmentLabel(rotArrangements[0]);               
+            }                        
+        }        
+
+        private bool IsSplittedArmature(List<Bone> armature)
+        {
+            bool splitterFound = false;
+            foreach (Bone b in armature) 
+            {
+                if (b.children.Count > 1) 
                 {
-                    List<AxisArrangement> locArrangements =
-                        AutomaticMapping.ComputeLocAssignment(new List<Bone>() { locBones }, locHandler, maxLevelBone/*, this.LeftHandedCheckBox.IsChecked.Value*/);
-                    locArrangements.Sort();
-                    CreateConfiguration(locArrangements[0], armatureName);
+                    splitterFound = true;
+                    break;
                 }
-                                                          
-            }            
-            
+
+            }
+
+            return splitterFound;
         }
 
-        private void SetArrangmentLabel(AxisArrangement axisArrangement)
+        private List<Bone> GetRotBones(List<Bone> armature)
+        {
+            List<Bone> result = new List<Bone>();
+            int minLevelBone = AutomaticMapping.GetMinLengthChain(armature);
+            foreach (Bone b in armature) 
+            {
+                if (b.rot_DoF.Count > 0)
+                {
+                    Bone boneToAdd = new Bone(b.name);
+                    boneToAdd.rot_DoF = b.rot_DoF.ToList();
+                    boneToAdd.level = b.level - minLevelBone;
+                    boneToAdd.parent = b.parent;
+                    boneToAdd.children = b.children.ToList();
+                    result.Add(boneToAdd);
+                }
+            }
+
+            return result;
+        }
+
+        public static List<Bone> GetLocBones(List<Bone> armature)
+        {
+            List<Bone> result = new List<Bone>();
+            foreach (Bone b in armature)
+            {
+                if (b.loc_DoF.Count > 0)
+                {
+                    Bone boneToAdd = new Bone(b.name);
+                    boneToAdd.loc_DoF = b.loc_DoF.ToList();
+                    boneToAdd.level = b.level;
+                    boneToAdd.parent = b.parent;
+                    boneToAdd.children = b.children.ToList();
+                    result.Add(boneToAdd);
+
+                }
+            }
+            return result;            
+        }
+
+        private DecompositionAssignment GetDecompositionAssignment(List<PartitionAssignment> partAssign)
+        {
+            float totalCost = 0;
+            
+            foreach (PartitionAssignment partition in partAssign)
+                totalCost += partition.Score;
+
+            return new DecompositionAssignment(partAssign, totalCost);
+        }
+
+        private PartitionAssignment ComputeAssignement (List<Bone> partition, List<Bone> virtualArmature, int maxLenghtChain, Dictionary<string, List<List<char>>> dictionary, string configurationName)
+        {
+            // solves assignment problem with Hungarian Algorithm                                        
+            //float[,] costsMatrix = new float[partition.Count, virtualArmature.Count];
+
+            // Computes node similarity
+            float[,] costsMatrix = Metrics.NodeSimilarityScore(partition, virtualArmature);
+
+            // Defines the costs
+            for (int row = 0; row < partition.Count; row++)
+            {
+                for (int col = 0; col < virtualArmature.Count; col++)
+                {
+                    costsMatrix[row, col] +=
+                        Metrics.DofCoverageScore(partition[row], virtualArmature[col], dictionary) +
+                        Metrics.ComponentRangeScore(partition[row], virtualArmature[col]) +
+                        Metrics.ComponentAnnoyanceScore(partition[row], virtualArmature[col]) +
+                        Metrics.ChainLengthScore(partition[row], virtualArmature[col], maxLenghtChain) + 
+                        Metrics.SymmetryScore(partition[row], virtualArmature[col]);
+                }
+            }
+
+            int[] assignment = HungarianAlgorithm.FindAssignments(costsMatrix);         
+
+            float score = 0;
+            for (int ass = 0; ass < assignment.Length; ass++)
+            {
+                score += costsMatrix[ass, assignment[ass]];
+            }
+
+            PartitionAssignment result = 
+                new PartitionAssignment(configurationName, assignment, partition, virtualArmature, score);
+            
+            /*
+            if (AutomaticMapping.KinectAssignmentConsistency(result))
+            {
+                return result;
+            }
+            else
+            {
+                return null;
+            }
+            */
+            return result;
+        }
+       
+        private void SetArrangmentLabel(PartitionAssignment axisArrangement)
         {
             this.ArrangementsOrderLabel.Content= "Arrangments: ";
             switch (axisArrangement.Name)
@@ -969,7 +1229,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 
                 case "TuiHip_Configuration":
                     foreach (int handlerIndex in axisArrangement.Assignment)
-                        this.ArrangementsOrderLabel.Content += axisArrangement.MotorDecomposition[handlerIndex].name + "_";
+                        this.ArrangementsOrderLabel.Content += axisArrangement.Handler[handlerIndex].name + "_";
                     break;
 
                 case "Kinect_Configuration":
@@ -977,7 +1237,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     break;
 
                 default:
-                    this.ArrangementsOrderLabel.Content += axisArrangement.MotorDecomposition[axisArrangement.MotorDecomposition.Count-1].name;
+                    this.ArrangementsOrderLabel.Content += axisArrangement.Handler[axisArrangement.Handler.Count-1].name;
                     break;
             }
                        
@@ -985,9 +1245,11 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             
         }
 
-        private void CreateConfiguration(List<AxisArrangement> arrangements, string text, string armatureName)
+        //Create configuration for more partitions
+        private void CreateConfiguration(List<PartitionAssignment> arrangements, string text, string armatureName)
         {
-            AxisArrangement bestArrangement = arrangements[0];            
+            /*
+            PartitionAssignment bestArrangement = arrangements[0];            
             // Create configuration from computeTuiAssignment
             List<Setting> settings = new List<Setting>();
 
@@ -996,7 +1258,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 for (int i = 0; i < bestArrangement.Assignment.Length; i++)
                 {
                     Bone components =
-                      bestArrangement.MotorDecomposition[bestArrangement.Assignment[i]];
+                      bestArrangement.Handler[bestArrangement.Assignment[i]];
 
                     List<string> componentName = GetComponentsName(components);
 
@@ -1024,7 +1286,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 for (int i = 0; i < bestArrangement.Assignment.Length; i++)
                 {
                     Bone components =
-                        bestArrangement.MotorDecomposition[bestArrangement.Assignment[i] / bestArrangement.Partition.Count];
+                        bestArrangement.Handler[bestArrangement.Assignment[i] / bestArrangement.Partition.Count];
 
                     List<string> componentName = GetComponentsName(components);
 
@@ -1064,7 +1326,102 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             */
         }
 
-        private void CreateConfiguration(AxisArrangement arrangement, string armatureName) 
+        private void CreateConfiguration(PartitionAssignment arrangement, string armatureName)
+        {
+            Setting settingToAdd = new Setting(arrangement.Name);
+            List<Setting> settings = new List<Setting>();
+            for (int i = 0; i < arrangement.Assignment.Length; i++)
+            {
+                Bone currentBone = arrangement.Partition[i];
+                string boneName = currentBone.name;
+                
+                List<Bone> components = new List<Bone>();
+                Bone handler = arrangement.Handler[arrangement.Assignment[i]];
+                
+                if (handler.name.Contains(" | "))
+                    components = Metrics.DecomposeHandler(handler);
+                else            
+                    components.Add(handler);            
+
+                for(int componentIndex = 0 ; componentIndex < components.Count;componentIndex++)
+                {
+                    Bone component = components[componentIndex];
+                    if (component.name.Contains("_TUI"))
+                    {
+                        string componentName = component.name;
+                        string port = componentName.Substring (componentName.IndexOf("PORT-") + 5,
+                             componentName.IndexOf(")_TUI") - (componentName.IndexOf("PORT-") + 5));
+                        string axis = "";
+
+                        if (componentName.Contains("LOC"))
+                        {
+                            axis = componentName.Substring(componentName.IndexOf(":LOC(") + 5, 1).ToUpper();
+                            settingToAdd.CheckBoxStatus.Add(new SettingItem(port + "Loc", "true"));
+                            settingToAdd.ComboBoxStatus.Add(new SettingItem(port + "BoneName", boneName + ":" + armatureName));
+                            settingToAdd.ComboBoxStatus.Add(new SettingItem(port + "Axis", axis));
+                        }
+
+                        if (componentName.Contains("ROT"))
+                        {
+                            axis = componentName.Substring(componentName.IndexOf(":ROT(") + 5, 1).ToUpper();
+                            settingToAdd.CheckBoxStatus.Add(new SettingItem(port + "Rot", "true"));
+                            settingToAdd.ComboBoxStatus.Add(new SettingItem(port + "BoneName", boneName + ":" + armatureName));
+                            settingToAdd.ComboBoxStatus.Add(new SettingItem(port + "Axis", axis));
+                            settingToAdd.ComboBoxStatus.Add(new SettingItem(port + "RotOrder", componentIndex.ToString()));
+                        }
+                    }
+                    else
+                    {
+                        // "Hip_NUI:LOC(z)"
+                        // is a Kinect component
+                        //string[] splittedStringComponent = component.name.Split('_');
+                        string componentName = component.name;
+                        if (componentName.Contains('.'))
+                            componentName = componentName.Remove(componentName.IndexOf('.'), 1);
+                        string jointName = componentName.Substring (0, componentName.IndexOf("_NUI"));
+                        
+                        if (componentName.Contains("LOC"))
+                        {
+                            string axis = componentName.Substring(componentName.IndexOf(":LOC(") + 5, 1).ToUpper();
+                            settingToAdd.CheckBoxStatus.Add(new SettingItem(jointName + "Loc" + axis, "true"));
+                            settingToAdd.ComboBoxStatus.Add(new SettingItem(jointName + "BoneName", boneName + ":" + armatureName));
+                            settingToAdd.ComboBoxStatus.Add(new SettingItem(jointName + axis + "from", axis));
+                        }
+
+                        if (componentName.Contains("ROT"))
+                        {
+                            settingToAdd.CheckBoxStatus.Add(new SettingItem(jointName + "Rot", "true"));
+                            settingToAdd.ComboBoxStatus.Add(new SettingItem(jointName + "BoneName", boneName + ":" + armatureName));
+                        }
+
+                        if (!componentName.Contains("ROT") && (!componentName.Contains("LOC")))
+                        {                                                        
+                            List<char> locDofs = currentBone.loc_DoF;
+                            //LOC                            
+                            settingToAdd.ComboBoxStatus.Add(
+                                new SettingItem(jointName + "BoneName", boneName + ":" + armatureName));
+                            
+                            foreach (char Dof in locDofs)
+                            {
+                                settingToAdd.ComboBoxStatus.Add(
+                                    new SettingItem(jointName + Dof.ToString().ToUpper() + "from", Dof.ToString().ToUpper()));
+                                
+                                settingToAdd.CheckBoxStatus.Add(
+                                    new SettingItem(jointName + "Loc" + Dof.ToString().ToUpper(), "true"));
+                            }
+                            //ROT
+                            settingToAdd.CheckBoxStatus.Add(new SettingItem(jointName + "Rot", "true"));
+                            settingToAdd.ComboBoxStatus.Add(
+                                new SettingItem(jointName + "BoneName", boneName + ":" + armatureName));
+                        }                        
+                    }
+                }
+            }
+            settings.Add(settingToAdd);
+            ConvertSettingToPreset(settings);
+        }
+
+        /*private void CreateConfiguration(PartitionAssignement arrangement, string armatureName) 
         {
             Setting settingToAdd = new Setting(arrangement.Name);
             List<Setting> settings = new List<Setting>();
@@ -1125,7 +1482,10 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             ConvertSettingToPreset(settings);
 
         }
+         
+         */
 
+        
         private void ConvertSettingToPreset(List<Setting> settings)
         {
             foreach (Setting s in settings)
@@ -1149,16 +1509,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             SetSetting(settings[0]);
         }
 
-        private static string GetOrderFromAxis(string axis)
-        {
-            if (axis.Equals("X"))
-                return "0";
-            if (axis.Equals("Y"))
-                return "1";
-            if (axis.Equals("Z"))
-                return "2";
-            return "0";
-        }
+        
 
         private List<string> GetComponentsName(Bone components)
         {
@@ -1176,24 +1527,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             
             return componentName;
         }
-
-        private List<Bone> GetOnePartition(int motors, BidirectionalGraph<Bone, Edge<Bone>> graph, List<List<Bone>> components)
-        {
-            List<List<List<Bone>>> graphPartitions = new List<List<List<Bone>>>();
-            
-            graphPartitions = AutomaticMapping.GraphPartitioning
-                (motors + 3, graph, components, graphPartitions, this.SplitDofCheckBox.IsChecked.Value, false);
-            
-            for (int i = 0; i < graphPartitions.Count; i++)
-            {
-                if (graphPartitions[i].Count == 1)
-                {
-                    return graphPartitions[i][0];                    
-                }
-            }            
-            return new List<Bone>();            
-        }
-
+       
         private List<Bone> RequestArmatureInfo(string armatureName)
         {
             List<Bone> armature = new List<Bone>();            
@@ -1215,8 +1549,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
             string stringReceived = AsynSocket.SyncReceiver();
             return JsonManager.GetString(stringReceived);
-        }
-        
+        }        
 
         public List<int> AllIndexOf(string str, string value)
         {

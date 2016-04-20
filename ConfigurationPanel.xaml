@@ -346,7 +346,7 @@
                     <Canvas Margin="50,50,0,0" x:Name="AutoConfigCanvas" HorizontalAlignment="Left">
                         <Button Content="Generate" Width="68" Click="ButtonAutoConfig_Click" Canvas.Left="780" Canvas.Top="471"/>
                         <Label Content="Preference" HorizontalAlignment="Left" Margin="7,-15,0,0" VerticalAlignment="Top" FontSize="14"/>
-                        <CheckBox x:Name="UseSensorCheckBox" Content="Use Sensor" Canvas.Top="30" Canvas.Left="30"/>
+                        <CheckBox x:Name="UseSensorCheckBox" Content="Use Sensor" Canvas.Top="39" Canvas.Left="30"/>
                         <CheckBox x:Name="SplitDofCheckBox" Content="Split DoF" Canvas.Top="60" Canvas.Left="30"/>
                         <!-- <CheckBox x:Name="LeftHandedCheckBox" Content="Left-Handed" Canvas.Top="90" Canvas.Left="30"/> -->
                         <Label  HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Canvas.Top="126" Width="55" Canvas.Left="-16">
@@ -356,7 +356,7 @@
                             <TextBlock Text="Tangible User Interface" TextWrapping="Wrap" TextAlignment="Center" FontSize="12" />
                         </Label>
                         <Slider x:Name="UserPreferenceSlider" Height="24" Width="60" Canvas.Left="37" Canvas.Top="134" Minimum="-1" Maximum="1" SmallChange="1" IsSnapToTickEnabled="True" Ticks="-1,0,1"/>
-                        <Label x:Name="ArrangementsOrderLabel" Content="Arrangment: " Canvas.Left="27" Canvas.Top="200"/>
+                        <Label x:Name="ArrangementsOrderLabel" Content="Arrangment: " Canvas.Left="-16" Canvas.Top="261"/>
                     </Canvas >
                 </TabItem>
 

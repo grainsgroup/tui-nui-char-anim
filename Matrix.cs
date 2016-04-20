@@ -154,27 +154,27 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         }
 
 
-        internal static float[,] VectorToCostMatrix(double[] costVector, int controlledBones, int kinectBones, int range)
+        internal static float[,] VectorToCostMatrix(double[] costVector, int controlledBones, int virtualBones, int range)
         {        
             // verifica che il vettore viene incolonnato bene nella matrice
             double max = costVector.Max();
 
-            float[,] matrix = new float[controlledBones, kinectBones];
+            float[,] matrix = new float[controlledBones, virtualBones];
             //int[,] matrix = new int[controlledBones, kinectBones];
             
             int index = 0;
-            for(int col = 0; col < kinectBones; col++)
+            for(int col = 0; col < virtualBones; col++)
             {
                 for (int row = 0; row < controlledBones; row++)
                 {
                     //matrix[row, col] = range - (int)Math.Round((costVector[index] / max) * range);
-                    matrix[row, col] = AutomaticMapping.MAX_COST - ((float)Math.Round(costVector[index], 3) * AutomaticMapping.MAX_COST);
+                    matrix[row, col] = Metrics.MAX_COST - ((float)Math.Round(costVector[index], 3) * Metrics.MAX_COST);
                     index++;
                 }
             }
 
             matrix = Matrix.TransposeMatrix(matrix);
-            PrintCostMatrix(matrix, "COST");
+            //PrintCostMatrix(matrix, "COST");
             return matrix;            
             
         }
@@ -211,6 +211,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             }
 
             double squaredSum = Math.Sqrt(sum);
+            if (squaredSum == 0)
+                return normalizedVector;
 
             for (int i = 0; i < vector.Length; i++)
             {

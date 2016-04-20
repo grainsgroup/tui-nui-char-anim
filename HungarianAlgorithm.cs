@@ -22,6 +22,10 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         /// (row) <em>i</em>.</returns>
         public static int[] FindAssignments(float[,] Matrix)
         {
+            if (Matrix.GetLength(0) > Matrix.GetLength(1))
+                throw new ArgumentException();
+            
+
             int[,] costsMatrix = new int[Matrix.GetLength(0), Matrix.GetLength(1)];
             for (int row = 0; row < Matrix.GetLength(0); row++)
                 for (int col = 0; col < Matrix.GetLength(1); col++)

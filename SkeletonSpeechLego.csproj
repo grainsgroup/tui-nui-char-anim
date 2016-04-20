@@ -123,6 +123,7 @@
     <Compile Include="HungarianAlgorithm.cs" />
     <Compile Include="JsonManager.cs" />
     <Compile Include="Matrix.cs" />
+    <Compile Include="Metrics.cs" />
     <Compile Include="SensorInfo.cs" />
     <Compile Include="LegoConnectionSetup.xaml.cs">
       <DependentUpon>LegoConnectionSetup.xaml</DependentUpon>

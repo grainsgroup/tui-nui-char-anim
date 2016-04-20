@@ -210,28 +210,50 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
     }
 
   
-
     public class AxisArrangement : IComparable<AxisArrangement>
+    {
+        public string Name { get; set; }
+        public char[] AxisCombination { get; set; }
+        public float Score { get; set; }
+
+        public AxisArrangement(string name, char[] comb, float score)
+        {
+            this.Name = name;
+            this.AxisCombination = comb;
+            this.Score = score;            
+        }
+
+        public int CompareTo(AxisArrangement compareAxisArrangement)
+        {
+            // A null value means that this object is greater.
+            if (compareAxisArrangement == null)
+                return 1;
+            else
+            { 
+                return this.Score.CompareTo(compareAxisArrangement.Score);
+            }        
+        }
+    }
+
+    public class PartitionAssignment : IComparable<PartitionAssignment>
     {
         public string Name { get; set; }
 
         public int[] Assignment { get; set;}
-        public List<List<Bone>> Partition { get; set;}
-        public List<Bone> MotorDecomposition { get; set; }        
-        public float Score { get; set; }
-        
-        
+        public List<Bone> Partition { get; set;}
+        public List<Bone> Handler { get; set; }        
+        public float Score { get; set; }                
 
-        public AxisArrangement(string name, int[] assignment, List<List<Bone>> partition, List<Bone>motorDeomposition, float score) 
+        public PartitionAssignment(string name, int[] assignment, List<Bone> partition, List<Bone>motorDeomposition, float score) 
         {
             this.Name = name;
             this.Assignment = assignment;
             this.Partition = partition;
-            this.MotorDecomposition = motorDeomposition;
+            this.Handler = motorDeomposition;
             this.Score = score;            
         }
         
-        public int CompareTo(AxisArrangement compareAxisArrangement)
+        public int CompareTo(PartitionAssignment compareAxisArrangement)
         {
             // A null value means that this object is greater.
             if (compareAxisArrangement == null)
@@ -245,4 +267,32 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         }
         
     }
+
+    public class DecompositionAssignment : IComparable<DecompositionAssignment>
+    {
+        
+        public List<PartitionAssignment> PartitionAss { get; set; }
+        public float TotalScore { get; set; }
+
+        public DecompositionAssignment(List<PartitionAssignment> partAss, float score)
+        {
+            this.PartitionAss = partAss;
+            this.TotalScore = score;
+        }
+
+        public int CompareTo(DecompositionAssignment compareDecompositionAssignment)
+        {
+            // A null value means that this object is greater.
+            if (compareDecompositionAssignment == null)
+                return 1;
+            else
+            {
+                if (this.TotalScore != compareDecompositionAssignment.TotalScore)
+                    return this.TotalScore.CompareTo(compareDecompositionAssignment.TotalScore);
+                else
+                    return this.PartitionAss.Count.CompareTo(compareDecompositionAssignment.PartitionAss.Count);
+            }
+        }
+    }
+    
 }
