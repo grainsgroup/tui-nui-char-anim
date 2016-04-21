@@ -242,7 +242,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     float tempScore = 0;
                     for (int j = 0; j < item.Count; j++)
                     {
-                        if (item[j] == 0) { tempScore += 0.5f; continue; }
+                        if (item[j] == 0) { tempScore+=0.2f; continue; }
                         if (item[j] == 'x' && handlerDof[j] != 'x') { tempScore++; continue; }
                         if (item[j] == 'y' && handlerDof[j] != 'y') { tempScore++; continue; }
                         if (item[j] == 'z' && handlerDof[j] != 'z') { tempScore++; continue; }
@@ -254,7 +254,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     }
                 }
 
-                rotCost = minScore / boneDoFPadded.Count * MAX_COST;
+                rotCost = minScore / boneDoFPadded[0].Count * MAX_COST;
             }
 
             if (bone.loc_DoF.Count > 0)
@@ -935,7 +935,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             if ((DoF.Equals("ROT(x)") || DoF.Equals("ROT(z)")) &&
                 ComponentType.Contains(DeviceType.Gyroscope.ToString()))
                 //return 2;
-                return MAX_COST / 5 * 2;
+                return MAX_COST / 5 * 4;
             if ((DoF.Equals("ROT(x)") || DoF.Equals("ROT(z)")) &&
                 ComponentType.Contains(DeviceType.Ultrasonic.ToString()))
                 //return 5;
@@ -950,7 +950,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 return MAX_COST / 5;
             if (DoF.Equals("ROT(y)") && ComponentType.Contains(DeviceType.Gyroscope.ToString()))
                 //return 2;
-                return MAX_COST / 5 * 2;
+                return MAX_COST / 5 * 4;
             if (DoF.Equals("ROT(y)") && ComponentType.Contains(DeviceType.Ultrasonic.ToString()))
                 //return 5;
                 return MAX_COST;
