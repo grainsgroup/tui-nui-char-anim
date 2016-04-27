@@ -82,155 +82,35 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         }
     }
 
-    public class Partition
+    public class GraphTraversal
     {
-        public List<List<Bone>> partition;
-        public List<Bone> bones;
-        int motorAvailable, legoMotors;
-
-        public Partition(int motor) 
+        public List<Bone> BonesToVisit;
+        public List<Bone> Partition;
+        public List<List<Bone>> Decomposition;
+        public int MotorAvailable;
+        
+        
+        public GraphTraversal(int motors) 
         {
-            partition = new List<List<Bone>>();
-            bones = new List<Bone>();
-            motorAvailable = motor;
-            legoMotors = motor;            
+            BonesToVisit = new List<Bone>();
+            Partition = new List<Bone>();
+            Decomposition = new List<List<Bone>>();
+            MotorAvailable = motors;
         }
         
         public void dfs_DiscoverVertex_MaxRotDoF(Bone vertex)
         {
-            if (vertex.rot_DoF.Count > 0)
-            {
-                // first element for parent checking
-                if (bones.Count < 1)
-                {
-                    bones.Add(vertex);
-                    motorAvailable -= vertex.rot_DoF.Count;
-                }
-                
-                //else if(bones[bones.Count - 1].name.Equals(vertex.parent) && (motorAvailable - vertex.rot_DoF.Count >= 0))           
-                //else if ((bones[bones.Count - 1].name.Equals(vertex.parent) || vertex.children.Contains(bones[bones.Count - 1].name)) && (motorAvailable - vertex.rot_DoF.Count >= 0))
-
-                //else if (motorAvailable - vertex.rot_DoF.Count >= 0)
-                else if (IsConnectedBone(bones, vertex) && (motorAvailable - vertex.rot_DoF.Count >= 0))
-                {
-                    bones.Add(vertex);
-                    motorAvailable -= vertex.rot_DoF.Count;
-                }
-                else
-                {
-                    partition.Add(bones);
-                    bones = new List<Bone>();
-                    motorAvailable = legoMotors - vertex.rot_DoF.Count;
-                    bones.Add(vertex);
-                } 
-            }
+            if(vertex.rot_DoF.Count>0)
+                BonesToVisit.Add(vertex);
         }
 
-        
-        
         public void dfs_DiscoverVertex_MaxLocRotDoF(Bone vertex)
-        {                    
-            if (vertex.rot_DoF.Count > 0 || vertex.loc_DoF.Count > 0)
-            {
-                // first element for parent checking
-                if (bones.Count < 1)
-                {
-                    bones.Add(vertex);
-                    motorAvailable = motorAvailable - (vertex.rot_DoF.Count + vertex.loc_DoF.Count);
-                }
-                //else if(bones[bones.Count - 1].name.Equals(vertex.parent) && (motorAvailable - vertex.rot_DoF.Count >= 0))  
-                //else if ((bones[bones.Count - 1].name.Equals(vertex.parent) || vertex.children.Contains(bones[bones.Count - 1].name)) && (motorAvailable - (vertex.rot_DoF.Count + vertex.loc_DoF.Count)>= 0))
-                //else if (motorAvailable - (vertex.rot_DoF.Count + vertex.loc_DoF.Count) >= 0)
-                else if (IsConnectedBone(bones, vertex) && (motorAvailable - (vertex.rot_DoF.Count + vertex.loc_DoF.Count) >= 0))
-                {
-                    bones.Add(vertex);
-                    motorAvailable = motorAvailable - (vertex.rot_DoF.Count + vertex.loc_DoF.Count);
-                } 
-                else
-                {
-                    partition.Add(bones);
-                    bones = new List<Bone>();
-                    motorAvailable = legoMotors - (vertex.rot_DoF.Count + vertex.loc_DoF.Count);
-                    bones.Add(vertex);
-                } 
-            }
-
-        }
-
-        private bool IsConnectedBone(List<Bone> bones, Bone vertex)
         {
-            bool connectedElement = false;
-            foreach (Bone b in bones)
-            {
-                if (b.parent.Equals(vertex.name))
-                {
-                    connectedElement = true;
-                    break;
-                }
-                if (b.children.Contains(vertex.name))
-                {
-                    connectedElement = true;
-                    break;
-                }
-            }
-            return connectedElement;
+            if (vertex.rot_DoF.Count + vertex.loc_DoF.Count > 0)
+                BonesToVisit.Add(vertex);
         }
-
-        public void dfs_DiscoverVertex_CostDof(Bone vertex)
-        {
-            // first element for parent checking
-            if (bones.Count < 1)
-            {
-                bones.Add(vertex);
-                motorAvailable -= vertex.rot_DoF.Count;
-            } 
-            else if (bones[bones.Count - 1].name.Equals(vertex.parent) || vertex.children.Contains(bones[bones.Count - 1].name))
-            {
-                // Adds the entire bone in the partition
-                if ((motorAvailable - vertex.rot_DoF.Count >= 0))
-                {
-                    bones.Add(vertex);
-                    motorAvailable -= vertex.rot_DoF.Count;
-                }
-                else 
-                {
-                    // Splits the joint
-                    Bone PartialBone = new Bone(vertex.name + "_PART");
-                    PartialBone.level = vertex.level;
-                    for (int i = 0; i < motorAvailable; i++) 
-                    {
-                        PartialBone.rot_DoF.Add(vertex.rot_DoF[i]);
-                    }
-                    if (PartialBone.rot_DoF.Count > 0)
-                    {
-                        bones.Add(PartialBone);
-                    }
-                    partition.Add(bones);
-                    bones = new List<Bone>();
-
-                    PartialBone = new Bone(vertex.name + "_PART");
-                    PartialBone.level = vertex.level;
-                    for (int i = motorAvailable; i < vertex.rot_DoF.Count; i++)
-                    {
-                        PartialBone.rot_DoF.Add(vertex.rot_DoF[i]);
-                    }
-                    if (PartialBone.rot_DoF.Count > 0)
-                    {
-                        bones.Add(PartialBone);
-                    }
-                    motorAvailable = legoMotors - PartialBone.rot_DoF.Count;    
-                }                
-            }
-            else
-            {
-                partition.Add(bones);
-                bones = new List<Bone>();
-                motorAvailable = legoMotors - vertex.rot_DoF.Count;
-                bones.Add(vertex);
-            }
-        }
-
     }
+
 
   
     public class AxisArrangement : IComparable<AxisArrangement>

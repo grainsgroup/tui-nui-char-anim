@@ -925,8 +925,17 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 {
                     // CREATES PARTITION
                     List<List<List<Bone>>> graphPartitions = new List<List<List<Bone>>>();
-                    graphPartitions = AutomaticMapping.GraphPartitioning
-                        (componentAvailable, graph, graphComponents, graphPartitions, this.SplitDofCheckBox.IsChecked.Value, true);
+                    try
+                    {                        
+                        graphPartitions = AutomaticMapping.GraphPartitioning
+                            (componentAvailable, graph, graphComponents, graphPartitions,
+                            this.SplitDofCheckBox.IsChecked.Value, true);
+                    }
+                    catch (ApplicationException)
+                    {
+                        MessageBoxResult result = MessageBox.Show(this, "Required components not available", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
                     
                     
                     // ROTATION ASSIGNMENT
