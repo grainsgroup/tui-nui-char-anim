@@ -426,47 +426,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
            }
            return cost;
        }
-       */
-
-       
-        public static KinectPieces ChainSimilarityScore(List<Bone> subPartition, List<Bone> kinectPartition, int maxLength)
-        {
-
-            // solves assignment problem with Hungarian Algorithm                                        
-            float[,] costsMatrix = new float[subPartition.Count, kinectPartition.Count];
-
-            // initialize costMatrix
-            for (int row = 0; row < subPartition.Count; row++)
-            {
-                for (int col = 0; col < kinectPartition.Count; col++)
-                {
-                    costsMatrix[row, col] =
-                        RotDofSimilarityScore(subPartition[row], kinectPartition[col]) +
-                        SymmetryScore(subPartition[row], kinectPartition[col]) +
-                        DofAnalysisScore(subPartition[row], kinectPartition[col], maxLength);
-                    /*Math.Abs(subPartition[row].level - kinectPartition[col].level) + 
-                    GetCostRange(kinectPartition[col]);*/
-                }
-            }
-
-
-            int[] assignment = HungarianAlgorithm.FindAssignments(costsMatrix);
-
-            Bone kinectBone = new Bone("");
-            float totalCost = 0;
-
-            // computes cost for this assignment
-            for (int ass = 0; ass < assignment.Length; ass++)
-            {
-                totalCost += costsMatrix[ass, assignment[ass]];
-                kinectBone.name += kinectPartition[assignment[ass]].name + "_";
-                foreach (char c in kinectPartition[assignment[ass]].rot_DoF)
-                    kinectBone.rot_DoF.Add(c);
-                foreach (char c in kinectPartition[assignment[ass]].loc_DoF)
-                    kinectBone.loc_DoF.Add(c);
-            }
-            return new KinectPieces(totalCost, kinectBone);
-        }
+       */              
 
         public static float SymmetryScore(Bone bone, Bone handler)
         {
@@ -762,32 +722,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             float[,] costMatrix = Matrix.VectorToCostMatrix(costVector, B.GetLength(0), A.GetLength(0), 10);
             return costMatrix;
             
-        }
-
-        public static float DofAnalysisScore(Bone bone, Bone handler, int maxLengthChain)
-        {
-            float rotCost = 0;
-            float locCost = 0;
-            if (bone.rot_DoF.Count > 0)
-            {
-                foreach (Bone oneDofHandler in AutomaticMapping.GetOneDofBones(new List<Bone>() { handler }, true, false))
-                {
-                    rotCost += /*ComponentRangeCost(oneDofHandler) / 2 + */ChainLengthScore(bone, oneDofHandler, maxLengthChain) / 2;
-                }
-            }
-            if (bone.loc_DoF.Count > 0)
-            {
-                foreach (Bone oneDofHandler in AutomaticMapping.GetOneDofBones(new List<Bone>() { handler }, false, true))
-                {
-                    locCost +=/* ComponentRangeCost(oneDofHandler) / 2 +*/ ChainLengthScore(bone, oneDofHandler, maxLengthChain) / 2;
-                }
-            }
-            float rotWorseCase = MAX_COST * 3;
-            float locWorseCase = MAX_COST * 3;
-            return (rotCost / rotWorseCase + locCost / locWorseCase) / 2 * MAX_COST;
-        }
-
-
+        }     
 
         // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
         // UTILITY FUNCTIONS
@@ -1048,53 +983,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         }
         
         // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-
-
-
-
-
-
-
-        public static PartitionAssignment ComputeKinectAssignmentScore(Dictionary<string, List<List<char>>> dictionary, List<List<Bone>> currentPartition, int maxLengthChain)
-        {
-
-            List<List<Bone>> kinectSkeleton = AutomaticMapping.GetKinectPartition();
-            List<Bone> motorDecomposition = new List<Bone>();
-
-            // solves assignment problem with Hungarian Algorithm                                        
-            float[,] costsMatrix = new float[currentPartition.Count, kinectSkeleton.Count * currentPartition.Count];
-            // initialize costMatrix
-            for (int row = 0; row < currentPartition.Count; row++)
-            {
-                for (int col = 0; col < kinectSkeleton.Count * currentPartition.Count;
-                    col += currentPartition.Count)
-                {
-                    KinectPieces kinectBones = ChainSimilarityScore(currentPartition[row], kinectSkeleton[col / currentPartition.Count], maxLengthChain);
-                    float cost = kinectBones.Score /*+ currentPartition.Count*/;
-                    motorDecomposition.Add(kinectBones.Bones);
-
-                    for (int index = 0; index < currentPartition.Count; index++)
-                    {
-                        costsMatrix[row, col + index] = cost;
-                    }
-
-                }
-            }
-
-
-            int[] assignment = HungarianAlgorithm.FindAssignments(costsMatrix);
-
-            float totalCost = 0;
-            // computes cost for this assignment
-            for (int ass = 0; ass < assignment.Length; ass++)
-            {
-                totalCost += costsMatrix[ass, assignment[ass]];
-                assignment[ass] = assignment[ass] % currentPartition.Count + currentPartition.Count * ass;
-            }
-
-            return null/*new PartitionAssignment("Kinect_Configuration", assignment, currentPartition, motorDecomposition, totalCost)*/;
-        }
-
+      
         public static AxisArrangement GetBestAxisArrangement(int motors, Dictionary<string, List<List<char>>> dictionary, List<List<Bone>> currentPartition, char[] comb, bool useSensor, Brick brick)
         {
             // creates possible configurations 
@@ -1143,169 +1032,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
              * new PartitionAssignment(GetDofString(comb.ToList()), assignment, currentPartition, motorDecomposition, totalCost)*/
         }
 
-        public static List<PartitionAssignment> ComputeLocAssignment(List<Bone> locBones, List<Bone> handler, int maxLengthChain/*, bool leftHanded*/)
-        {
-            List<PartitionAssignment> arrangements = new List<PartitionAssignment>();
-            foreach (Bone bone in locBones)
-            {
-                List<Bone> locBoneOneDof = AutomaticMapping.GetOneDofBones(locBones, false, true);
-
-                // solves assignment problem with Hungarian Algorithm                                        
-                float[,] costsMatrix = new float[locBoneOneDof.Count, handler.Count];
-                // initialize costMatrix
-                for (int row = 0; row < locBoneOneDof.Count; row++)
-                {
-                    for (int col = 0; col < handler.Count; col += locBones.Count)
-                    {
-                        costsMatrix[row, col] = Metrics.LocDoFSimilarityScore(locBoneOneDof[row], handler[col]) /*+
-                            Metrics.ComponentRangeCost(handler[col])*/ +
-                            Metrics.SymmetryScore(locBoneOneDof[row], handler[col / locBones.Count]) +
-                            Metrics.ChainLengthScore(locBoneOneDof[row], handler[col], maxLengthChain)/* +
-                            UserPreferenceScore(handler[col], leftHanded)*/;
-                    }
-                }
-
-                int[] assignment = HungarianAlgorithm.FindAssignments(costsMatrix);
-
-                float score = 0;
-                for (int ass = 0; ass < assignment.Length; ass++)
-                {
-                    score += costsMatrix[ass, assignment[ass]];
-                }
-
-                List<List<Bone>> partition = new List<List<Bone>>();
-                partition.Add(locBoneOneDof);
-                arrangements.Add(null/*new PartitionAssignment(bone.name, assignment, partition, handler, score)*/);
-            }
-            return arrangements;
-        }
-
-        public static PartitionAssignment ComputeLocRotKinectAssignement(List<Bone> uniquePartition, int maxLengthChain)
-        {
-            List<Bone> kinectSkeleton = new List<Bone>();
-            foreach (List<Bone> lb in AutomaticMapping.GetKinectPartition())
-                foreach (Bone b in lb)
-                    kinectSkeleton.Add(b);
-
-            // solves assignment problem with Hungarian Algorithm                                        
-            //float[,] costsMatrix = NodeEdgeSimilarity(uniquePartition, kinectSkeleton);
-            float[,] costsMatrix = new float[uniquePartition.Count, kinectSkeleton.Count];
-
-            // initialize costMatrix
-            for (int row = 0; row < uniquePartition.Count; row++)
-            {
-                for (int col = 0; col < kinectSkeleton.Count; col++)
-                {
-                    costsMatrix[row, col] +=
-                        Metrics.RotDofSimilarityScore(uniquePartition[row], kinectSkeleton[col]) +
-                        Metrics.LocDoFSimilarityScore(uniquePartition[row], kinectSkeleton[col]) +
-                        Metrics.DofAnalysisScore(uniquePartition[row], kinectSkeleton[col], maxLengthChain);
-
-                    if (uniquePartition[row].name.Contains(".R") || uniquePartition[row].name.Contains(".L"))
-                        costsMatrix[row, col] += Metrics.SymmetryScore(uniquePartition[row], kinectSkeleton[col]);
-                }
-            }
-
-
-            int[] assignment = HungarianAlgorithm.FindAssignments(costsMatrix);
-
-            float score = 0;
-            for (int ass = 0; ass < assignment.Length; ass++)
-            {
-                score += costsMatrix[ass, assignment[ass]];
-            }
-
-            List<List<Bone>> partition = new List<List<Bone>>();
-            partition.Add(uniquePartition);
-            PartitionAssignment bestArrangement = null
-                /*new PartitionAssignment("Kinect_Configuration", assignment, partition, kinectSkeleton, score)*/;
-
-
-            // Gets oneBone-mode mapping representation
-
-            List<Bone> oneDofBone = AutomaticMapping.GetOneDofBones(uniquePartition, true, true);
-            List<Bone> oneDofHandler = AutomaticMapping.GetOneDofBones(bestArrangement.Handler, true, true);
-            List<int> dofAssignament = new List<int>();
-
-            for (int handlerIndex = 0; handlerIndex < bestArrangement.Assignment.Length; handlerIndex++)
-            {
-                foreach (char dof in uniquePartition[handlerIndex].rot_DoF)
-                {
-                    string boneToFind =
-                        bestArrangement.Handler[bestArrangement.Assignment[handlerIndex]].name +
-                        "_ROT(" + dof + ")";
-
-                    dofAssignament.Add(oneDofHandler.FindIndex(x => x.name.Equals(boneToFind)));
-
-                }
-                foreach (char dof in uniquePartition[handlerIndex].loc_DoF)
-                {
-                    string boneToFind =
-                        bestArrangement.Handler[bestArrangement.Assignment[handlerIndex]].name +
-                        "_LOC(" + dof + ")";
-
-                    dofAssignament.Add(oneDofHandler.FindIndex(x => x.name.Equals(boneToFind)));
-                }
-
-            }
-
-            List<List<Bone>> oneDofPartition = new List<List<Bone>>();
-            oneDofPartition.Add(oneDofBone);
-            return null /*new PartitionAssignment("Kinect_Configuration", dofAssignament.ToArray(), oneDofPartition, oneDofHandler, bestArrangement.Score)*/;/* arrangements[0];*/
-
-        }
-
-        public static PartitionAssignment ComputeLocRotTuiAssignement(List<Bone> uniquePartition, Brick brick, Dictionary<string, List<List<char>>> dictionary, int maxLenghtChain)
-        {
-
-            List<Bone> handler = AutomaticMapping.GetTuiHandler(AutomaticMapping.GetTuiComponentList(true, brick));
-            Bone hipCenter = new Bone("Hip");
-            hipCenter.loc_DoF = new List<char>() { 'x', 'y', 'z' };
-            foreach (Bone bone in AutomaticMapping.GetOneDofBones(new List<Bone>() { hipCenter }, false, true))
-            {
-                handler.Add(bone);
-            }
-            List<Bone> boneOneDof = AutomaticMapping.GetOneDofBones(uniquePartition, true, true);
-
-
-            // solves assignment problem with Hungarian Algorithm                                        
-            float[,] costsMatrix = new float[boneOneDof.Count, handler.Count];
-            // initialize costMatrix
-            for (int row = 0; row < boneOneDof.Count; row++)
-            {
-                for (int col = 0; col < handler.Count; col++)
-                {
-                    costsMatrix[row, col] =
-                        Metrics.RotDofSimilarityScore(boneOneDof[row], handler[col]) +
-                        Metrics.LocDoFSimilarityScore(boneOneDof[row], handler[col]) +
-                        /*Metrics.ComponentRangeCost(handler[col]) +*/
-                        Metrics.SymmetryScore(boneOneDof[row], handler[col]) +
-                        Metrics.ChainLengthScore(boneOneDof[row], handler[col], maxLenghtChain);
-                }
-            }
-
-            int[] assignment = HungarianAlgorithm.FindAssignments(costsMatrix);
-
-            float score = 0;
-            for (int ass = 0; ass < assignment.Length; ass++)
-            {
-                score += costsMatrix[ass, assignment[ass]];
-            }
-
-            List<List<Bone>> partition = new List<List<Bone>>();
-            partition.Add(boneOneDof);
-            PartitionAssignment result = null
-                /*new PartitionAssignment("TuiHip_Configuration", assignment, partition, handler, score)*/;
-            if (AutomaticMapping.KinectAssignmentConsistency(result))
-            {
-                return result;
-            }
-            else
-            {
-                return null;
-            }
-        }
-
+          
         
     }
 }

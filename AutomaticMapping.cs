@@ -69,22 +69,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
     public static class AutomaticMapping
     {        
         
-        public static List<Bone> GetLocHandler(Brick brick)
-        {
-            List<Bone> handler = GetTuiHandler(GetTuiComponentList(true, brick));
-             List<char> axis = new List<char>() { 'x', 'y', 'z' };
-
-            
-            /*
-            foreach (List<Bone> kinectPartition in GetKinectPartition())
-                foreach (Bone bone in GetOneDofBones(kinectPartition,false,true))
-                    handler.Add(bone);
-             
-             */
-            return handler;
-        }
-        
-
+       
         public static List<List<List<Bone>>> GraphPartitioning(int motors, BidirectionalGraph<Bone, Edge<Bone>> graph, List<List<Bone>> components, List<List<List<Bone>>> graphPartitions, bool splitDofCheckBox, bool isRotOnly)
         {
             if (!splitDofCheckBox)
@@ -92,10 +77,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 foreach (List<Bone> armatureComponent in components)
                 {
                     // This list is called partial because contains only the partition for a specific connected component
-                    
-                    // List<List<List<Bone>>> partialGraphPartitions = 
-                    //      PartitionByDepthFirstSearch(armatureComponent, graph, motors, isRotOnly);
-
+                                       
                     List<List<List<Bone>>> partialGraphPartitions = new List<List<List<Bone>>>();
                     try
                     {
@@ -127,121 +109,17 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         graphPartitions = partialGraphPartitions;                        
                     }
                 }
-                
-                /*
-                foreach (List<Bone> armaturePart in components)
-                {
-                    // this list is called partial because contains only the partition for a specific connected component
-                    List<List<List<Bone>>> partialGraphPartitions = 
-                        PartitionByDepthFirstSearch(armaturePart, graph, motors, isRotOnly);
-                    
-                    int iteration = 0;
-
-                    foreach (List<List<Bone>> partialPartition in partialGraphPartitions)
-                    {
-                        if (graphPartitions.Count > 0)
-                        {
-                            iteration = graphPartitions.Count;
-                            // combines all partial partition obtained
-                            for (int i = 0; i < iteration; i++)
-                            {
-                                graphPartitions.Add(partialPartition.Concat(graphPartitions[i]).ToList());
-                            }                            
-
-                        }
-                        else
-                        {
-                            // is the first or the unique connected component of the graph
-                            graphPartitions = partialGraphPartitions;
-                            break;
-                        }
-                    }
-                    graphPartitions.RemoveRange(0, iteration);
-                }
-                */
+              
             }
 
-            // TODO: debuggare
+            // TODO: 
             if (splitDofCheckBox)
             {
                 throw new NotImplementedException();             
-            }
-
-
-            /*  IMPLEMENTATION WITHOUT GRAPH CONNETCED COMPONENTS             
-            // Partition uniform DoF
-            if(this.SplitDofCheckBox.IsChecked.Value)
-            {            
-                foreach (List<List<Bone>> result in PartitionUniformDoF(armature, graph, motors))
-                {
-                    graphPartitions.Add(result);
-                }
-            }
-            */
-
-            /*
-            // Partition with depthFirstSearch
-            foreach (List<List<Bone>> result in PartitionByDepthFirstSearch(armaturePart, graph, motors))
-            {
-                graphPartitions.Add(result);
-            }
-            */
+            }            
 
             return graphPartitions;
-        }        
-
-        /// <summary>
-        /// Returns list of one Dof Bone
-        /// </summary>
-        /// <param name="bones"> List of Bones to convert</param>
-        /// <param name="rotDof"> Consider rot DoF</param>
-        /// <param name="locDof"> Consider lot Dot</param>
-        /// <returns>List of one Dof Bone</returns>
-        public static List<Bone> GetOneDofBones(List<Bone> bones, bool rotDof, bool locDof)
-        {            
-            List<Bone> oneDofBones = new List<Bone>();
-            foreach (Bone b in bones)
-            {
-                if (locDof)
-                {
-                    foreach (char c in b.loc_DoF)
-                    {
-                        Bone DofToAdd = new Bone(b.name + "_LOC(" + c + ")");
-                        DofToAdd.loc_DoF.Add(c);
-                        DofToAdd.level = b.level;
-                        oneDofBones.Add(DofToAdd);
-                    } 
-                }
-                if (rotDof)
-                {
-                    foreach (char c in b.rot_DoF)
-                    {
-                        Bone DofToAdd = new Bone(b.name + "_ROT(" + c + ")");
-                        DofToAdd.rot_DoF.Add(c);
-                        DofToAdd.level = b.level;
-                        oneDofBones.Add(DofToAdd);
-                    } 
-                }
-            }
-            return oneDofBones;    
-        }
-       
-        ///<summary>
-        ///Returns a list of bones that represent motors and sensors of the tangible Interface
-        ///</summary>        
-        public static List<Bone> GetTuiHandler(List<string> list)
-        {
-            List<Bone> result = new List<Bone>();
-            List<char> axis = new List<char>() { 'x', 'y', 'z' };
-            foreach (String component in list)
-            {
-                Bone b = new Bone(component);
-                b.rot_DoF = axis;
-                b.loc_DoF = axis;
-                result.Add(b);
-            }
-            return result;
-        }
+        }                    
         
         public static List<List<Bone>> GetConnectedComponentList(BidirectionalGraph<Bone, Edge<Bone>> graph)
         {
@@ -1086,85 +964,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             return bone;
         }
         
-        // VERS. 1
-        // Only for Rot_Partition 
-        /*private static List<List<List<Bone>>> PartitionArmatureComponent(List<Bone> armature, BidirectionalGraph<Bone, Edge<Bone>> graph, int motors, bool isRotOnly)
-        {
-            List<List<List<Bone>>> graphPartitions = new List<List<List<Bone>>>();
-            List<List<Bone>> decomposition = new List<List<Bone>>();
-
-            //try
-            //{
-                foreach (Bone startBone in armature)
-                {
-                    int motorAvailable = motors;
-                    List<Bone> partition = new List<Bone>();
-
-                    var dfs = new QuickGraph.Algorithms.Search.DepthFirstSearchAlgorithm<Bone, Edge<Bone>>(graph);
-                    ComponentDecomposition currentDecomposition = new ComponentDecomposition();
-
-                    dfs.DiscoverVertex += new VertexAction<Bone>(currentDecomposition.dfs_DiscoverVertex_MaxRotDoF);
-                    dfs.Compute(startBone);
-
-                    foreach (Bone currentBone in currentDecomposition.bones)
-                    {
-                        if (currentBone.children.Count > 1)
-                        {
-                            // Bone is a split
-                            if (CountBoneChildrenDoFs(currentBone, currentDecomposition.bones) <= motorAvailable)
-                            {
-                                // CurrentBone and its children can be added to the current partition
-                                motorAvailable = AddBoneToPartition(motorAvailable, partition, currentBone);
-                            }
-                            else
-                            {
-                                if (motorAvailable - currentBone.rot_DoF.Count >= 0 && 
-                                   (partition.Count==0 || partition[partition.Count-1].children.Contains(currentBone.name)))
-                                {                                    
-                                    //Adds the bone to the current partition and create a new one
-                                    motorAvailable = AddBoneToPartition(motorAvailable, partition, currentBone);                             
-                                }
-                                else 
-                                {
-                                    //Creates new partition with only this bone
-                                    decomposition.Add(partition);
-                                    partition = new List<Bone>();
-                                    partition.Add(currentBone);
-                                }
-                                decomposition.Add(partition);
-                                partition = new List<Bone>();
-                            }
-                        }
-                        else
-                        {
-                            UpdatePartition(motors, decomposition, ref motorAvailable, ref partition, currentBone);
-                        }
-
-                    }
-
-                    if (partition.Count > 0)
-                    {
-                        // Adds last partition
-                        decomposition.Add(partition);
-                    }
-
-                    graphPartitions.Add(decomposition);
-                    decomposition = new List<List<Bone>>();
-
-                }
-
-                return graphPartitions;
-            //}
-            //catch (Exception)
-            //{
-            //    throw new Exception();
-            //}
-        }
-
-*/
-
-        // VERS. 2
-        // Only for Rot_Partition 
         private static List<List<List<Bone>>> PartitionArmatureComponent(List<Bone> armature, BidirectionalGraph<Bone, Edge<Bone>> graph, int motors, bool isRotOnly)
         {
             List<List<List<Bone>>> graphPartitions = new List<List<List<Bone>>>();
@@ -1284,8 +1083,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                             
             }
 
-
-
             // TODO: Remove decompositions from graphPartitions that propose the same partitioning
             return graphPartitions;
             
@@ -1356,8 +1153,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             return result;
         }
 
-
-
         private static List<Bone> ChildrenWithBreadthFirst(Bone currentBone, List<Bone> armature, int motorAvailable, BidirectionalGraph<Bone, Edge<Bone>> graph)
         {
             List<Bone> neighborsAtLevel = new List<Bone>();
@@ -1412,7 +1207,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             return result;
         }
 
-
         private static bool PartitionCapacityOverflow(List<Bone> armature, int motors)
         {
             bool result = false;
@@ -1457,42 +1251,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 count+= CountBoneChildrenDoFs(GetBoneFromName(child, armature), armature);
             }            
             return count;
-        }
-        
-        
-        /*
-        private static List<List<List<Bone>>> PartitionByDepthFirstSearch(List<Bone> armature, BidirectionalGraph<Bone, Edge<Bone>> graph, int motors, bool isRotOnly)
-        {
-            List<List<List<Bone>>> graphPartitions = new List<List<List<Bone>>>();
-
-            foreach (Bone b in armature)
-            {
-                List<List<Bone>> partition = new List<List<Bone>>();
-
-                var dfs = new QuickGraph.Algorithms.Search.DepthFirstSearchAlgorithm<Bone, Edge<Bone>>(graph);
-                ComponentDecomposition part = new ComponentDecomposition(motors);
-                if (isRotOnly)
-                {
-                    dfs.DiscoverVertex += new VertexAction<Bone>(part.dfs_DiscoverVertex_MaxRotDoF);
-                }
-                else 
-                { 
-                    dfs.DiscoverVertex += new VertexAction<Bone>(part.dfs_DiscoverVertex_MaxLocRotDoF); 
-                }
-                dfs.Compute(b);
-
-                if (part.bones.Count > 0)
-                {
-                    // Adds the last subpartition
-                    part.partition.Add(part.bones);
-
-                    // Add the current partition to the list of partitions computed
-                    graphPartitions.Add(part.partition);
-                }
-            }
-            return graphPartitions;
-        }
-        */
+        }                
 
         public static List<Bone> DecomposeMotorCombination(int motor, char[] comb, bool useSensor, Brick brick)
         {
@@ -1534,9 +1293,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             }
             return configurations;
         }
-
         
-
         private static Bone GetBoneFromName(string boneName, List<Bone> armature)
         {
             foreach (Bone b in armature)
