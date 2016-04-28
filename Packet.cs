@@ -85,7 +85,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 return false;
 
             Bone s = (Bone)obj;
-            return (s.name.Contains(this.name));
+            return (s.name.Equals(this.name));
         }
 
     }

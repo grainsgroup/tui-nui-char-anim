@@ -566,79 +566,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         // dofType: { _ROT, _LOC }: type of dofs 
         public static List<List<Bone>> CreateArmaturesFromComb(char[] comb, Brick brick, string[] doFType)
         {
-            // IMPLEMENTATION WITH PARENTS REPRESENTATION (PR)
-            /* 
-             
-            // list of possible parents {0,1,2,3...}
-            string[] list = new string[comb.Length+1];            
-            for (int i = 0; i <= comb.Length; i++)
-            {
-                list[i] = i.ToString();
-            }
-            
-            // List of possible combinations
-            List<char[]> combination = new List<char[]>();
-            // List of valid armatures that can be obtained with this array of char (ES. {x, y, x})
-            List<List<Bone>> armatures = new List<List<Bone>>();
-
-            foreach (var c in AutomaticMapping.CombinationsWithRepetition(list, comb.Length))
-            {
-                char[] array = c.ToCharArray();
-                combination.Add(array);
-            }          
-
-            // removes loop: 
-            //      1) bone that is father of itself 
-            //      2) bone that is father of its father
-            
-            for (int i = 0; i < combination.Count; i++)
-            {
-                char[] armature = combination[i];
-                bool validConf = true;
-                
-                for (int j = 0; j < armature.Length; j++)
-                {                    
-                    int val = (int)Char.GetNumericValue(armature[j]);
-                    if (val > 0)
-                    {
-                        // bone that is father of itself 
-                        if (j == val - 1)
-                        {                            
-                            validConf = false;
-                            break;
-                        }
-
-                        // bone that is father of its father
-                        if (armature[val - 1] == j + 1)
-                        {
-                            validConf = false;
-                            break;
-                        }
-                    }
-                }
-                if (validConf)
-                {
-                    List<Bone> bones = new List<Bone>();
-
-                    for (int dof = 0; dof < comb.Length; dof++)
-                    {
-                        Bone rotBone = new Bone("ROT(" + comb[dof] + ")");
-                        rotBone.rot_DoF.Add(comb[dof]);
-                        rotBone.level = (int)Char.GetNumericValue(armature[dof]);
-                        bones.Add(rotBone);
-
-                        Bone locBone = new Bone("LOC(" + comb[dof] + ")");
-                        locBone.loc_DoF.Add(comb[dof]);
-                        locBone.level = (int)Char.GetNumericValue(armature[dof]);
-                        bones.Add(locBone);
-                    }
-
-                    armatures.Add(bones);
-                }
-            }                
-            */                       
-
-
             // IMPLEMENTATION WITH OPERATION SEQUENCE REPRESENTATION (OSR)
 
             // List of possible bone type ()
@@ -966,6 +893,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         
         private static List<List<List<Bone>>> PartitionArmatureComponent(List<Bone> armature, BidirectionalGraph<Bone, Edge<Bone>> graph, int motors, bool isRotOnly)
         {
+            
             List<List<List<Bone>>> graphPartitions = new List<List<List<Bone>>>();
             if (PartitionCapacityOverflow(armature, motors)) 
             {
@@ -992,8 +920,11 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         
                         if (currentBone.children.Count > 1)
                         {                            
-                            if(currGraphTrav.MotorAvailable - currentBone.rot_DoF.Count < 0)
+
+                            if((currGraphTrav.MotorAvailable - currentBone.rot_DoF.Count < 0)|| 
+                                !IsConnectedBone(currGraphTrav.Partition,currentBone))
                             {
+                                // Terminates the inclusion into the current partition
                                 currGraphTrav.Decomposition.Add(currGraphTrav.Partition);
                                 currGraphTrav.Partition = new List<Bone>();
                                 currGraphTrav.MotorAvailable = motors;
@@ -1003,6 +934,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                 currGraphTrav.Partition.Add(currentBone);
                                 currGraphTrav.BonesToVisit.RemoveAt(0);
                                 currGraphTrav.MotorAvailable -= currentBone.rot_DoF.Count;
+                                bool currGraphTravEdited = false;
                                 
                                 // Explore neighborhood:
                                 
@@ -1011,6 +943,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                     (currentBone, currGraphTrav.BonesToVisit, currGraphTrav.MotorAvailable, graph);
                                 if (alternativePaths.Count > 0)
                                 {
+                                    currGraphTravEdited = true;
                                     foreach (List<Bone> path in alternativePaths) 
                                     {
                                         // Copies the old GraphTraversal values 
@@ -1024,13 +957,14 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                         {
                                             newGraphTr.Partition.Add(childToAdd);
                                             newGraphTr.BonesToVisit.Remove(childToAdd);
+                                            newGraphTr.MotorAvailable -= childToAdd.rot_DoF.Count;
                                         }
 
                                         newGraphTr.Decomposition.Add(newGraphTr.Partition);
                                         newGraphTr.Partition = new List<Bone>();
+                                        newGraphTr.MotorAvailable = motors;
 
                                         graphTraversalList.Add(newGraphTr);
-
                                     }
                                 }
 
@@ -1040,6 +974,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                 
                                 if(neighborsToAdd.Count > 1)
                                 {
+                                    currGraphTravEdited = true;
+
                                     // Copies the old GraphTraversal values 
                                     GraphTraversal newGraphTr = new GraphTraversal(currGraphTrav.MotorAvailable);
                                     newGraphTr.BonesToVisit = currGraphTrav.BonesToVisit.ToList();
@@ -1050,12 +986,20 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                     {
                                         newGraphTr.Partition.Add(childToAdd);
                                         newGraphTr.BonesToVisit.Remove(childToAdd);
+                                        newGraphTr.MotorAvailable -= childToAdd.rot_DoF.Count;
                                     }
 
                                     newGraphTr.Decomposition.Add(newGraphTr.Partition);
                                     newGraphTr.Partition = new List<Bone>();
+                                    newGraphTr.MotorAvailable = motors;
 
                                     graphTraversalList.Add(newGraphTr);
+                                }
+
+                                if (currGraphTravEdited)
+                                {
+                                    graphTraversalList.Remove(currGraphTrav);
+                                    currGraphTrav = graphTraversalList[0];
                                 }
                             }
                         }
@@ -1065,8 +1009,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                             UpdatePartition(motors, currGraphTrav.Decomposition, 
                                 ref currGraphTrav.MotorAvailable, 
                                 ref currGraphTrav.Partition, currentBone);
-
-                            currGraphTrav.BonesToVisit.RemoveAt(0);
+                            currGraphTrav.BonesToVisit.RemoveAt(0);                            
                         }
                     }
 
@@ -1074,16 +1017,16 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     {
                         // Adds last partition
                         currGraphTrav.Decomposition.Add(currGraphTrav.Partition);
-                    }
+                    }                   
 
-                    graphPartitions.Add(currGraphTrav.Decomposition);
+                    graphPartitions.Add(currGraphTrav.Decomposition.ToList());
                     currGraphTrav.Decomposition = new List<List<Bone>>();
                     graphTraversalList.RemoveAt(0);
                 }
                             
             }
 
-            // TODO: Remove decompositions from graphPartitions that propose the same partitioning
+            // TODO: Remove decompositions from graphPartitions that propose the same partitioning            
             return graphPartitions;
             
         }
@@ -1237,8 +1180,10 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 decomposition.Add(partition);
                 partition = new List<Bone>();
                 partition.Add(currentBone);
-                motorAvailable -= currentBone.rot_DoF.Count;
+                motorAvailable = motors - currentBone.rot_DoF.Count;
             }
+
+            
             
         }
 
@@ -1543,6 +1488,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
         public static bool IsConnectedBone(List<Bone> bones, Bone vertex)
         {
+            if (bones.Count == 0)             
+                return true;
             
             Bone lastBone = bones[bones.Count - 1];
 
