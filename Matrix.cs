@@ -159,15 +159,14 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             // verifica che il vettore viene incolonnato bene nella matrice
             double max = costVector.Max();
 
-            float[,] matrix = new float[controlledBones, virtualBones];
-            //int[,] matrix = new int[controlledBones, kinectBones];
+            float[,] matrix = new float[controlledBones, virtualBones];            
             
             int index = 0;
             for(int col = 0; col < virtualBones; col++)
             {
                 for (int row = 0; row < controlledBones; row++)
                 {
-                    //matrix[row, col] = range - (int)Math.Round((costVector[index] / max) * range);
+                    //matrix[row, col] = (float)Math.Round(costVector[index], 3);
                     matrix[row, col] = Metrics.MAX_COST - ((float)Math.Round(costVector[index], 3) * Metrics.MAX_COST);
                     index++;
                 }
@@ -184,7 +183,11 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         {
             // Print Matrix
             Console.WriteLine(text);
-            Console.WriteLine("\t0   \t1   \t2   \t3   \t4   \t5   \t6   \t7   \t8   \t9   \t10   \t11   ");
+            for (int i = 0; i < matrix.GetLength(1); i++)
+            {
+                Console.Write("\t"+i+"\t");
+            }
+            Console.Write("\n");
             for (int i = 0; i < matrix.GetLength(0); i++)
             {
                 Console.Write(i);
@@ -197,6 +200,23 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 }
                 Console.Write("\n");
             }
+        }
+
+
+        public static float[] GetRow(float[,] matrix, int row) 
+        {
+            float[] result = new float [matrix.GetLength(1)];
+            for (int col = 0; col < matrix.GetLength(1); col++)
+                result[col] = matrix[row, col];
+            return result;
+        }
+
+        public static float[] GetCol(float[,] matrix, int col)
+        {
+            float[] result = new float[matrix.GetLength(0)];
+            for (int row = 0; row < matrix.GetLength(0); row++)
+                result[row] = matrix[row, col];
+            return result;
         }
 
 

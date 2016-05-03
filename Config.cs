@@ -173,14 +173,19 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
     public class DecompositionAssignment : IComparable<DecompositionAssignment>
     {
-        
+        public const string SEQUENTIAL_TYPE = "Sequential";
+        public const string SPLITTED_TYPE = "Splitted";
+        public const string KINECT_TYPE = "Kinect";
+
         public List<PartitionAssignment> PartitionAss { get; set; }
         public float TotalScore { get; set; }
+        public string Type { get; set; }
 
-        public DecompositionAssignment(List<PartitionAssignment> partAss, float score)
+        public DecompositionAssignment(List<PartitionAssignment> partAss, float score, string type)
         {
             this.PartitionAss = partAss;
             this.TotalScore = score;
+            this.Type = type;
         }
 
         public int CompareTo(DecompositionAssignment compareDecompositionAssignment)

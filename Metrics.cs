@@ -597,27 +597,25 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         }        
 
         public static float[,] NodeSimilarityScore(List<Bone> partition, List<Bone> virtualArmature)
-        {
-            var graphVirtualArmature = AutomaticMapping.CreateUndirectedGraph(virtualArmature);
+        {                        
             var graphControlledArmature = AutomaticMapping.CreateUndirectedGraph(partition);
+            var graphVirtualArmature = AutomaticMapping.CreateUndirectedGraph(virtualArmature);
 
             int[,] A = Matrix.GetAdjacencyMatrix(partition, graphControlledArmature);
-            int[,] B = Matrix.GetAdjacencyMatrix(virtualArmature, graphVirtualArmature);
+            int[,] B = Matrix.GetAdjacencyMatrix(virtualArmature, graphVirtualArmature);                
 
             int[,] AT = Matrix.TransposeMatrix(A);
             int[,] BT = Matrix.TransposeMatrix(B);
 
             int[,] DAs = Matrix.GetSourceDiagonalMatrix(partition, graphControlledArmature);
             int[,] DAt = Matrix.GetTerminalDiagonalMatrix(partition, graphControlledArmature);
-            
+
             int[,] DBs = Matrix.GetSourceDiagonalMatrix(virtualArmature, graphVirtualArmature);
             int[,] DBt = Matrix.GetTerminalDiagonalMatrix(virtualArmature, graphVirtualArmature);
 
+            // Matrices taken from article: "Graph similarity scoring and matching" 
+            // http://www.sciencedirect.com/science/article/pii/S0893965907001012
             /*
-            
-            Matrices taken from article "Graph similarity scoring and matching" 
-            http://www.sciencedirect.com/science/article/pii/S0893965907001012
-             
             int[,] A = new int[,] { 
             { 0, 1, 0 }, 
             { 0, 0, 1 }, 
@@ -664,16 +662,18 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             { 0, 0, 0, 0, 2, 0 },
             { 0, 0, 0, 0, 0, 1 },
             };
-             */
+            */
 
-            //Matrix.PrintMatrix(A, "A");
-            //Matrix.PrintMatrix(B, "B");
-            //Matrix.PrintMatrix(AT, "AT");
-            //Matrix.PrintMatrix(BT, "BT");
-            //Matrix.PrintMatrix(DAs, "DAs");
-            //Matrix.PrintMatrix(DAt, "DAt");
-            //Matrix.PrintMatrix(DBs, "DBs");
-            //Matrix.PrintMatrix(DBt, "DBt");
+            /*
+            Matrix.PrintMatrix(A, "A");
+            Matrix.PrintMatrix(B, "B");
+            Matrix.PrintMatrix(AT, "AT");
+            Matrix.PrintMatrix(BT, "BT");
+            Matrix.PrintMatrix(DAs, "DAs");
+            Matrix.PrintMatrix(DAt, "DAt");
+            Matrix.PrintMatrix(DBs, "DBs");
+            Matrix.PrintMatrix(DBt, "DBt");
+            */
 
             int[,] kroneckerAxB = Matrix.KroneckerProduct(A, B);
             //Matrix.PrintMatrix(kroneckerAxB, "kroneckerAxB");
@@ -688,7 +688,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             //Matrix.PrintMatrix(kroneckerDAtxDBt, "kroneckerDAtxDBt");
 
             int[,] MatricesSummation = Matrix.ComputeMatricesSummation
-                (new List<int[,]>() { kroneckerAxB, kroneckerATxBT/*, kroneckerDAsxDBs, kroneckerDAtxDBt*/ });
+                (new List<int[,]>() { kroneckerAxB, kroneckerATxBT, kroneckerDAsxDBs, kroneckerDAtxDBt });
             //Matrix.PrintMatrix(MatricesSummation, "MatricesSummation");
 
 
@@ -696,7 +696,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             double[] costVector = Matrix.GetAllOneVector(MatricesSummation.GetLength(0));
 
 
-            for (int step = 0; step < 30; step++)
+            for (int step = 0; step < 15; step++)
             {
                 costVector = Matrix.Product(MatricesSummation, costVector);
                 costVector = Matrix.NormalizeVector(costVector);
@@ -707,12 +707,12 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             }
 
             /*
-            Console.WriteLine("VIRTUAL ARMATURE COMPONENT");
+            Console.WriteLine("VIRTUAL ARMATURE COMPONENTS");
             for (int i = 0; i < virtualArmature.Count; i++)
             {
                 Console.Write("[" + i + "] = " + virtualArmature[i].name + "; ");
             }
-            Console.WriteLine("\nBLENDER BONE");
+            Console.WriteLine("\nBLENDER BONES");
             for (int i = 0; i < partition.Count; i++)
             {
                 Console.Write("[" + i + "] = " + partition[i].name + "; ");
@@ -720,9 +720,39 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             */
 
             float[,] costMatrix = Matrix.VectorToCostMatrix(costVector, B.GetLength(0), A.GetLength(0), 10);
+
+            if (A.GetLength(0) == B.GetLength(0) &&  A.GetLength(1) == B.GetLength(1) && 
+                graphControlledArmature.EdgeCount == graphVirtualArmature.EdgeCount)
+
+                GraphComparison(costMatrix, partition, virtualArmature);
+
+                
             return costMatrix;
             
-        }     
+        }
+
+        private static void GraphComparison(float[,] costMatrix, List<Bone> partition, List<Bone> virtualArmature)
+        {
+
+            for (int row = 0; row < costMatrix.GetLength(0); row++)
+            {
+                float[] scores = Matrix.GetRow(costMatrix, row);
+                float min = scores.Min();
+
+                for (int col = 0; col < scores.Length; col++)
+                {
+                    if (scores[col] <= min &&
+                        partition[row].level == virtualArmature[col].level &&
+                        partition[row].children.Count == virtualArmature[col].children.Count)
+                    {
+                        costMatrix[row, col] = 0;
+                    }
+                }
+            }
+        }
+       
+
+        
 
         // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
         // UTILITY FUNCTIONS
@@ -962,7 +992,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
                 if (DoF.Contains("LOC(y)"))
                 {
-                    List<List<Bone>> kinectSkeleton = AutomaticMapping.GetKinectPartition();
+                    List<List<Bone>> kinectSkeleton = KinectSkeleton.GetKinectPartition();
 
                     if (kinectSkeleton[0].Contains(new Bone(ComponentType)) ||
                         kinectSkeleton[1].Contains(new Bone(ComponentType)))
@@ -1032,7 +1062,52 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
              * new PartitionAssignment(GetDofString(comb.ToList()), assignment, currentPartition, motorDecomposition, totalCost)*/
         }
 
-          
+        public static PartitionAssignment ComputeAssignement(List<Bone> partition, List<Bone> virtualArmature, int maxLenghtChain, Dictionary<string, List<List<char>>> dictionary, string configurationName)
+        {
+
+            // solves assignment problem with Hungarian Algorithm                                        
+            //float[,] costsMatrix = new float[partition.Count, virtualArmature.Count];
+
+            // Computes node similarity
+            float[,] costsMatrix = Metrics.NodeSimilarityScore(partition, virtualArmature);
+
+            // Defines the costs
+            for (int row = 0; row < partition.Count; row++)
+            {
+                for (int col = 0; col < virtualArmature.Count; col++)
+                {
+                    costsMatrix[row, col] +=
+                        Metrics.DofCoverageScore(partition[row], virtualArmature[col], dictionary) +
+                        Metrics.ComponentRangeScore(partition[row], virtualArmature[col]) +
+                        Metrics.ComponentAnnoyanceScore(partition[row], virtualArmature[col]) +
+                        Metrics.ChainLengthScore(partition[row], virtualArmature[col], maxLenghtChain) +
+                        Metrics.SymmetryScore(partition[row], virtualArmature[col]);
+                }
+            }
+
+            int[] assignment = HungarianAlgorithm.FindAssignments(costsMatrix);
+
+            float score = 0;
+            for (int ass = 0; ass < assignment.Length; ass++)
+            {
+                score += costsMatrix[ass, assignment[ass]];
+            }
+
+            PartitionAssignment result =
+                new PartitionAssignment(configurationName, assignment, partition, virtualArmature, score);
+
+            /*
+            if (AutomaticMapping.KinectAssignmentConsistency(result))
+            {
+                return result;
+            }
+            else
+            {
+                return null;
+            }
+            */
+            return result;
+        }
         
     }
 }
