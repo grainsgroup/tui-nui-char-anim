@@ -207,7 +207,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
            List<string[]> permutations = new List<string[]>() {perm};
            
 
-
             // combines combPermutation with types of dof
             List<List<string>> typedSequence_Dof = new List<List<string>>();
             foreach (string[] cp in permutations)
@@ -290,8 +289,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             // For each sequence creates the armor which represent it
             List<List<Bone>> armatures = new List<List<Bone>>();
             for (int i = 0; i < dofSequences.Count; i++)
-            {
-                
+            {                
                 
                 // initialization
                 List<string> sequenceItem = dofSequences[i];
@@ -306,12 +304,10 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 firstBone.level = level;
                 partialArmatures.Add(new PartialArmature(new List<Bone>() { firstBone }, firstBone));
 
-
                 // For each item of the sequence
                 for (int j = 1; j < sequenceItem.Count; j = j + 2)
                 {
                     
-
                     // Gets operation type: S = series; P = parallel; B = bone;
                     if (sequenceItem[j].Equals("S"))
                     {
@@ -804,6 +800,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
         public static List<Bone> DecomposeMotorCombination(int motor, char[] comb, bool useSensor, Brick brick)
         {
+            
             List<Bone> configurations = new List<Bone>();
             // list of position {0,1,2,3...}
             var list = new List<string>();
@@ -816,8 +813,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             foreach (char c in comb)
                 combToListString.Add(c.ToString());
         
-            int index = 0;
-
+            
             for (int size = 1; size <= motor; size++)
             {
                 var result = Combinatorics.GetDispositions(list, size);
@@ -835,11 +831,14 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     }
                         
                     // Add Bone to the configuration
-                    configurations.Add(b);
-                    index++;
+                    if (!configurations.Contains(b))
+                    {
+                        configurations.Add(b);                        
+                    }
                 }
             }
             return configurations;
+                                    
         }
         
         private static Bone GetBoneFromName(string boneName, List<Bone> armature)
@@ -912,6 +911,12 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 !brick.Ports[InputPort.Four].Type.ToString().Equals(DeviceType.Touch.ToString()))
                     components.Add(brick.Ports[InputPort.Four].Type.ToString() + "(PORT-Four)_TUI");
             }
+
+            // VIRTUAL_MOTOR
+            //components.Add(DeviceType.LMotor.ToString() + "(PORT-Two)_TUI");
+            //components.Add(DeviceType.LMotor.ToString() + "(PORT-Three)_TUI");
+            //components.Add(DeviceType.LMotor.ToString() + "(PORT-D)_TUI");
+
             return components;
         }
         
@@ -990,6 +995,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 if (brick.Ports[InputPort.Four].Type.ToString().Equals(mType))
                     componentAvailable++;
             }
+
             return componentAvailable;
         }        
 
