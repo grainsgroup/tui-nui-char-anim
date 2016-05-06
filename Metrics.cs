@@ -1070,11 +1070,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         public static AxisArrangement GetBestAxisArrangement(int motors, Dictionary<string, List<List<char>>> dictionary, List<List<Bone>> currentPartition, char[] comb, bool useSensor, Brick brick)
         {
             
-            if(Metrics.GetDofString(comb.ToList()).Equals("yxzxzx"))
-            {
-                ;
-            }
-
             Bone motorBone = new Bone("");
             foreach (char c in comb)
             {
@@ -1093,7 +1088,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 
             }            
 
-            return new AxisArrangement(GetDofString(comb.ToList()), comb, cost);
+            return new AxisArrangement(comb, cost);
 
             /* return 
              * new PartitionAssignment(GetDofString(comb.ToList()), assignment, currentPartition, motorDecomposition, totalCost)*/

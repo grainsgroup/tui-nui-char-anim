@@ -1193,7 +1193,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             return result;
         }
 
-        public static DecompositionAssignment GetDecompositionAssignment(List<PartitionAssignment> partAssign, string decType)
+        public static DecompositionAssignment GetDecompositionAssignment(List<PartitionAssignment> partAssign, char decType)
         {
             float totalCost = 0;
 

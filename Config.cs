@@ -115,13 +115,11 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
   
     public class AxisArrangement : IComparable<AxisArrangement>
     {
-        public string Name { get; set; }
         public char[] AxisCombination { get; set; }
         public float Score { get; set; }
 
-        public AxisArrangement(string name, char[] comb, float score)
+        public AxisArrangement(char[] comb, float score)
         {
-            this.Name = name;
             this.AxisCombination = comb;
             this.Score = score;            
         }
@@ -173,15 +171,15 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
     public class DecompositionAssignment : IComparable<DecompositionAssignment>
     {
-        public const string SEQUENTIAL_TYPE = "Sequential";
-        public const string SPLITTED_TYPE = "Splitted";
-        public const string KINECT_TYPE = "Kinect";
+        public const char SEQUENTIAL_TYPE = 'S';
+        public const char SPLITTED_TYPE = 'Y';
+        public const char KINECT_TYPE = 'K';
 
         public List<PartitionAssignment> PartitionAss { get; set; }
         public float TotalScore { get; set; }
-        public string Type { get; set; }
+        public char Type { get; set; }
 
-        public DecompositionAssignment(List<PartitionAssignment> partAss, float score, string type)
+        public DecompositionAssignment(List<PartitionAssignment> partAss, float score, char type)
         {
             this.PartitionAss = partAss;
             this.TotalScore = score;
