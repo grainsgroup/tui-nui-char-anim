@@ -1124,6 +1124,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         //////////////////////////////////////////////////////////////                                               
                     }
 
+
                     decAssign.Sort();
 
                     
