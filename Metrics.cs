@@ -461,9 +461,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             return cost;
         }
 
-        public static int RotDofDifferenceScore(List<Bone> partition, List<char> motorDecomposition, Dictionary<string, List<List<char>>> dictionary)
+        public static int RotDofDifferenceScore(List<Bone> partition, List<char> motorDecomposition, Dictionary<string, List<List<char>>> dictionary, ref bool[] dofUsed)
         {
-            // Degrees of fredom of bones which belong to the actual partition
+            // Degrees of fredom of bones which belong to the current partition
             List<List<char>> partitionDoF = new List<List<char>>();
 
             foreach (Bone b in partition)
@@ -506,6 +506,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             {
                 // padding not needed
                 partitionDoFPadded = partitionDoF;
+
             }
             else if (partitionDoF[0].Count < motorDecomposition.Count)
             {
@@ -545,9 +546,15 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
             // compute min score for all alterantives representation of this partition
             int minScore = int.MaxValue;
+            bool[] currentDofUsed = new bool[motorDecomposition.Count];
+            bool[] bestDofUsed = new bool[motorDecomposition.Count];
 
             foreach (List<char> item in partitionDoFPadded)
             {
+                //Initializes curreDofUsed
+                for (int i = 0; i < currentDofUsed.Length; i++)
+                    currentDofUsed[i] = false;
+
                 int tempScore = 0;
                 int dofCovered = 0;
                 for (int j = 0; j < item.Count; j++)
@@ -560,25 +567,34 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                             tempScore += 1; continue;
                         }
                     }
-                    if (item[j] == 'x' && motorDecomposition[j] == 'x') { dofCovered++; continue; }
-                    if (item[j] == 'x' && motorDecomposition[j] == 'y') { tempScore += 2; dofCovered++; continue; }
-                    if (item[j] == 'x' && motorDecomposition[j] == 'z') { tempScore += 1; dofCovered++; continue; }
-                    if (item[j] == 'y' && motorDecomposition[j] == 'y') { dofCovered++; continue; }
-                    if (item[j] == 'y' && motorDecomposition[j] == 'x') { tempScore += 2; dofCovered++; continue; }
-                    if (item[j] == 'y' && motorDecomposition[j] == 'z') { tempScore += 2; dofCovered++; continue; }
-                    if (item[j] == 'z' && motorDecomposition[j] == 'z') { dofCovered++; continue; }
-                    if (item[j] == 'z' && motorDecomposition[j] == 'x') { tempScore += 1; dofCovered++; continue; }
-                    if (item[j] == 'z' && motorDecomposition[j] == 'y') { tempScore += 2; dofCovered++; continue; }
+                    if (item[j] == 'x' && motorDecomposition[j] == 'x') { dofCovered++; currentDofUsed[j] = true; continue; }
+                    if (item[j] == 'x' && motorDecomposition[j] == 'y') { tempScore += 2; dofCovered++; currentDofUsed[j] = true; continue; }
+                    if (item[j] == 'x' && motorDecomposition[j] == 'z') { tempScore += 1; dofCovered++; currentDofUsed[j] = true; continue; }
+                    if (item[j] == 'y' && motorDecomposition[j] == 'y') { dofCovered++; currentDofUsed[j] = true; continue; }
+                    if (item[j] == 'y' && motorDecomposition[j] == 'x') { tempScore += 2; dofCovered++; currentDofUsed[j] = true; continue; }
+                    if (item[j] == 'y' && motorDecomposition[j] == 'z') { tempScore += 2; dofCovered++; currentDofUsed[j] = true; continue; }
+                    if (item[j] == 'z' && motorDecomposition[j] == 'z') { dofCovered++; currentDofUsed[j] = true; continue; }
+                    if (item[j] == 'z' && motorDecomposition[j] == 'x') { tempScore += 1; dofCovered++; currentDofUsed[j] = true; continue; }
+                    if (item[j] == 'z' && motorDecomposition[j] == 'y') { tempScore += 2; dofCovered++; currentDofUsed[j] = true; continue; }
 
                 }
 
                 if (tempScore < minScore)
                 {
                     minScore = tempScore;
+                    for (int index = 0; index < bestDofUsed.Length; index++)
+                    {
+                        bestDofUsed[index] = currentDofUsed[index];
+                    }
+
                 }
             }
 
-            //return minScore / (partitionDoFPadded.Count*2) * MAX_COST;
+
+            for (int i = 0; i < bestDofUsed.Length; i++)
+                if (bestDofUsed[i])
+                    dofUsed[i] = true;
+            
             return minScore;
         }
 
@@ -597,12 +613,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
             int[] assignment = HungarianAlgorithm.FindAssignments(costsMatrix);
 
-            float totalCost = 0;
-            // computes cost for this assignment
-            for (int ass = 0; ass < assignment.Length; ass++)
-            {
-                totalCost += costsMatrix[ass, assignment[ass]];
-            }
+            float totalCost = ComputeCostAssignment(costsMatrix, assignment);
 
             return totalCost / (motorDecomposition.Count * MAX_COST) * MAX_COST;
         }        
@@ -768,9 +779,11 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
         // UTILITY FUNCTIONS
 
-        public static List<string> AssignName(List<string> boneDoF, bool useSensor, Brick brick, bool useHipJoint)
+        public static List<string> AssignName(List<List<string>> boneDoF, bool useSensor, Brick brick, bool useHipJoint)
         {
             List<string> result = new List<string>();
+            float bestCost = float.MaxValue;
+            
             List<string> tuiPieces = AutomaticMapping.GetTuiComponentList(useSensor, brick);
             if (useHipJoint)
             {
@@ -779,24 +792,34 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 tuiPieces.Add("Hip_NUI");
             }
 
-            float[,] costsMatrix = new float[boneDoF.Count, tuiPieces.Count];
-            // initialize costsMatrix
-            for (int row = 0; row < boneDoF.Count; row++)
+            foreach (List<string> item in boneDoF)
             {
-                for (int col = 0; col < tuiPieces.Count; col++)
+                float[,] costsMatrix = new float[item.Count, tuiPieces.Count];
+                // initialize costsMatrix
+                for (int row = 0; row < item.Count; row++)
                 {
-                    costsMatrix[row, col] =
-                        GetAnnoyanceCost(boneDoF[row], tuiPieces[col]) +
-                        GetComponentRangeCost(boneDoF[row], tuiPieces[col]);
+                    for (int col = 0; col < tuiPieces.Count; col++)
+                    {
+                        costsMatrix[row, col] =
+                            GetAnnoyanceCost(item[row], tuiPieces[col]) +
+                            GetComponentRangeCost(item[row], tuiPieces[col]);
+                    }
                 }
-            }
 
-            int[] assignment = HungarianAlgorithm.FindAssignments(costsMatrix);
+                int[] assignment = HungarianAlgorithm.FindAssignments(costsMatrix);
 
-            for (int ass = 0; ass < assignment.Length; ass++)
-            {
-                result.Add(tuiPieces[assignment[ass]] + ":" + boneDoF[ass]);
-            }
+                float score = ComputeCostAssignment(costsMatrix, assignment);
+
+                if (score < bestCost)
+                {
+                    bestCost = score;
+                    result.Clear();
+                    for (int ass = 0; ass < assignment.Length; ass++)
+                    {
+                        result.Add(tuiPieces[assignment[ass]] + ":" + item[ass]);
+                    }
+                }
+            }            
             return result;
         }
 
@@ -1069,29 +1092,31 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
         public static AxisArrangement GetBestAxisArrangement(int motors, Dictionary<string, List<List<char>>> dictionary, List<List<Bone>> currentPartition, char[] comb, bool useSensor, Brick brick)
         {
-            
-            Bone motorBone = new Bone("");
-            foreach (char c in comb)
-            {
-                // Adds DoF to the bone
-                motorBone.rot_DoF.Add(c);
-                //Console.Write(c + " ");
-                motorBone.name += c + "_";
-            }
+                                                               
+
+
+
+            List<char> combToReturn = new List<char>();           
+
+            bool[] dofUsed = new bool[comb.Length];
+        
 
             float cost = 0;
             // initialize costMatrix
             for (int i = 0; i < currentPartition.Count; i++)
             {
-                cost += RotDofDifferenceScore(currentPartition[i], motorBone.rot_DoF, dictionary) + 
-                    ComponentRequiredScore(motorBone.rot_DoF, useSensor, brick);                    
-                
-            }            
+                cost += RotDofDifferenceScore(currentPartition[i], comb.ToList(), dictionary, ref dofUsed);                
+            }
 
-            return new AxisArrangement(comb, cost);
+            for (int i = 0; i < dofUsed.Length; i++)
+            {
+                if (dofUsed[i])
+                    combToReturn.Add(comb[i]);
+            }
 
-            /* return 
-             * new PartitionAssignment(GetDofString(comb.ToList()), assignment, currentPartition, motorDecomposition, totalCost)*/
+
+            // DEBUG
+            return new AxisArrangement(combToReturn.ToArray(), cost);            
         }
 
         public static PartitionAssignment ComputeAssignement(List<Bone> partition, List<Bone> virtualArmature, int maxLenghtChain, Dictionary<string, List<List<char>>> dictionary, string configurationName)
@@ -1119,11 +1144,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
             int[] assignment = HungarianAlgorithm.FindAssignments(costsMatrix);
 
-            float score = 0;
-            for (int ass = 0; ass < assignment.Length; ass++)
-            {
-                score += costsMatrix[ass, assignment[ass]];
-            }
+            float score = ComputeCostAssignment(costsMatrix, assignment);
 
             PartitionAssignment result =
                 new PartitionAssignment(configurationName, assignment, partition, virtualArmature, score);
@@ -1139,6 +1160,16 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             }
             */
             return result;
+        }
+
+        public static float ComputeCostAssignment(float[,] costsMatrix, int[] assignment)
+        {
+            float score = 0;
+            for (int ass = 0; ass < assignment.Length; ass++)
+            {
+                score += costsMatrix[ass, assignment[ass]];
+            }
+            return score;
         }
         
     }

@@ -117,11 +117,17 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
     {
         public char[] AxisCombination { get; set; }
         public float Score { get; set; }
-
+        
+        
         public AxisArrangement(char[] comb, float score)
         {
             this.AxisCombination = comb;
             this.Score = score;            
+        }
+
+        public AxisArrangement()
+        {
+            // TODO: Complete member initialization
         }
 
         public int CompareTo(AxisArrangement compareAxisArrangement)
@@ -133,6 +139,16 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             { 
                 return this.Score.CompareTo(compareAxisArrangement.Score);
             }        
+        }
+
+        public override bool Equals(Object obj)
+        {
+            // Check for null values and compare run-time types.
+            if (obj == null || GetType() != obj.GetType())
+                return false;
+
+            AxisArrangement s = (AxisArrangement)obj;
+            return (Metrics.GetDofString(AxisCombination.ToList()).Equals(Metrics.GetDofString(s.AxisCombination.ToList())));
         }
     }
 
@@ -152,6 +168,11 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             this.Partition = partition;
             this.Handler = motorDeomposition;
             this.Score = score;            
+        }
+
+        public PartitionAssignment()
+        {
+            // TODO: Complete member initialization
         }
         
         public int CompareTo(PartitionAssignment compareAxisArrangement)
