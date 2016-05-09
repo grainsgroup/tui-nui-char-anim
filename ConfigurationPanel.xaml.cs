@@ -1002,8 +1002,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         }                        
                         
                         arrangements.Sort();
-                        
-                                                
+                                                                        
                         //////////////////////////////////////////////////////////////
                         float bestScore = arrangements[0].Score;
                         
