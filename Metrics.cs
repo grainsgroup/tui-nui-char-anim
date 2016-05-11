@@ -1091,16 +1091,11 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         //}
 
         public static AxisArrangement GetBestAxisArrangement(int motors, Dictionary<string, List<List<char>>> dictionary, List<List<Bone>> currentPartition, char[] comb, bool useSensor, Brick brick)
-        {
-                                                               
-
-
+        {                                                               
 
             List<char> combToReturn = new List<char>();           
-
             bool[] dofUsed = new bool[comb.Length];
         
-
             float cost = 0;
             // initialize costMatrix
             for (int i = 0; i < currentPartition.Count; i++)

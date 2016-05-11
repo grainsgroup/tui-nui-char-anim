@@ -65,8 +65,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             {
                 foreach (List<Bone> armatureComponent in components)
                 {
-                    // This list is called partial because contains only the partition for a specific connected component
-                                       
+                    // This list is called partial because contains only the partition for a specific connected component                     
                     List<List<List<Bone>>> partialGraphPartitions = new List<List<List<Bone>>>();
                     try
                     {

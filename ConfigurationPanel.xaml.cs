@@ -869,7 +869,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 }
 
                 // VIRTUAL_MOTOR 
-                //componentAvailable += 3;
+                //componentAvailable += 2;
 
                 // componentAvailable is increased in order to consider the hip joint
                 if (DofCountTest(armature, brick, this.UseSensorCheckBox.IsChecked.Value) &&
@@ -957,48 +957,41 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         combination.Add(array);
                     }
                     
-
-                    
+                    // Progress bar
                     float CompletePercentage = 0;
                     float indexCurrentGraphPartition = 0;
-                    
 
-
+                    // Data structures used during computing
                     List<AxisArrangement> arrangements = new List<AxisArrangement>();
                     List<List<Bone>> virtualArmatures = new List<List<Bone>>();
                     List<List<Bone>> sequntialArmature = new List<List<Bone>>();
                     List<List<Bone>> splittedArmature = new List<List<Bone>>();
-
+                    List<List<Bone>> splitArmAlternatives = new List<List<Bone>>();
 
                     // Search the best sequence                    
                     foreach (List<List<Bone>> decomposition in graphPartitions)                    
-                    {
+                    {                        
+
+                        // Reset data
                         arrangements.Clear();
                         virtualArmatures.Clear();
-                        
-                        
-                                                
+                                     
+                        // Updates progress bar                                   
                         CompletePercentage = indexCurrentGraphPartition/(graphPartitions.Count-1) * 100;
                         indexCurrentGraphPartition++;
                         //System.Diagnostics.Debug.WriteLine(CompletePercentage.ToString() + " %");
                         Console.WriteLine(CompletePercentage.ToString() + " %");                                               
 
-                        // Finds the most frequent axis arrangement in the partition
-                        // VERIFICARE CHE FUNZIONA
+                        // Finds the most frequent axis arrangement in the partition                        
                         AxisArrangement arr = new AxisArrangement();
-                        
-                        // DEBUG
-                        int id = 0;
-
-
+                                               
                         foreach (char[] comb in combination)
                         {
                             arr = Metrics.GetBestAxisArrangement(componentAvailable, dictionary, decomposition, 
                                 comb, this.UseSensorCheckBox.IsChecked.Value, brick);
 
                             if (!arrangements.Contains(arr))
-                                arrangements.Add(arr);
-                            
+                                arrangements.Add(arr);                            
                         }                        
                         
                         arrangements.Sort();
@@ -1029,8 +1022,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                     }
                                 }
 
-                                // Ogni suo PartAss contiene la migliore 
-                                // associazione tra partizione e armatura virtuale sequenziale
+                                // Each of its PartAss contains the best association between partition and sequential armature     
                                 DecompositionAssignment partialDecAssign = new DecompositionAssignment
                                     (new List<PartitionAssignment>(), 0, DecompositionAssignment.SEQUENTIAL_TYPE );
                                 
@@ -1044,9 +1036,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                     {
                                         // For all the sequential armatures can be used the same component arrangement, 
                                         // so the algorithm chooses the best;                                              
-
+                                        
+                                        List<Bone> rotCurrentPartition = GetRotBones(currentPartition);
                                         // Virtual armature is able to control the current partition
-                                        List<Bone> rotCurrentPartition = GetRotBones(currentPartition);           
                                         if (rotCurrentPartition.Count <= currentVirtualArmature.Count)
                                         {                                            
                                             partAssign.Add(ComputeAssignement
@@ -1081,11 +1073,66 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                     decAssignBestScore = decAssign[decAssign.Count - 1].TotalScore;
                                 }
 
-
+                                // DEBUG
+                                int splitIndex = 0;
                                 // Computes assignment with splitted armature
-                                foreach (List<Bone> currentVirtualArmature in splittedArmature)
+                                foreach (List<Bone> splittedVirtualArmature in splittedArmature)
                                 {
-                                    
+                                    splitIndex++;
+
+                                    splitArmAlternatives = ComputeAlternatives(splittedVirtualArmature, componentAvailable);
+
+                                    partialDecAssign = new DecompositionAssignment
+                                    (new List<PartitionAssignment>(), 0, DecompositionAssignment.SPLITTED_TYPE);
+
+                                    // Computes assignment with all the alteratives splitted armature
+                                    foreach (List<Bone> currentPartition in decomposition)
+                                    {
+                                        List<PartitionAssignment> partAssign = new List<PartitionAssignment>();
+                                        float partAssigBestScore = float.MaxValue;
+
+                                        foreach (List<Bone> currentVirtualArmature in splitArmAlternatives)
+                                        {                                                                                        
+                                            List<Bone> rotCurrentPartition = GetRotBones(currentPartition);
+                                            // Virtual armature is able to control the current partition
+                                            if (rotCurrentPartition.Count <= currentVirtualArmature.Count)
+                                            {
+                                                partAssign.Add(ComputeAssignement
+                                                    (rotCurrentPartition, currentVirtualArmature, maxLevelBone,
+                                                     dictionary, rotCurrentPartition[0].name + "_ROT"));
+
+                                                if (partAssign[partAssign.Count - 1].Score > partAssigBestScore)
+                                                {
+                                                    partAssign.RemoveAt(partAssign.Count - 1);
+                                                }
+                                                else
+                                                {
+                                                    partAssigBestScore = partAssign[partAssign.Count - 1].Score;
+                                                }
+                                            }
+                                        }
+
+                                        // 
+                                        //if(partAssign.Count>0)
+                                        //{
+                                            partAssign.Sort();
+                                            partAssign.RemoveRange(1, partAssign.Count - 1);
+                                            partialDecAssign.PartitionAss.Add(partAssign[0]);
+                                        //}
+                                    }
+
+                                    // Cost updates                                
+                                    decAssign.Add(GetDecompositionAssignment
+                                        (partialDecAssign.PartitionAss, DecompositionAssignment.SPLITTED_TYPE));
+                                    if (decAssign[decAssign.Count - 1].TotalScore > decAssignBestScore)
+                                    {
+                                        decAssign.RemoveAt(decAssign.Count - 1);
+                                    }
+                                    else
+                                    {
+                                        decAssignBestScore = decAssign[decAssign.Count - 1].TotalScore;
+                                    }
+                                    /*
                                     List<PartitionAssignment> partAssign = new List<PartitionAssignment>();
                                     bool validVirtualArm = true;
 
@@ -1119,6 +1166,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                             decAssignBestScore = decAssign[decAssign.Count - 1].TotalScore;
                                         }
                                     }
+                                    */
                                 }                                                                                                                                                               
                             }
 
@@ -1190,6 +1238,254 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 
                 //SetArrangmentLabel(rotArrangements[0]);               
             }                        
+        }
+
+        private List<List<Bone>> ComputeAlternatives(List<Bone> currentVirtualArmature, int componentAvailable)
+        {
+            List<List<Bone>> result = new List<List<Bone>>();
+            foreach(List<Bone> arm in ArmatureAssignSymmetry(currentVirtualArmature))
+                result.Add(arm);
+
+
+            //  Partitioning of the currentVirtualArmature
+            var graph = AutomaticMapping.CreateDirectedGraph(currentVirtualArmature);
+            // Obtaints the graph connected component 
+            List<List<Bone>> graphComponents = AutomaticMapping.GetConnectedComponentList(graph);
+            List<List<List<Bone>>> graphPartitions = new List<List<List<Bone>>>();
+            graphPartitions = AutomaticMapping.GraphPartitioning (componentAvailable, graph, graphComponents, graphPartitions,
+                this.SplitDofCheckBox.IsChecked.Value, true);
+            
+            
+            List<List<List<Bone>>> partitionsToCombine = new List<List<List<Bone>>>();            
+            List<List<Bone>> currentPartAlternatives = new List<List<Bone>>();
+            List<List<Bone>> partitionAlternative = new List<List<Bone>>();
+
+            bool decContainsSplitted;
+            foreach (List<List<Bone>> decomposition in graphPartitions)
+            {
+                decContainsSplitted = false;
+                currentPartAlternatives.Clear();
+
+                for(int i = 0; i < decomposition.Count; i++)                    
+                {
+                    List<Bone> partition = UpdateChildrenCount(decomposition[i]);
+                    
+                    decContainsSplitted = IsSplittedArmature(partition);
+                    if (!decContainsSplitted)
+                    {
+                        List<char> comb = GetDofSequenceFromPartition(partition);
+
+                        partitionAlternative.Clear();
+                        partitionAlternative = AutomaticMapping.CreateArmaturesFromComb(comb.ToArray(), brick, new string[] { "_ROT" });
+                                                
+                        for(int j = 0 ; j < partitionAlternative.Count; j++)
+                        {                            
+                            if (IsSplittedArmature(partitionAlternative[j]))
+                            {
+                                partitionAlternative.RemoveAt(j);
+                                j++;
+                            }
+                        }
+
+                        partitionsToCombine.Add(partitionAlternative.ToList());
+
+                    }
+
+                    else 
+                    {
+                        break;
+                    }                   
+                }
+
+                if (!decContainsSplitted)
+                {
+                    List<List<Bone>> partialArmature = new List<List<Bone>>();
+
+                    foreach (List<List<Bone>> ptc in partitionsToCombine)
+                    {
+                        if (partialArmature.Count == 0)
+                        {
+                            partialArmature = ptc.ToList();
+                        }
+                        else
+                        {
+                            int iteration = partialArmature.Count;
+                            for (int k = 0; k < iteration; k++)
+                            {                                
+                                foreach (List<Bone> lb in ptc)
+                                {
+                                    List<Bone> armatureToAdd = partialArmature[0].ToList();
+                                    // Combines the two lists
+                                    foreach (Bone b in lb)
+                                    {
+                                        armatureToAdd.Add(b);
+                                    }
+                                    partialArmature.Add(armatureToAdd);
+                                }
+                                partialArmature.RemoveAt(0);
+                            }
+                        }
+                    }
+
+                    //Adds new armature computed to the result
+                    foreach (List<Bone> arm in partialArmature)
+                    {
+                        result.Add(arm.ToList());
+                    }
+                    partialArmature.Clear();
+                }
+                partitionsToCombine.Clear();
+
+            }
+
+            
+                       
+            return result;
+        }
+
+        public List<List<Bone>> ArmatureAssignSymmetry(List<Bone> currentVirtualArmature)
+        {
+            List<char> symType = new List<char>() {'L','R','0' };
+            List<List<Bone>> splittedArm = new List<List<Bone>>();
+            
+
+            // Finds split at minimum level
+            int lowestLevel = int.MaxValue;
+            Bone split = new Bone("");            
+            foreach (Bone b in currentVirtualArmature)
+            {
+                if (b.children.Count > 1)
+                {
+                    if (b.level == lowestLevel) { return splittedArm; }
+                    if (b.level < lowestLevel) { split = b; lowestLevel = b.level; }                        
+                }
+            }
+
+            List<List<char>> symAssignedToChild = new List<List<char>>();
+            for (int i = 0; i < split.children.Count; i++)
+            {
+                if (symAssignedToChild.Count == 0)
+                {
+                    foreach (char c in symType)
+                    {
+                        symAssignedToChild.Add(new List<char>() { c });
+                    }
+                }
+                else 
+                {
+                    int iteration = symAssignedToChild.Count;
+                    for (int j = 0; j < iteration; j++)                    
+                    {                        
+                        foreach (char c in symType)
+                        {
+                            List<char> p = symAssignedToChild[0].ToList();
+                            p.Add(c);
+                            symAssignedToChild.Add(p);
+                        }
+
+                        symAssignedToChild.RemoveAt(0);
+                    } 
+                }
+            }
+
+            for(int i = 0; i < symAssignedToChild.Count; i++)
+            {
+                if (IsSymmetricSplit(symAssignedToChild[i]))
+                {
+                    List<Bone> symmetricArm = new List<Bone>();
+
+                    foreach (Bone b in currentVirtualArmature)
+                    {
+                        Bone newBone = new Bone(b.name);
+                        newBone.level = b.level;
+                        newBone.children = b.children.ToList();
+                        newBone.parent = b.parent;
+                        newBone.loc_DoF = b.loc_DoF.ToList();
+                        newBone.rot_DoF = b.rot_DoF.ToList();
+                        symmetricArm.Add(newBone);
+                    }                    
+
+                    for(int childIndex = 0; childIndex<split.children.Count; childIndex++)
+                    {
+                        Bone child = symmetricArm.Find(x => x.name.Equals(split.children[childIndex]));                                                
+                        BoneAssignSymmetry(symmetricArm, child, symAssignedToChild[i][childIndex]);
+                    }
+
+                    splittedArm.Add(symmetricArm);
+                }                
+
+            }                        
+            
+            return splittedArm;
+
+        }
+
+        private void BoneAssignSymmetry(List<Bone> symmetricArm, Bone boneToUpdate, char symmetry)
+        {
+            if (symmetry.Equals('0'))
+                    return;
+                        
+            boneToUpdate.name += "." + symmetry;            
+            foreach (string child in boneToUpdate.children)
+            {
+                BoneAssignSymmetry(symmetricArm, symmetricArm.Find(x => x.name.Equals(child)),symmetry);
+            }
+            
+        }
+
+        private bool IsSymmetricSplit(List<char> list)
+        {
+            int lBones = 0;
+            int rBones = 0;
+            foreach (char c in list)
+            {
+                if (c.Equals('L')) { lBones++; continue; }                    
+                if (c.Equals('R')) { rBones++; continue; }
+            }
+            return lBones == rBones;
+        }
+
+        public static List<char> GetDofSequenceFromPartition(List<Bone> partition)
+        {
+            List<char> comb = new List<char>();
+            foreach (Bone b in partition)
+            {
+                foreach (char c in b.rot_DoF)
+                {
+                    comb.Add(c);
+                }
+            }
+            return comb;
+        }
+
+        private List<Bone> UpdateChildrenCount(List<Bone> partition)
+        {
+            List<Bone> part = new List<Bone>();
+
+            foreach(Bone b in partition)
+            {
+                Bone boneToUpdate = new Bone(b.name);
+                boneToUpdate.level = b.level;
+                boneToUpdate.loc_DoF = b.loc_DoF.ToList();
+                boneToUpdate.rot_DoF = b.rot_DoF.ToList();
+                int index;
+                for (int i = 0; i< b.children.Count;i++) 
+                {
+                    string child = b.children[i];
+                    index = partition.FindIndex(x => x.name.Equals(child));
+                    if (index > 0)
+                    {
+                        boneToUpdate.children.Add(child);
+                    }
+                }
+
+                index = partition.FindIndex(x => x.name.Equals(b.parent));
+                if (index > 0)
+                    boneToUpdate.parent = b.parent;
+
+                part.Add(boneToUpdate);
+            }
+            return part;
         }
 
         private bool DofCountTest(List<Bone> armature, Brick brick, bool useSensor)
