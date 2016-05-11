@@ -869,7 +869,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 }
 
                 // VIRTUAL_MOTOR 
-                //componentAvailable += 2;
+                componentAvailable += 1;
 
                 // componentAvailable is increased in order to consider the hip joint
                 if (DofCountTest(armature, brick, this.UseSensorCheckBox.IsChecked.Value) &&
@@ -998,9 +998,12 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                                                         
                         //////////////////////////////////////////////////////////////
                         float bestScore = arrangements[0].Score;
-                        
+
+
+                        int arrangementsIndex = 0;
                         foreach (AxisArrangement axisArr in arrangements)
-                        {                            
+                        {
+                            arrangementsIndex++;
                             if (axisArr.Score <= bestScore)
                             {
                                 sequntialArmature.Clear();
@@ -1221,7 +1224,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         foreach (List<Bone> currentPartition in decomposition)
                         {                                                        
                             partAssign.Add(ComputeAssignement
-                                (currentPartition, virtualArmature, maxLevelBone, dictionary, currentPartition[0].name));              
+                                (currentPartition, virtualArmature, maxLevelBone, 
+                                 dictionary, currentPartition[0].name + "_KINECT_CONFIG"));              
                         }
                         
                         decAssign.Add(GetDecompositionAssignment(partAssign, DecompositionAssignment.KINECT_TYPE));
@@ -1273,7 +1277,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     decContainsSplitted = IsSplittedArmature(partition);
                     if (!decContainsSplitted)
                     {
-                        List<char> comb = GetDofSequenceFromPartition(partition);
+                        List<char> comb = AutomaticMapping.GetDofSequenceFromPartition(partition);
 
                         partitionAlternative.Clear();
                         partitionAlternative = AutomaticMapping.CreateArmaturesFromComb(comb.ToArray(), brick, new string[] { "_ROT" });
@@ -1444,19 +1448,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             }
             return lBones == rBones;
         }
-
-        public static List<char> GetDofSequenceFromPartition(List<Bone> partition)
-        {
-            List<char> comb = new List<char>();
-            foreach (Bone b in partition)
-            {
-                foreach (char c in b.rot_DoF)
-                {
-                    comb.Add(c);
-                }
-            }
-            return comb;
-        }
+        
 
         private List<Bone> UpdateChildrenCount(List<Bone> partition)
         {
@@ -1744,12 +1736,17 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     components.Add(handler);            
 
                 PartitionAssignment BoneDofsAssignment = new PartitionAssignment();
-                if (arrangement.Name.Equals("KINECT_CONFIG"))
+                if (arrangement.Name.Contains("KINECT_CONFIG"))
+                {
                     BoneDofsAssignment = arrangement;
+                    components = KinectSkeleton.GetKinectSkeleton();
+                }
                 else
                 {
-                    List<Bone> oneDofBones = AutomaticMapping.GetOneDofBones(currentBone, components);
-                    BoneDofsAssignment = ComputeAssignement(oneDofBones, components, maxLenghtChain, dictionary, currentBone.name);
+                    List<Bone> oneDofBones = AutomaticMapping.GetOneDofBones(currentBone, components, dictionary);
+                    
+                    BoneDofsAssignment = 
+                        ComputeAssignement(oneDofBones, components, maxLenghtChain, dictionary, currentBone.name);
                 }
                 int rotOrder = 0;
 

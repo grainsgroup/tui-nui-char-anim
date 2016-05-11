@@ -100,7 +100,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         
         public void dfs_DiscoverVertex_MaxRotDoF(Bone vertex)
         {
-            if(vertex.rot_DoF.Count>0)
+            if(vertex.rot_DoF.Count > 0)
                 BonesToVisit.Add(vertex);
         }
 

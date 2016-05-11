@@ -201,6 +201,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             return skeleton;
             */            
             
+
             Bone shoulder_right = new Bone("Shoulder.R_NUI");
             shoulder_right.rot_DoF = new List<char>() { 'z' };
             shoulder_right.loc_DoF = axis;
