@@ -743,9 +743,10 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
             float[,] costMatrix = Matrix.VectorToCostMatrix(costVector, B.GetLength(0), A.GetLength(0), 10);
 
+            /*
             if (A.GetLength(0) == B.GetLength(0) &&  A.GetLength(1) == B.GetLength(1) && 
                 graphControlledArmature.EdgeCount == graphVirtualArmature.EdgeCount)
-
+            */
                 GraphComparison(costMatrix, partition, virtualArmature);
 
                 
@@ -765,9 +766,20 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 {
                     if (scores[col] <= min &&
                         partition[row].level == virtualArmature[col].level &&
-                        partition[row].children.Count == virtualArmature[col].children.Count)
+                        partition[row].children.Count == virtualArmature[col].children.Count)                       
                     {
-                        costMatrix[row, col] = 0;
+                        if (partition[row].parent.Equals("") && virtualArmature[col].parent.Equals(""))
+                            costMatrix[row, col] = 0;
+                        
+                        if (!partition[row].parent.Equals("") && !virtualArmature[col].parent.Equals("") &&
+                            partition.Contains
+                                (AutomaticMapping.GetBoneFromName(partition[row].parent, partition)) &&
+                            virtualArmature.Contains
+                                (AutomaticMapping.GetBoneFromName(virtualArmature[col].parent, virtualArmature)) && 
+                            AutomaticMapping.GetBoneFromName(partition[row].parent, partition).children.Count == 
+                            AutomaticMapping.GetBoneFromName(virtualArmature[col].parent, virtualArmature).children.Count) 
+                            
+                            costMatrix[row, col] = 0;
                     }
                 }
             }
@@ -1166,6 +1178,11 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             }
             return score;
         }
-        
+
+
+        public static float PartitionsCountScore(int currPartitionCount, int maxPartitionCount)
+        {
+            return (float)currPartitionCount / (float)maxPartitionCount * MAX_COST;
+        }
     }
 }

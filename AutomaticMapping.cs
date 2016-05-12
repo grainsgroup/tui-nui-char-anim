@@ -14,7 +14,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
     {
         public List<Bone> virtualArmature { get; set; }
         public Bone currentBone { get; set; }
-                
+
         public PartialArmature(List<Bone> virtualArmature, Bone lastBone)
         {
             this.virtualArmature = virtualArmature;
@@ -27,12 +27,12 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         public Bone ReferenceBone { get; set; }
         public string Dof { get; set; }
 
-        public DofBoneAssociation(Bone refBone, string dof) 
+        public DofBoneAssociation(Bone refBone, string dof)
         {
             this.ReferenceBone = refBone;
             this.Dof = dof;
         }
- 
+
     }
 
     public class PathExpansion
@@ -41,7 +41,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         public List<Bone> Path { get; set; }
         public int MotorAvailable { get; set; }
 
-        public PathExpansion() 
+        public PathExpansion()
         {
             NodeToExpand = new List<Bone>();
             Path = new List<Bone>();
@@ -56,9 +56,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
     }
 
     public static class AutomaticMapping
-    {        
-        
-       
+    {
+
+
         public static List<List<List<Bone>>> GraphPartitioning(int motors, BidirectionalGraph<Bone, Edge<Bone>> graph, List<List<Bone>> components, List<List<List<Bone>>> graphPartitions, bool splitDofCheckBox, bool isRotOnly)
         {
             if (!splitDofCheckBox)
@@ -69,11 +69,11 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     List<List<List<Bone>>> partialGraphPartitions = new List<List<List<Bone>>>();
                     try
                     {
-                        if(isRotOnly)
-                            partialGraphPartitions = 
+                        if (isRotOnly)
+                            partialGraphPartitions =
                                 PartitionArmatureComponent(armatureComponent, graph, motors, isRotOnly);
                         else
-                            partialGraphPartitions = 
+                            partialGraphPartitions =
                                 PartitionArmatureComponent_LOCROT(armatureComponent, graph, motors, isRotOnly);
                     }
                     catch (ApplicationException ex)
@@ -91,7 +91,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                             foreach (List<List<Bone>> partialPartition in partialGraphPartitions)
                             {
                                 graphPartitions.Add(graphPartitions[i].Concat(partialPartition).ToList());
-                            }                            
+                            }
                         }
 
                         graphPartitions.RemoveRange(0, lastItemIndex);
@@ -99,26 +99,26 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     }
                     else
                     {
-                        graphPartitions = partialGraphPartitions;                        
+                        graphPartitions = partialGraphPartitions;
                     }
                 }
-              
+
             }
 
             // TODO: 
             if (splitDofCheckBox)
             {
-                throw new NotImplementedException();             
-            }            
+                throw new NotImplementedException();
+            }
 
             return graphPartitions;
-        }                    
-        
+        }
+
         public static List<List<Bone>> GetConnectedComponentList(BidirectionalGraph<Bone, Edge<Bone>> graph)
         {
-            var g = 
+            var g =
                 new QuickGraph.Algorithms.ConnectedComponents.WeaklyConnectedComponentsAlgorithm<Bone, Edge<Bone>>(graph);
-            g.Compute();           
+            g.Compute();
 
             List<List<Bone>> components = new List<List<Bone>>();
             for (int i = 0; i < g.ComponentCount; i++)
@@ -164,7 +164,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 foreach (string child in b.children)
                 {
                     Bone childToAdd = GetBoneFromName(child, armature);
-                    if(childToAdd!=null)
+                    if (childToAdd != null)
                         graph.AddVerticesAndEdge(new Edge<Bone>(b, childToAdd));
                 }
             }
@@ -203,13 +203,13 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             }
             */
 
-           string[] perm  = new string[comb.Length];
-           for (int i = 0; i < comb.Length; i++)
-           {
-               perm[i] = i.ToString();
-           }
-           List<string[]> permutations = new List<string[]>() {perm};
-           
+            string[] perm = new string[comb.Length];
+            for (int i = 0; i < comb.Length; i++)
+            {
+                perm[i] = i.ToString();
+            }
+            List<string[]> permutations = new List<string[]>() { perm };
+
 
             // combines combPermutation with types of dof
             List<List<string>> typedSequence_Dof = new List<List<string>>();
@@ -227,7 +227,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     // Assigns the best componet for each dof in the sequence
                     int index = 0;
                     foreach (string assignedComp in Metrics.AssignName
-                        (new List<List<string>>(){sequenceToAdd.ToList()}, true, brick, true))
+                        (new List<List<string>>() { sequenceToAdd.ToList() }, true, brick, true))
                     {
                         sequenceToAdd[index] = assignedComp;
                         index++;
@@ -243,7 +243,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                             break;
                         }
                     }
-                    if (!sequenceExist) 
+                    if (!sequenceExist)
                     {
                         typedSequence_Dof.Add(sequenceToAdd);
                     }
@@ -251,7 +251,13 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 }
             }
 
+            List<List<Bone>> armatures = CreateArmature(comb, typedSequence_Dof);
 
+            return armatures;
+        }
+
+        public static List<List<Bone>> CreateArmature(char[] comb, List<List<string>> typedSequence_Dof)
+        {
             /* Possible operation with two dof
              * - P = creates two bones in parallel; 
              * - S = creates two bones in series; 
@@ -294,8 +300,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             // For each sequence creates the armor which represent it
             List<List<Bone>> armatures = new List<List<Bone>>();
             for (int i = 0; i < dofSequences.Count; i++)
-            {                
-                
+            {
+
                 // initialization
                 List<string> sequenceItem = dofSequences[i];
                 List<Bone> virtualArmature = new List<Bone>();
@@ -312,7 +318,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 // For each item of the sequence
                 for (int j = 1; j < sequenceItem.Count; j = j + 2)
                 {
-                    
                     // Gets operation type: S = series; P = parallel; B = bone;
                     if (sequenceItem[j].Equals("S"))
                     {
@@ -349,7 +354,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                             {
                                 List<Bone> ancestors = GetAncestor
                                     (pa.virtualArmature, GetBoneFromName(lastBoneAnalyzed.parent, pa.virtualArmature));
-                                foreach (Bone ancestor in ancestors) 
+                                foreach (Bone ancestor in ancestors)
                                 {
                                     Bone parentToUpdate = new Bone(ancestor.name);
                                     parentToUpdate.level = ancestor.level;
@@ -358,8 +363,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                     parentToUpdate.parent = ancestor.parent;
                                     parentToUpdate.children = ancestor.children.ToList();
 
-                                    PartialArmature newPartialArmature = 
-                                        new PartialArmature(pa.virtualArmature.ToList(), parentToUpdate);                                    
+                                    PartialArmature newPartialArmature =
+                                        new PartialArmature(pa.virtualArmature.ToList(), parentToUpdate);
 
                                     //Initializes new bone
                                     Bone boneToAdd = InitializeBoneFromItem(sequenceItem[j + 1]);
@@ -387,7 +392,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
                                 //removes the partialArmature not updated used to create the new partialArmatures
                                 partialArmatures.RemoveAt(0);
-                            }                            
+                            }
 
                             else
                             {
@@ -397,17 +402,17 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                         new PartialArmature(pa.virtualArmature.ToList(), pa.currentBone);
                                 newPartialArmature.virtualArmature.Add(boneToAdd);
                                 newPartialArmature.currentBone = boneToAdd;
-                                partialArmatures.Add(newPartialArmature);                                
-                                partialArmatures.RemoveAt(0);                                
+                                partialArmatures.Add(newPartialArmature);
+                                partialArmatures.RemoveAt(0);
                             }
                         }
                         continue;
-                    } 
-                       
+                    }
+
                     if (sequenceItem[j].Equals("B"))
                     {
                         Bone boneToAdd = InitializeBoneFromItem(sequenceItem[j + 1]);
-                        
+
                         for (int k = 0; k < partialArmatures.Count; k++)
                         {
                             PartialArmature pa = partialArmatures[k];
@@ -448,13 +453,12 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                 parentToUpdate.children.Add(boneToUpdate.name);
                                 pa.virtualArmature.Add(parentToUpdate);
                             }
-                            
+
                             // Updates current bone
                             pa.virtualArmature.Add(boneToUpdate);
                             pa.currentBone = boneToUpdate;
                         }
                     }
-                    continue;
                 }
 
                 foreach (PartialArmature pa in partialArmatures)
@@ -462,7 +466,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     armatures.Add(pa.virtualArmature);
                 }
             }
-            
             return armatures;
         }
 
@@ -473,40 +476,40 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             while (lastBoneAnalyzed.level > 0)
             {
                 ancestors.Add(lastBoneAnalyzed);
-                lastBoneAnalyzed = GetBoneFromName(lastBoneAnalyzed.parent,list);
+                lastBoneAnalyzed = GetBoneFromName(lastBoneAnalyzed.parent, list);
             }
 
             ancestors.Add(lastBoneAnalyzed);
             return ancestors;
-        }       
+        }
 
         private static Bone InitializeBoneFromItem(string item)
         {
             Bone bone = new Bone(item);
-            if (item.Contains("ROT")) 
+            if (item.Contains("ROT"))
             {
                 char[] dof = item.Substring(item.IndexOf("ROT") + 4, 1).ToCharArray();
                 bone.rot_DoF.Add(dof[0]);
             }
-            if (item.Contains("LOC")) 
+            if (item.Contains("LOC"))
             {
                 char[] dof = item.Substring(item.IndexOf("LOC") + 4, 1).ToCharArray();
                 bone.loc_DoF.Add(dof[0]);
             }
             return bone;
         }
-        
+
         private static List<List<List<Bone>>> PartitionArmatureComponent(List<Bone> armature, BidirectionalGraph<Bone, Edge<Bone>> graph, int motors, bool isRotOnly)
         {
-            
+
             List<List<List<Bone>>> graphPartitions = new List<List<List<Bone>>>();
-            if (PartitionCapacityOverflow(armature, motors)) 
+            if (PartitionCapacityOverflow(armature, motors))
             {
                 throw new ApplicationException();
             }
-            
-            foreach(Bone startBone in armature)
-            {                                
+
+            foreach (Bone startBone in armature)
+            {
                 List<GraphTraversal> graphTraversalList = new List<GraphTraversal>();
 
                 GraphTraversal graphTraversal = new GraphTraversal(motors);
@@ -515,25 +518,25 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 dfs.Compute(startBone);
                 graphTraversalList.Add(graphTraversal);
 
-                while(graphTraversalList.Count > 0)
+                while (graphTraversalList.Count > 0)
                 {
                     GraphTraversal currGraphTrav = graphTraversalList[0];
 
-                    while(currGraphTrav.BonesToVisit.Count > 0)
+                    while (currGraphTrav.BonesToVisit.Count > 0)
                     {
                         Bone currentBone = currGraphTrav.BonesToVisit[0];
-                        
+
                         if (currentBone.children.Count > 1)
-                        {                            
+                        {
                             // The bone is a split
 
                             // Checks if the current partition can contain this bone
                             if ((currGraphTrav.MotorAvailable - currentBone.rot_DoF.Count < 0) || // there are not enough available motors
                                 !IsConnectedBone(currGraphTrav.Partition, currentBone) || // the new bone is not connected
                                 // symmetric split check
-                                (currGraphTrav.Partition.Count > 0 && 
-                                    currGraphTrav.Partition[currGraphTrav.Partition.Count - 1].name.Contains(".R")) || 
-                                (currGraphTrav.Partition.Count > 0 && 
+                                (currGraphTrav.Partition.Count > 0 &&
+                                    currGraphTrav.Partition[currGraphTrav.Partition.Count - 1].name.Contains(".R")) ||
+                                (currGraphTrav.Partition.Count > 0 &&
                                     currGraphTrav.Partition[currGraphTrav.Partition.Count - 1].name.Contains(".L")))
                             {
                                 // Terminates the inclusion into the current partition
@@ -542,21 +545,21 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                 currGraphTrav.MotorAvailable = motors;
                             }
                             else
-                            {                                
+                            {
                                 currGraphTrav.Partition.Add(currentBone);
                                 currGraphTrav.BonesToVisit.RemoveAt(0);
                                 currGraphTrav.MotorAvailable -= currentBone.rot_DoF.Count;
                                 bool currGraphTravEdited = false;
-                                
+
                                 // Explore neighborhood:
-                                
+
                                 // 1. Depth-First 
                                 List<List<Bone>> alternativePaths = ChildrenWithDepthSearch
                                     (currentBone, currGraphTrav.BonesToVisit, currGraphTrav.MotorAvailable, graph);
                                 if (alternativePaths.Count > 0)
                                 {
                                     currGraphTravEdited = true;
-                                    foreach (List<Bone> path in alternativePaths) 
+                                    foreach (List<Bone> path in alternativePaths)
                                     {
                                         // Copies the old GraphTraversal values 
                                         GraphTraversal newGraphTr = new GraphTraversal(currGraphTrav.MotorAvailable);
@@ -581,10 +584,10 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                 }
 
                                 // 2. Breadth-first
-                                List<Bone> neighborsToAdd =  ChildrenWithBreadthFirst
-                                    (currentBone, currGraphTrav.BonesToVisit, currGraphTrav.MotorAvailable, graph); 
-                                
-                                if(neighborsToAdd.Count > 1)
+                                List<Bone> neighborsToAdd = ChildrenWithBreadthFirst
+                                    (currentBone, currGraphTrav.BonesToVisit, currGraphTrav.MotorAvailable, graph);
+
+                                if (neighborsToAdd.Count > 1)
                                 {
                                     currGraphTravEdited = true;
 
@@ -593,7 +596,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                     newGraphTr.BonesToVisit = currGraphTrav.BonesToVisit.ToList();
                                     newGraphTr.Decomposition = currGraphTrav.Decomposition.ToList();
                                     newGraphTr.Partition = currGraphTrav.Partition.ToList();
-                                    
+
                                     foreach (Bone childToAdd in neighborsToAdd)
                                     {
                                         newGraphTr.Partition.Add(childToAdd);
@@ -618,17 +621,17 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                 {
                                     currGraphTrav.Decomposition.Add(currGraphTrav.Partition);
                                     currGraphTrav.Partition = new List<Bone>();
-                                    currGraphTrav.MotorAvailable = motors;                                   
+                                    currGraphTrav.MotorAvailable = motors;
                                 }
                             }
                         }
                         else
                         {
                             // Current bone is a sequential bone
-                            UpdatePartition(motors, currGraphTrav.Decomposition, 
-                                ref currGraphTrav.MotorAvailable, 
+                            UpdatePartition(motors, currGraphTrav.Decomposition,
+                                ref currGraphTrav.MotorAvailable,
                                 ref currGraphTrav.Partition, currentBone);
-                            currGraphTrav.BonesToVisit.RemoveAt(0);                            
+                            currGraphTrav.BonesToVisit.RemoveAt(0);
                         }
                     }
 
@@ -636,17 +639,17 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     {
                         // Adds last partition
                         currGraphTrav.Decomposition.Add(currGraphTrav.Partition);
-                    }                   
+                    }
 
                     graphPartitions.Add(currGraphTrav.Decomposition.ToList());
                     currGraphTrav.Decomposition = new List<List<Bone>>();
                     graphTraversalList.RemoveAt(0);
                 }
-                            
+
             }
 
             // Remove decompositions from graphPartitions that propose the same partitioning
-            for (int i = 0; i < graphPartitions.Count; i++)                
+            for (int i = 0; i < graphPartitions.Count; i++)
             {
                 for (int j = i + 1; j < graphPartitions.Count; j++)
                 {
@@ -657,9 +660,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     }
                 }
             }
-            
+
             return graphPartitions;
-            
+
         }
 
         private static List<List<List<Bone>>> PartitionArmatureComponent_LOCROT(List<Bone> armature, BidirectionalGraph<Bone, Edge<Bone>> graph, int motors, bool isRotOnly)
@@ -694,7 +697,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                             // The bone is a split
 
                             // Checks if the current partition can contain this bone
-                            if ((currGraphTrav.MotorAvailable - currentBone.rot_DoF.Count - currentBone.loc_DoF.Count  < 0) || // there are not enough available motors
+                            if ((currGraphTrav.MotorAvailable - currentBone.rot_DoF.Count - currentBone.loc_DoF.Count < 0) || // there are not enough available motors
                                 !IsConnectedBone(currGraphTrav.Partition, currentBone) || // the new bone is not connected
                                 // symmetric split check
                                 (currGraphTrav.Partition.Count > 0 &&
@@ -830,10 +833,10 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
 
         private static bool IsEqualDecomposition(List<List<Bone>> list1, List<List<Bone>> list2)
-        {            
+        {
             if (list1.Count != list2.Count)
                 return false;
-            else 
+            else
             {
                 foreach (List<Bone> partition1 in list1)
                 {
@@ -844,9 +847,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         {
                             return false;
                         }
-                        else 
+                        else
                         {
-                            foreach (Bone b2 in partition2) 
+                            foreach (Bone b2 in partition2)
                             {
                                 if (!partition1.Contains(b2))
                                     return false;
@@ -854,31 +857,31 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         }
                     }
                 }
-            }   
-               
-            return true;         
+            }
+
+            return true;
         }
 
         private static List<Bone> GetPartitionFromBone(Bone bone, List<List<Bone>> list)
         {
-            
+
             foreach (List<Bone> partition in list)
             {
                 if (partition.Contains(bone))
                     return partition;
             }
             return null;
-        }       
+        }
 
         private static List<List<Bone>> ChildrenWithDepthSearch(Bone currentBone, List<Bone> armature, int motorAvailable, BidirectionalGraph<Bone, Edge<Bone>> graph)
         {
-            List<List<Bone>> result = new List<List<Bone>>();            
-            List<Bone> boneToVisit = armature.ToList();                        
+            List<List<Bone>> result = new List<List<Bone>>();
+            List<Bone> boneToVisit = armature.ToList();
             List<PathExpansion> paths = new List<PathExpansion>();
 
             // Gets neighbors
             foreach (var edge in graph.OutEdges(currentBone))
-            {                                
+            {
                 Bone neighbor = edge.Target;
                 if (boneToVisit.Contains(neighbor) && (motorAvailable - neighbor.rot_DoF.Count >= 0))
                 {
@@ -889,9 +892,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     paths.Add(new PathExpansion(newBoneToVisit, newPath, motorAvailable - neighbor.rot_DoF.Count));
                 }
             }
-            
-            bool executeComputation = SymmetricSplitCheck(paths); 
-  
+
+            bool executeComputation = SymmetricSplitCheck(paths);
+
             if (executeComputation)
             {
                 while (paths.Count > 0)
@@ -934,19 +937,19 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         result.Add(pathToExpand.Path);
                         paths.Remove(pathToExpand);
                     }
-                }     
-            }                        
+                }
+            }
 
             return result;
         }
 
         private static bool SymmetricSplitCheck(List<PathExpansion> paths)
         {
-            foreach(PathExpansion p in paths)
+            foreach (PathExpansion p in paths)
             {
                 if (p.Path[0].name.Contains(".R") || p.Path[0].name.Contains(".L"))
-                    return false;                
-            }                
+                    return false;
+            }
             return true;
         }
 
@@ -962,8 +965,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     bonesR++;
                     continue;
                 }
-                
-                if(b.name.Contains(".L"))
+
+                if (b.name.Contains(".L"))
                 {
                     bonesL++;
                     continue;
@@ -976,7 +979,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         private static List<Bone> ChildrenWithBreadthFirst(Bone currentBone, List<Bone> armature, int motorAvailable, BidirectionalGraph<Bone, Edge<Bone>> graph)
         {
             List<Bone> neighborsAtLevel = new List<Bone>();
-            List<Bone> result = new List<Bone>();            
+            List<Bone> result = new List<Bone>();
             List<Bone> bonesToVisit = armature.ToList();
 
             // Initializes neighborsAtLevel list and updates bonesToVisit
@@ -986,22 +989,22 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 if (bonesToVisit.Contains(neighbor))
                 {
                     neighborsAtLevel.Add(neighbor);
-                    bonesToVisit.Remove(neighbor);                    
+                    bonesToVisit.Remove(neighbor);
                 }
-            }     
+            }
 
-            for(int level = 0; level < GetMaxLengthChain(armature); level++ )
+            for (int level = 0; level < GetMaxLengthChain(armature); level++)
             {
                 if (CountArmatureDofs(neighborsAtLevel) <= motorAvailable && SymmetricSplitCheck(neighborsAtLevel))
                 {
-                    
+
                     result = neighborsAtLevel.ToList();
 
                     // Adds neighbors of next level
-                    List<Bone> boneToAdd = new List<Bone>();                    
-                    foreach(Bone boneToVisit in bonesToVisit)
-                    {                        
-                        foreach(Bone bone in neighborsAtLevel)
+                    List<Bone> boneToAdd = new List<Bone>();
+                    foreach (Bone boneToVisit in bonesToVisit)
+                    {
+                        foreach (Bone bone in neighborsAtLevel)
                         {
                             // Checks if the boneToVisit is connected to a bone in the list neighborsAtLevel
                             if (bone.children.Contains(boneToVisit.name) || bone.parent.Equals(boneToVisit.name))
@@ -1010,9 +1013,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                 // Bone is connected, continue with the next boneToVisit
                                 break;
                             }
-                        }                       
+                        }
                     }
-                    foreach (Bone b in boneToAdd) 
+                    foreach (Bone b in boneToAdd)
                     {
                         neighborsAtLevel.Add(b);
                         bonesToVisit.Remove(b);
@@ -1022,12 +1025,12 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 {
                     // Partition can not contain another level of children
                     break;
-                }                                                                                               
+                }
             }
 
             return result;
         }
-       
+
 
         private static bool PartitionCapacityOverflow(List<Bone> armature, int motors)
         {
@@ -1056,15 +1059,15 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
         private static void UpdatePartition(int motors, List<List<Bone>> decomposition, ref int motorAvailable, ref List<Bone> partition, Bone currentBone)
         {
-            
+
             // Inserts the first element into the partition
-            if ((partition.Count == 0) || 
+            if ((partition.Count == 0) ||
                 (IsConnectedBone(partition, currentBone) && (motorAvailable - currentBone.rot_DoF.Count >= 0)))
             {
                 partition.Add(currentBone);
                 motorAvailable -= currentBone.rot_DoF.Count;
 
-            }                
+            }
             else
             {
                 // partitions is full or new bone is not a child or parent of bones in the partition
@@ -1074,15 +1077,15 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 motorAvailable = motors - currentBone.rot_DoF.Count;
             }
 
-            
-            
+
+
         }
         private static void UpdatePartition_LOCROT(int motors, List<List<Bone>> decomposition, ref int motorAvailable, ref List<Bone> partition, Bone currentBone)
         {
 
             // Inserts the first element into the partition
             if ((partition.Count == 0) ||
-                (IsConnectedBone(partition, currentBone) && 
+                (IsConnectedBone(partition, currentBone) &&
                 (motorAvailable - currentBone.rot_DoF.Count - currentBone.loc_DoF.Count >= 0)))
             {
                 partition.Add(currentBone);
@@ -1103,16 +1106,16 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         private static int CountBoneChildrenDoFs(Bone bone, List<Bone> armature)
         {
             int count = bone.rot_DoF.Count;
-            foreach (String child in bone.children) 
+            foreach (String child in bone.children)
             {
-                count+= CountBoneChildrenDoFs(GetBoneFromName(child, armature), armature);
-            }            
+                count += CountBoneChildrenDoFs(GetBoneFromName(child, armature), armature);
+            }
             return count;
-        }                
+        }
 
         public static List<Bone> DecomposeMotorCombination(int motor, char[] comb, bool useSensor, Brick brick)
         {
-            
+
             List<Bone> configurations = new List<Bone>();
             // list of position {0,1,2,3...}
             var list = new List<string>();
@@ -1124,8 +1127,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             List<string> combToListString = new List<string>();
             foreach (char c in comb)
                 combToListString.Add(c.ToString());
-        
-            
+
+
             for (int size = 1; size <= motor; size++)
             {
                 var result = Combinatorics.GetDispositions(list, size);
@@ -1141,19 +1144,19 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         //Console.Write(c + " ");
                         b.name += combToListString[Convert.ToInt32(c)] + "_";
                     }
-                        
+
                     // Add Bone to the configuration
                     if (!configurations.Contains(b))
                     {
-                        configurations.Add(b);                        
+                        configurations.Add(b);
                     }
                 }
             }
             return configurations;
-                                    
+
         }
-        
-        private static Bone GetBoneFromName(string boneName, List<Bone> armature)
+
+        public static Bone GetBoneFromName(string boneName, List<Bone> armature)
         {
             foreach (Bone b in armature)
             {
@@ -1165,7 +1168,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             return null;
         }
 
-        public static List<Bone> GetOneDofBones (Bone currentBone, List<Bone> components, Dictionary<string, List<List<char>>> dictionary)
+        public static List<Bone> GetOneDofBones(Bone currentBone, List<Bone> components, Dictionary<string, List<List<char>>> dictionary)
         {
             List<Bone> bones = new List<Bone>();
 
@@ -1175,13 +1178,13 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 var list = new List<string>();
                 var alternatives = new List<Bone[]>();
                 var componentList = new List<Bone>();
-                List<List<char>> threeDofsRepr = dictionary[Metrics.GetDofString(currentBone.rot_DoF)]; 
+                List<List<char>> threeDofsRepr = dictionary[Metrics.GetDofString(currentBone.rot_DoF)];
 
                 for (int i = 0; i < components.Count; i++)
                 {
                     list.Add(i.ToString());
                 }
-                
+
                 var result = Combinatorics.GetDispositions(list, 3);
 
                 int index = 0;
@@ -1198,16 +1201,16 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 }
 
                 int bestScore = int.MaxValue;
-                foreach(Bone[] alt in alternatives)
-                {                                        
+                foreach (Bone[] alt in alternatives)
+                {
                     List<char> currentRepr = GetDofSequenceFromPartition(alt.ToList());
                     bool validRepr = false;
-                    
+
                     foreach (List<char> repr in threeDofsRepr)
                     {
                         bool isEqual = true;
                         for (int k = 0; k < repr.Count; k++)
-                        {                            
+                        {
                             if (currentRepr[k] != repr[k])
                             {
                                 isEqual = false;
@@ -1233,10 +1236,10 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         {
                             componentList.Clear();
                             componentList = alt.ToList();
-                        } 
+                        }
                     }
                 }
-                                                
+
                 foreach (Bone comp in componentList)
                 {
                     Bone b = new Bone(currentBone.name);
@@ -1245,21 +1248,21 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     b.parent = currentBone.parent;
 
 
-                    if (comp.name.Contains("LOC")) 
+                    if (comp.name.Contains("LOC"))
                     {
                         b.loc_DoF.Add(comp.name[comp.name.IndexOf(":LOC(") + 5]);
                         bones.Add(b);
                         continue;
                     }
 
-                    if (comp.name.Contains("ROT")) 
+                    if (comp.name.Contains("ROT"))
                     {
                         b.rot_DoF.Add(comp.name[comp.name.IndexOf(":ROT(") + 5]);
                         bones.Add(b);
                         continue;
                     }
 
-                    
+
                 }
             }
             else
@@ -1290,7 +1293,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         public static List<string> GetTuiComponentList(bool useSensor, Brick brick)
         {
             List<string> components = new List<string>();
-            
+
             if (!brick.Ports[InputPort.A].Type.ToString().Equals(DeviceType.Empty.ToString()) &&
                 !brick.Ports[InputPort.A].Type.ToString().Equals(DeviceType.Touch.ToString()))
                 components.Add(brick.Ports[InputPort.A].Type.ToString() + "(PORT-A)_TUI");
@@ -1323,11 +1326,11 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             // VIRTUAL_MOTOR
             //components.Add(DeviceType.LMotor.ToString() + "(PORT-Two)_TUI");
             //components.Add(DeviceType.LMotor.ToString() + "(PORT-Three)_TUI");
-            components.Add(DeviceType.MMotor.ToString() + "(PORT-D)_TUI");
+            //components.Add(DeviceType.MMotor.ToString() + "(PORT-D)_TUI");
 
             return components;
         }
-        
+
         public static Dictionary<string, List<List<char>>> InitDoFDictionary()
         {
             Dictionary<string, List<List<char>>> dictionary = new Dictionary<string, List<List<char>>>();
@@ -1379,7 +1382,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             dictionary.Add("", alternatives);
 
             return dictionary;
-        }        
+        }
 
         public static int CountComponentAvailable(List<string> componentType, Brick brick)
         {
@@ -1405,7 +1408,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             }
 
             return componentAvailable;
-        }        
+        }
 
         public static int GetMaxLengthChain(List<Bone> Partition)
         {
@@ -1428,7 +1431,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         public static List<Bone> GetTuiArmature(List<Bone> controlledAramature, bool useSensor, Brick brick, Dictionary<string, List<List<char>>> dictionary)
         {
             List<Bone> armature = new List<Bone>();
-       
+
             // Gets the dof[i] and the bone to which it belongs
             List<List<DofBoneAssociation>> dofBoneAss = GetDofsBoneAssociation(controlledAramature, dictionary);
 
@@ -1446,7 +1449,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
             List<string> dofsAssigned = Metrics.AssignName(dofsAlternatives, useSensor, brick, true);
             int componentIndex = 0;
-            for (int i = 0; i < controlledAramature.Count; i++) 
+            for (int i = 0; i < controlledAramature.Count; i++)
             {
                 Bone bone = new Bone("");
                 bone.level = controlledAramature[i].level;
@@ -1508,19 +1511,19 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
         public static bool IsConnectedBone(List<Bone> bones, Bone vertex)
         {
-            if (bones.Count == 0)             
+            if (bones.Count == 0)
                 return true;
-            
+
             Bone lastBone = bones[bones.Count - 1];
 
             if (lastBone.parent.Equals(vertex.name))
                 return true;
-            
+
             if (lastBone.children.Contains(vertex.name))
                 return true;
-            
+
             return false;
-                           
+
             /*    
             bool connectedElement = false;
             
@@ -1541,7 +1544,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             */
         }
 
-        public static List<List<DofBoneAssociation>> GetDofsBoneAssociation(List<Bone> partition, 
+        public static List<List<DofBoneAssociation>> GetDofsBoneAssociation(List<Bone> partition,
             Dictionary<string, List<List<char>>> dictionary)
         {
             List<List<DofBoneAssociation>> armatureDofs = new List<List<DofBoneAssociation>>();
@@ -1574,7 +1577,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                             foreach (List<char> dofSequence in alternatives)
                             {
                                 List<DofBoneAssociation> newItem = armatureDofs[0].ToList();
-                         
+
                                 foreach (char dof in dofSequence)
                                 {
                                     newItem.Add(new DofBoneAssociation(b, "ROT(" + dof + ")"));
@@ -1609,7 +1612,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     }
                 }
             }
-                                       
+
             return armatureDofs;
         }
 
@@ -1682,8 +1685,21 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 totalCost += partition.Score;
 
             return new DecompositionAssignment(partAssign, totalCost, decType);
-        }   
+        }
 
+
+        public static int GetMaxPartitionCount(List<List<List<Bone>>> graphPartitions)
+        {
+            int maxPartitionCount = 0;
+            foreach (List<List<Bone>> decomposition in graphPartitions)
+            {
+                if (decomposition.Count > maxPartitionCount) 
+                {
+                    maxPartitionCount = decomposition.Count;
+                }
+            }
+            return maxPartitionCount;
+        }
     }
-   
+
 }

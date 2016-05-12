@@ -172,7 +172,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
         public PartitionAssignment()
         {
-            // TODO: Complete member initialization
+            
         }
         
         public int CompareTo(PartitionAssignment compareAxisArrangement)
