@@ -137,6 +137,9 @@
     <Compile Include="Combinatorics.cs" />
     <Compile Include="Command.cs" />
     <Compile Include="Config.cs" />
+    <Compile Include="ConfigurationPanel.xaml.cs">
+      <DependentUpon>ConfigurationPanel.xaml</DependentUpon>
+    </Compile>
     <Compile Include="GraphVisualization.cs" />
     <Compile Include="HungarianAlgorithm.cs" />
     <Compile Include="JsonManager.cs" />
@@ -160,9 +163,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="AsynSocket.cs" />
-    <Compile Include="ConfigurationPanel.xaml.cs">
-      <DependentUpon>ConfigurationPanel.xaml</DependentUpon>
-    </Compile>
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
