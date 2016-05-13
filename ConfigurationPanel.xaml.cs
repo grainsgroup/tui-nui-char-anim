@@ -870,7 +870,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 }
 
                 // VIRTUAL_MOTOR 
-                //componentAvailable += 1;
+                componentAvailable += 2;
 
                 // componentAvailable is increased in order to consider the hip joint
                 if (DofCountTest(armature, brick, this.UseSensorCheckBox.IsChecked.Value) &&
@@ -979,8 +979,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         // Updates progress bar                                   
                         CompletePercentage = indexCurrentGraphPartition / (graphPartitions.Count - 1) * 100;
                         indexCurrentGraphPartition++;
-                        //System.Diagnostics.Debug.WriteLine(CompletePercentage.ToString() + " %");
-                        Console.WriteLine(CompletePercentage.ToString() + " %");
+                        System.Diagnostics.Debug.WriteLine(CompletePercentage.ToString() + " %");
+                        //Console.WriteLine(CompletePercentage.ToString() + " %");
 
                         // Finds the most frequent axis arrangement in the partition                        
                         AxisArrangement arr = new AxisArrangement();
@@ -1068,7 +1068,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                 // Cost updates                                
                                 decAssign.Add(GetDecompositionAssignment
                                     (partialDecAssign.PartitionAss, DecompositionAssignment.SEQUENTIAL_TYPE));                                
-                                /*
+                                
                                 if (decAssign[decAssign.Count - 1].TotalScore > decAssignBestScore)
                                 {
                                     decAssign.RemoveAt(decAssign.Count - 1);
@@ -1077,7 +1077,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                 {
                                     decAssignBestScore = decAssign[decAssign.Count - 1].TotalScore;
                                 }
-                                */
+                                
 
                                 // DEBUG
                                 int splitIndex = 0;
@@ -1085,6 +1085,13 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                 foreach (List<Bone> splittedVirtualArmature in splittedArmature)
                                 {
                                     splitIndex++;
+
+                                    //Debug
+                                    if (splitIndex == 621)
+                                    {
+ 
+                                    }
+
 
                                     splitArmAlternatives = 
                                         ComputeAlternatives(splittedVirtualArmature, componentAvailable);
@@ -1132,7 +1139,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                     // Cost updates                                
                                     decAssign.Add(GetDecompositionAssignment
                                         (partialDecAssign.PartitionAss, DecompositionAssignment.SPLITTED_TYPE));
-                                    /*
+                                    
                                     if (decAssign[decAssign.Count - 1].TotalScore > decAssignBestScore)
                                     {
                                         decAssign.RemoveAt(decAssign.Count - 1);
@@ -1141,7 +1148,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                     {
                                         decAssignBestScore = decAssign[decAssign.Count - 1].TotalScore;
                                     }
-                                    */
+                                    
 
                                     /*
                                     List<PartitionAssignment> partAssign = new List<PartitionAssignment>();
@@ -1251,6 +1258,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     }
                 }
 
+
                 //SetArrangmentLabel(rotArrangements[0]);               
             }
         }
@@ -1335,7 +1343,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         {
                             if (b.name.Contains(" | "))
                             {
-                                partitionSigle_Component = Metrics.DecomposeHandler(b);
+                                foreach (Bone component in Metrics.DecomposeHandler(b))
+                                    partitionSigle_Component.Add(component);
                             }
                             else
                             {
