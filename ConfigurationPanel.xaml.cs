@@ -870,7 +870,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 }
 
                 // VIRTUAL_MOTOR 
-                componentAvailable += 2;
+                //componentAvailable += 2;
 
                 // componentAvailable is increased in order to consider the hip joint
                 if (DofCountTest(armature, brick, this.UseSensorCheckBox.IsChecked.Value) &&
@@ -1085,14 +1085,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                 foreach (List<Bone> splittedVirtualArmature in splittedArmature)
                                 {
                                     splitIndex++;
-
-                                    //Debug
-                                    if (splitIndex == 621)
-                                    {
- 
-                                    }
-
-
+                                    
                                     splitArmAlternatives = 
                                         ComputeAlternatives(splittedVirtualArmature, componentAvailable);
 
@@ -1210,12 +1203,13 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     // LOCATION ASSIGNMENT
                     // Computes LOC -> TUI Assignment
                     //List<Bone> locHandler = AutomaticMapping.GetLocHandler(brick);
-                    List<Bone> locBones = GetLocBones(armature);
-                    List<Bone> virtualArmature =
-                        AutomaticMapping.GetTuiArmature(locBones, this.UseSensorCheckBox.IsChecked.Value, brick, dictionary);
+                    List<Bone> locBones = GetLocBones(armature);                    
 
                     foreach (Bone bone in locBones)
                     {
+                        List<Bone> virtualArmature = AutomaticMapping.GetTuiArmature
+                            (new List<Bone> { bone }, this.UseSensorCheckBox.IsChecked.Value, brick, dictionary);
+
                         PartitionAssignment locArrangements =
                             ComputeAssignement(new List<Bone>() { bone }, virtualArmature, maxLevelBone, 1, 1, dictionary, bone.name + "_LOC");
 
@@ -1827,7 +1821,6 @@ int maxPartitionCount, Dictionary<string, List<List<char>>> dictionary)
             {
                 Bone currentBone = arrangement.Partition[i];
 
-
                 List<Bone> components = new List<Bone>();
                 Bone handler = arrangement.Handler[arrangement.Assignment[i]];
 
@@ -1850,11 +1843,16 @@ int maxPartitionCount, Dictionary<string, List<List<char>>> dictionary)
                         ComputeAssignement(oneDofBones, components, maxLenghtChain, 
                          currPartitionCount, maxPartitionCount, dictionary, currentBone.name);
                 }
+
                 int rotOrder = 0;
 
                 for (int boneDof = 0; boneDof < BoneDofsAssignment.Assignment.Length; boneDof++)
                 {
-                    Bone component = components[BoneDofsAssignment.Assignment[boneDof]];
+                    Bone component = new Bone("");
+                    if (arrangement.Name.Contains("KINECT_CONFIG"))
+                        component = components[BoneDofsAssignment.Assignment[i]];
+                    else
+                        component = components[BoneDofsAssignment.Assignment[boneDof]];
                     if (component.name.Contains("_TUI"))
                     {
                         string componentName = component.name;
@@ -1872,7 +1870,10 @@ int maxPartitionCount, Dictionary<string, List<List<char>>> dictionary)
 
                         if (componentName.Contains("ROT"))
                         {
-                            axis = componentName.Substring(componentName.IndexOf(":ROT(") + 5, 1).ToUpper();
+                            // FOR RABBIT
+                            //axis = componentName.Substring(componentName.IndexOf(":ROT(") + 5, 1).ToUpper();
+                            axis = BoneDofsAssignment.Partition[boneDof].rot_DoF[0].ToString().ToUpper();
+                            
                             settingToAdd.CheckBoxStatus.Add(new SettingItem(port + "Rot", "true"));
                             settingToAdd.ComboBoxStatus.Add(new SettingItem(port + "BoneName", currentBone.name + ":" + armatureName));
                             settingToAdd.ComboBoxStatus.Add(new SettingItem(port + "Axis", axis));
@@ -1906,11 +1907,11 @@ int maxPartitionCount, Dictionary<string, List<List<char>>> dictionary)
 
                         if (!componentName.Contains("ROT") && (!componentName.Contains("LOC")))
                         {
-                            List<char> locDofs = currentBone.loc_DoF;
-                            //LOC                            
                             settingToAdd.ComboBoxStatus.Add(
                                 new SettingItem(jointName + "BoneName", currentBone.name + ":" + armatureName));
-
+                            
+                            //LOC                            
+                            List<char> locDofs = currentBone.loc_DoF;
                             foreach (char Dof in locDofs)
                             {
                                 settingToAdd.ComboBoxStatus.Add(
@@ -1921,14 +1922,16 @@ int maxPartitionCount, Dictionary<string, List<List<char>>> dictionary)
                             }
                             //ROT
                             settingToAdd.CheckBoxStatus.Add(new SettingItem(jointName + "Rot", "true"));
-                            settingToAdd.ComboBoxStatus.Add(
-                                new SettingItem(jointName + "BoneName", currentBone.name + ":" + armatureName));
+                                                        
+                            break;
                         }
                     }
                 }
             }
+            
             settings.Add(settingToAdd);
             ConvertSettingToPreset(settings);
+            
         }
 
         /*private void CreateConfiguration(PartitionAssignement arrangement, string armatureName) 

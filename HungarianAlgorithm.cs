@@ -16,9 +16,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         /// <summary>
         /// Finds the optimal assignments for a matrix of agents and costed tasks.
         /// </summary>
-        /// <param name="costs">A cost matrix; each row contains elements that represent the associated costs of each
+        /// <param name="costs"> A cost matrix; each row contains elements that represent the associated costs of each
         /// task for the agent.</param>
-        /// <returns>An array of assignments; element <em>i</em> is the index of the assigned task (column) for agent
+        /// <returns> An array of assignments; element <em>i</em> is the index of the assigned task (column) for agent
         /// (row) <em>i</em>.</returns>
         public static int[] FindAssignments(float[,] Matrix)
         {

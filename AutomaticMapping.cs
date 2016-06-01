@@ -1324,8 +1324,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             }
 
             // VIRTUAL_MOTOR
-            components.Add(DeviceType.LMotor.ToString() + "(PORT-Two)_TUI");
-            components.Add(DeviceType.LMotor.ToString() + "(PORT-Three)_TUI");
+            //components.Add(DeviceType.LMotor.ToString() + "(PORT-Two)_TUI");
+            //components.Add(DeviceType.LMotor.ToString() + "(PORT-Three)_TUI");
             //components.Add(DeviceType.MMotor.ToString() + "(PORT-D)_TUI");
 
             return components;

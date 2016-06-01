@@ -1614,17 +1614,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             {
                 SendCommand(Command.FRAME, "");
             }
-
-            if (e.Key == Key.D && Keyboard.IsKeyDown(Key.LeftCtrl))
-            {
-                SendCommand(Command.FRAME_LOC, "");
-            }
-
-            if (e.Key == Key.S && Keyboard.IsKeyDown(Key.LeftCtrl))
-            {
-                SendCommand(Command.FRAME_ROT, "");
-            }
-
             
             if (e.Key == Key.R && Keyboard.IsKeyDown(Key.LeftCtrl))
             {
@@ -1634,16 +1623,11 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             if (e.Key == Key.G && Keyboard.IsKeyDown(Key.LeftCtrl))
             {
                 GetCurrentFrame();
-            }
-
-            if (e.Key == Key.Z && Keyboard.IsKeyDown(Key.LeftCtrl))
-            {
-                SendCommand(Command.BACKWARD,"");
-            } 
+            }            
             
-            if (e.Key == Key.X && Keyboard.IsKeyDown(Key.LeftCtrl))
+            if (e.Key == Key.A && Keyboard.IsKeyDown(Key.LeftCtrl))
             {
-                SendCommand(Command.FORWARD, "");
+                SendCommand(Command.FAST_FORWARD, "");
             }
 
 

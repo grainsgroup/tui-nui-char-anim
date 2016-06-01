@@ -881,6 +881,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     cost = 3;
                     break;               
 
+
+
                 case "Hip.R":
                 case "Hip.L":                
                 case "Foot.R":
