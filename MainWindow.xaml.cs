@@ -237,7 +237,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             //grammarRules.Add(new VoiceCommand("elimina", Command.DELETE));
             //grammarRules.Add(new VoiceCommand("Delete frame", Command.DELETE_CURRENT));
             grammarRules.Add(new VoiceCommand("Reset", Command.RESET));
-            //grammarRules.Add(new VoiceCommand("Play animation", Command.PLAY_ANIMATION));
+            grammarRules.Add(new VoiceCommand("Play animation", Command.PLAY_ANIMATION));
             //grammarRules.Add(new VoiceCommand("Disable sensor", Command.HIDE_CAPTURE));
             //grammarRules.Add(new VoiceCommand("indietro", Command.FAST_BACKWARD));
             //grammarRules.Add(new VoiceCommand("associa", Command.BONES_ASSOCIATION));
@@ -792,16 +792,21 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                 {
                                     newMotion.rotTrack = true;
                                     
-                                    // Aggiornare la matrice di rotazione dell'oggetto in funzione dell'ordine
+                                    // UUpdates the rotation matrix depending on the order of rotations
                                     Matrix4x4 rotToApply = UpdateObjectRotMatrix(sf.Axis, sf.ObjectName + ":" + sf.BoneName,
                                         (legoBrick.Ports[sf.InputPort].SIValue - sf.Offset) / accuracy, sf.RotationOrder);
                                     
-                                    // calcolare le coordinate w,x,y,z -> scriverle in motion
-                                    newMotion.vectorOr.W = (float)Math.Sqrt(Convert.ToDouble(1.0f + rotToApply.M11 + rotToApply.M22 + rotToApply.M33))/2;
-                                    newMotion.vectorOr.X = (rotToApply.M32 - rotToApply.M23) / (4 * newMotion.vectorOr.W);
-                                    newMotion.vectorOr.Y = (rotToApply.M13 - rotToApply.M31) / (4 * newMotion.vectorOr.W);
-                                    newMotion.vectorOr.Z = (rotToApply.M21 - rotToApply.M12) / (4 * newMotion.vectorOr.W);
+                                    // Computes quaternion representation (w,x,y,z) and updates the new motion
+                                    newMotion.vectorOr.W = 
+                                        (float)Math.Sqrt(Convert.ToDouble(1.0f + rotToApply.M11 + rotToApply.M22 + rotToApply.M33))/2;
+                                    newMotion.vectorOr.X = 
+                                        (rotToApply.M32 - rotToApply.M23) / (4 * newMotion.vectorOr.W);
+                                    newMotion.vectorOr.Y = 
+                                        (rotToApply.M13 - rotToApply.M31) / (4 * newMotion.vectorOr.W);
+                                    newMotion.vectorOr.Z = 
+                                        (rotToApply.M21 - rotToApply.M12) / (4 * newMotion.vectorOr.W);
                                     
+                                    // Old version
                                     //newMotion.vectorOr.X = (legoBrick.Ports[sf.InputPort].SIValue - sf.Offset) / accuracy;
                                 }
                                 break;
@@ -821,10 +826,14 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                         (-legoBrick.Ports[sf.InputPort].SIValue + sf.Offset) / accuracy, sf.RotationOrder);
 
                                     // Compute w,x,y,z coordinates the new rotation matrix
-                                    newMotion.vectorOr.W = (float)Math.Sqrt(Convert.ToDouble(1.0f + rotToApply.M11 + rotToApply.M22 + rotToApply.M33)) / 2;
-                                    newMotion.vectorOr.X = (rotToApply.M32 - rotToApply.M23) / (4 * newMotion.vectorOr.W);
-                                    newMotion.vectorOr.Y = (rotToApply.M13 - rotToApply.M31) / (4 * newMotion.vectorOr.W);
-                                    newMotion.vectorOr.Z = (rotToApply.M21 - rotToApply.M12) / (4 * newMotion.vectorOr.W);
+                                    newMotion.vectorOr.W = 
+                                        (float)Math.Sqrt(Convert.ToDouble(1.0f + rotToApply.M11 + rotToApply.M22 + rotToApply.M33)) / 2;
+                                    newMotion.vectorOr.X = 
+                                        (rotToApply.M32 - rotToApply.M23) / (4 * newMotion.vectorOr.W);
+                                    newMotion.vectorOr.Y = 
+                                        (rotToApply.M13 - rotToApply.M31) / (4 * newMotion.vectorOr.W);
+                                    newMotion.vectorOr.Z = 
+                                        (rotToApply.M21 - rotToApply.M12) / (4 * newMotion.vectorOr.W);
                                 }
                                 break;
 
@@ -846,10 +855,14 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                     Matrix4x4 rotToApply = UpdateObjectRotMatrix(sf.Axis, sf.ObjectName + ":" + sf.BoneName,
                                         (legoBrick.Ports[sf.InputPort].SIValue - sf.Offset) / accuracy, sf.RotationOrder);
                                     
-                                    newMotion.vectorOr.W = (float)Math.Sqrt(Convert.ToDouble(1.0f + rotToApply.M11 + rotToApply.M22 + rotToApply.M33)) / 2;
-                                    newMotion.vectorOr.X = (rotToApply.M32 - rotToApply.M23) / (4 * newMotion.vectorOr.W);
-                                    newMotion.vectorOr.Y = (rotToApply.M13 - rotToApply.M31) / (4 * newMotion.vectorOr.W);
-                                    newMotion.vectorOr.Z = (rotToApply.M21 - rotToApply.M12) / (4 * newMotion.vectorOr.W);
+                                    newMotion.vectorOr.W = 
+                                        (float)Math.Sqrt(Convert.ToDouble(1.0f + rotToApply.M11 + rotToApply.M22 + rotToApply.M33)) / 2;
+                                    newMotion.vectorOr.X = 
+                                        (rotToApply.M32 - rotToApply.M23) / (4 * newMotion.vectorOr.W);
+                                    newMotion.vectorOr.Y = 
+                                        (rotToApply.M13 - rotToApply.M31) / (4 * newMotion.vectorOr.W);
+                                    newMotion.vectorOr.Z = 
+                                        (rotToApply.M21 - rotToApply.M12) / (4 * newMotion.vectorOr.W);
 
                                     
                                 }
@@ -875,10 +888,14 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                     Matrix4x4 rotToApply = UpdateObjectRotMatrix(sf.Axis, sf.ObjectName + ":" + sf.BoneName,
                                         (-legoBrick.Ports[sf.InputPort].SIValue + sf.Offset) / accuracy, sf.RotationOrder);
                                     
-                                    newMotion.vectorOr.W = (float)Math.Sqrt(Convert.ToDouble(1.0f + rotToApply.M11 + rotToApply.M22 + rotToApply.M33)) / 2;
-                                    newMotion.vectorOr.X = (rotToApply.M32 - rotToApply.M23) / (4 * newMotion.vectorOr.W);
-                                    newMotion.vectorOr.Y = (rotToApply.M13 - rotToApply.M31) / (4 * newMotion.vectorOr.W);
-                                    newMotion.vectorOr.Z = (rotToApply.M21 - rotToApply.M12) / (4 * newMotion.vectorOr.W);
+                                    newMotion.vectorOr.W = 
+                                        (float)Math.Sqrt(Convert.ToDouble(1.0f + rotToApply.M11 + rotToApply.M22 + rotToApply.M33)) / 2;
+                                    newMotion.vectorOr.X = 
+                                        (rotToApply.M32 - rotToApply.M23) / (4 * newMotion.vectorOr.W);
+                                    newMotion.vectorOr.Y = 
+                                        (rotToApply.M13 - rotToApply.M31) / (4 * newMotion.vectorOr.W);
+                                    newMotion.vectorOr.Z = 
+                                        (rotToApply.M21 - rotToApply.M12) / (4 * newMotion.vectorOr.W);
                                 }
                                 break;
 
@@ -901,9 +918,12 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
                                     // calcolare le coordinate w,x,y,z -> scriverle in motion
                                     newMotion.vectorOr.W = (float)Math.Sqrt(Convert.ToDouble(1.0f + rotToApply.M11 + rotToApply.M22 + rotToApply.M33)) / 2;
-                                    newMotion.vectorOr.X = (rotToApply.M32 - rotToApply.M23) / (4 * newMotion.vectorOr.W);
-                                    newMotion.vectorOr.Y = (rotToApply.M13 - rotToApply.M31) / (4 * newMotion.vectorOr.W);
-                                    newMotion.vectorOr.Z = (rotToApply.M21 - rotToApply.M12) / (4 * newMotion.vectorOr.W);
+                                    newMotion.vectorOr.X = 
+                                        (rotToApply.M32 - rotToApply.M23) / (4 * newMotion.vectorOr.W);
+                                    newMotion.vectorOr.Y = 
+                                        (rotToApply.M13 - rotToApply.M31) / (4 * newMotion.vectorOr.W);
+                                    newMotion.vectorOr.Z = 
+                                        (rotToApply.M21 - rotToApply.M12) / (4 * newMotion.vectorOr.W);
                                 }
                                 break;
 
@@ -927,10 +947,14 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                         (-legoBrick.Ports[sf.InputPort].SIValue + sf.Offset) / accuracy, sf.RotationOrder);
 
                                     // calcolare le coordinate w,x,y,z -> scriverle in motion
-                                    newMotion.vectorOr.W = (float)Math.Sqrt(Convert.ToDouble(1.0f + rotToApply.M11 + rotToApply.M22 + rotToApply.M33)) / 2;
-                                    newMotion.vectorOr.X = (rotToApply.M32 - rotToApply.M23) / (4 * newMotion.vectorOr.W);
-                                    newMotion.vectorOr.Y = (rotToApply.M13 - rotToApply.M31) / (4 * newMotion.vectorOr.W);
-                                    newMotion.vectorOr.Z = (rotToApply.M21 - rotToApply.M12) / (4 * newMotion.vectorOr.W);
+                                    newMotion.vectorOr.W = 
+                                        (float)Math.Sqrt(Convert.ToDouble(1.0f + rotToApply.M11 + rotToApply.M22 + rotToApply.M33)) / 2;
+                                    newMotion.vectorOr.X = 
+                                        (rotToApply.M32 - rotToApply.M23) / (4 * newMotion.vectorOr.W);
+                                    newMotion.vectorOr.Y = 
+                                        (rotToApply.M13 - rotToApply.M31) / (4 * newMotion.vectorOr.W);
+                                    newMotion.vectorOr.Z = 
+                                        (rotToApply.M21 - rotToApply.M12) / (4 * newMotion.vectorOr.W);
                                 }
                                 break;
                         }

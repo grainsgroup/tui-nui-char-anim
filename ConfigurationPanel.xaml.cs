@@ -731,11 +731,12 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 case "Pixar_Lamp":
                     // FOR TESTING
                     this.factorSlider.Value = 70;
-                    LoadConfig("Preset_Pixar_Lamp");
+                    LoadConfig("Preset_Pixar_Lamp_TestVIDEO");
                     break;
 
                 case "Crocodile":
-                    LoadConfig("Preset_Crocodile_Test");
+                    this.factorSlider.Value = 15;
+                    LoadConfig("Preset_Crocodile_TestVIDEO");
                     break;
 
                 case "Guss T_1":
