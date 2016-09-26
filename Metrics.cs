@@ -255,6 +255,14 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 }
 
                 rotCost = minScore / boneDoFPadded[0].Count * MAX_COST;
+
+                //if (bone.rot_DoF.Count == 3 && rotCost > 0)
+                //{
+                //    rotCost = MAX_COST;
+                //}
+                
+
+
             }
 
             if (bone.loc_DoF.Count > 0)
@@ -430,8 +438,20 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
         public static float SymmetryScore(Bone bone, Bone handler)
         {
-            if (bone.name.Contains(".R") || bone.name.Contains(".L"))
+            // Kinect
+            if (handler.name.Contains("NUI"))
             {
+                if (!bone.name.Contains(".R") && !bone.name.Contains(".L"))
+                {
+                    if (handler.name.Contains(".R") || handler.name.Contains(".L"))
+                        return MAX_COST / 2;
+                    else
+                        return 0;
+                } 
+            }
+
+            if (bone.name.Contains(".R") || bone.name.Contains(".L"))
+            {                                
                 float cost = 0;
                 if (bone.name.Contains(".R"))
                     cost += MAX_COST / 2;
@@ -439,11 +459,12 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     cost -= MAX_COST / 2;
 
                 if (bone.name.Contains(".L"))
-                    cost -= MAX_COST;
+                    cost -= MAX_COST / 2 ;
                 if (handler.name.Contains(".L"))
-                    cost += MAX_COST;
+                    cost += MAX_COST / 2 ;
                 return Math.Abs(cost);
             }
+
             else return 0;
         }
 
@@ -624,7 +645,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             var graphVirtualArmature = AutomaticMapping.CreateUndirectedGraph(virtualArmature);
 
             int[,] A = Matrix.GetAdjacencyMatrix(partition, graphControlledArmature);
-            int[,] B = Matrix.GetAdjacencyMatrix(virtualArmature, graphVirtualArmature);                
+            int[,] B = Matrix.GetAdjacencyMatrix(virtualArmature, graphVirtualArmature);            
 
             int[,] AT = Matrix.TransposeMatrix(A);
             int[,] BT = Matrix.TransposeMatrix(B);
@@ -843,19 +864,105 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 DoF += c;
             }
             return DoF;
-        }       
+        }
 
-        public static int GetKinectRotRangeCost(string boneName)
+        public static float GetKinectRotRangeCost(string DoF, string ComponentType)
         {
-            if (boneName.Contains("_ROT"))
-                boneName = boneName.Remove(boneName.IndexOf("_ROT"));
+            float cost = MAX_COST;
+            
+            if (ComponentType.Contains("_ROT"))
+                ComponentType = ComponentType.Remove(ComponentType.IndexOf("_ROT"));
 
-            if (boneName.Contains("_NUI"))
-                boneName = boneName.Remove(boneName.IndexOf("_NUI"));
+            if (ComponentType.Contains("_NUI"))
+                ComponentType = ComponentType.Remove(ComponentType.IndexOf("_NUI"));
+
+            switch (ComponentType)
+            {
+                case "Head" :
+                    if (DoF.Equals("ROT(x)"))
+                        cost = MAX_COST - (85 / 360) * MAX_COST;
+                    if (DoF.Equals("ROT(z)"))
+                        cost = MAX_COST - (60 / 360) * MAX_COST;
+                    break;
+                
+                case "Shoulder.R":
+                case "Shoulder.L":
+                    if (DoF.Equals("ROT(x)"))
+                        cost = MAX_COST - (60 / 360) * MAX_COST;
+                    if (DoF.Equals("ROT(z)"))
+                        cost = MAX_COST - (10 / 360) * MAX_COST;                
+                    break;
+                
+                case "Elbow.R":
+                case "Elbow.L":
+                    if (DoF.Equals("ROT(x)"))
+                        cost = MAX_COST - (170 / 360) * MAX_COST;
+                    if (DoF.Equals("ROT(y)"))
+                        cost = MAX_COST - (170 / 360) * MAX_COST;
+                    if (DoF.Equals("ROT(z)"))
+                        cost = MAX_COST - (120 / 360) * MAX_COST;
+                    break;
+                
+                case "Wrist.R":
+                case "Wrist.L":
+                    if (DoF.Equals("ROT(x)"))
+                        cost = MAX_COST - (160 / 360) * MAX_COST;
+                    break;
+
+                case "Hand.R":
+                case "Hand.L":
+                    if (DoF.Equals("ROT(x)"))
+                        cost = MAX_COST - (50 / 360) * MAX_COST;
+                    if (DoF.Equals("ROT(z)"))
+                        cost = MAX_COST - (50 / 360) * MAX_COST;
+                    break;
+
+                case "Hip":
+                    if (DoF.Equals("ROT(x)"))
+                        cost = MAX_COST - (90 / 360) * MAX_COST;
+                    if (DoF.Equals("ROT(y)"))
+                        cost = MAX_COST - (80 / 360) * MAX_COST;
+                    if (DoF.Equals("ROT(z)"))
+                        cost = MAX_COST - (60 / 360) * MAX_COST;
+                    break;                
+                
+                case "Knee.R":
+                case "Knee.L":
+                    if (DoF.Equals("ROT(x)"))
+                        cost = MAX_COST - (120 / 360) * MAX_COST;
+                    if (DoF.Equals("ROT(z)"))
+                        cost = MAX_COST - (90 / 360) * MAX_COST;
+                    break;
+
+                case "Ankle.R":
+                case "Ankle.L":
+                    if (DoF.Equals("ROT(x)"))
+                        cost = MAX_COST - (50 / 360) * MAX_COST;
+                    break;
+
+                case "Hip.R":
+                case "Hip.L":
+                case "Foot.R":
+                case "Foot.L":
+                case "Shoulder":
+                case "Spine":
+                    cost = MAX_COST;
+                    break;
+            }
+            return cost;
+        }
+
+        public static int GetKinectRotRangeCost(string ComponentType)
+        {
+            if (ComponentType.Contains("_ROT"))
+                ComponentType = ComponentType.Remove(ComponentType.IndexOf("_ROT"));
+
+            if (ComponentType.Contains("_NUI"))
+                ComponentType = ComponentType.Remove(ComponentType.IndexOf("_NUI"));
 
             int cost = 0;
             
-            switch (boneName)
+            switch (ComponentType)
             {
                 case "Elbow.R":
                 case "Elbow.L":
@@ -1047,10 +1154,14 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     cost = MAX_COST / 4 * (4 - 3.2f);
 
                 if (DoF.Contains("ROT("))
-                    cost = MAX_COST / 4 * GetKinectRotRangeCost(ComponentType);
+                    cost = GetKinectRotRangeCost(DoF, ComponentType);
+                    //cost = MAX_COST / 4 * GetKinectRotRangeCost(ComponentType);
+
             }
             return cost;
         }
+
+        
         
         // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
       
@@ -1131,7 +1242,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         public static PartitionAssignment ComputeAssignement(List<Bone> partition, List<Bone> virtualArmature, int maxLenghtChain, Dictionary<string, List<List<char>>> dictionary, string configurationName)
         {
 
-            // solves assignment problem with Hungarian Algorithm                                        
+            // Solves assignment problem with Hungarian Algorithm                                        
             //float[,] costsMatrix = new float[partition.Count, virtualArmature.Count];
 
             // Computes node similarity

@@ -357,6 +357,20 @@
                         </Label>
                         <Slider x:Name="UserPreferenceSlider" Height="24" Width="60" Canvas.Left="37" Canvas.Top="134" Minimum="-1" Maximum="1" SmallChange="1" IsSnapToTickEnabled="True" Ticks="-1,0,1"/>
                         <Label x:Name="ArrangementsOrderLabel" Content="Arrangment: " Canvas.Left="-16" Canvas.Top="261"/>
+                        <TextBox x:Name="NodSim" Height="23" TextWrapping="Wrap" Text="1" Width="50" Canvas.Left="580" Canvas.Top="73"/>
+                        <TextBox x:Name="DofCov" Height="23" TextWrapping="Wrap" Text="1" Width="50" Canvas.Left="580" Canvas.Top="101"/>
+                        <TextBox x:Name="ComRan" Height="23" TextWrapping="Wrap" Text="1" Width="50" Canvas.Left="580" Canvas.Top="129"/>
+                        <TextBox x:Name="ComAnn" Height="23" TextWrapping="Wrap" Text="1" Width="50" Canvas.Left="580" Canvas.Top="157"/>
+                        <TextBox x:Name="PosInC" Height="23" TextWrapping="Wrap" Text="1" Width="50" Canvas.Left="580" Canvas.Top="185"/>
+                        <TextBox x:Name="Sym" Height="23" TextWrapping="Wrap" Text="1" Width="50" Canvas.Left="580" Canvas.Top="213"/>
+                        <TextBox x:Name="ParCou" Height="23" TextWrapping="Wrap" Text="1" Width="50" Canvas.Left="580" Canvas.Top="241"/>
+                        <Label x:Name="ArrangementsOrderLabel_Copy" Content="Node Similarity" Canvas.Left="450" Canvas.Top="71" Width="120"/>
+                        <Label x:Name="ArrangementsOrderLabel_Copy1" Content="DofCoverage" Canvas.Left="450" Canvas.Top="99" Width="108"/>
+                        <Label x:Name="ArrangementsOrderLabel_Copy2" Content="CompRange " Canvas.Left="450" Canvas.Top="127" Width="108"/>
+                        <Label x:Name="ArrangementsOrderLabel_Copy3" Content="CompAnnoyance" Canvas.Left="450" Canvas.Top="155" Width="136"/>
+                        <Label x:Name="ArrangementsOrderLabel_Copy4" Content="PositionInChain" Canvas.Left="450" Canvas.Top="183" Width="122"/>
+                        <Label x:Name="ArrangementsOrderLabel_Copy5" Content="Symmetry" Canvas.Left="450" Canvas.Top="211" Width="92"/>
+                        <Label x:Name="ArrangementsOrderLabel_Copy6" Content="PartitionCount" Canvas.Left="450" Canvas.Top="239" Width="116"/>
                     </Canvas >
                 </TabItem>
 

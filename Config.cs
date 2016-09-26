@@ -194,11 +194,14 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
     {
         public const char SEQUENTIAL_TYPE = 'S';
         public const char SPLITTED_TYPE = 'Y';
+        public const char SINGLE_CONF_TYPE = 'O';
         public const char KINECT_TYPE = 'K';
 
         public List<PartitionAssignment> PartitionAss { get; set; }
         public float TotalScore { get; set; }
         public char Type { get; set; }
+
+        public List<Bone> SplittedArmature { get; set; }
 
         public DecompositionAssignment(List<PartitionAssignment> partAss, float score, char type)
         {

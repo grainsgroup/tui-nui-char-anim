@@ -35,31 +35,37 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
     class SensorLegoInfo : SensorInfo
      {
-         public Lego.Ev3.Core.InputPort InputPort { get; set; }
+        public Lego.Ev3.Core.InputPort InputPort { get; set; }
          
-         public string Axis { get; set; }
+        public string Axis { get; set; }
 
-         public float Offset { get; set; }
+        public float Offset { get; set; }
 
-         public float LocPos { get; set; }
+        public float LocPos { get; set; }
 
-         public bool LocationTrack { get; set; }
+        public bool LocationTrack { get; set; }
 
-         public int RotationOrder { get; set; }
+        public int RotationOrder { get; set; }
 
-         public SensorLegoInfo(Lego.Ev3.Core.InputPort inputPort, string boneName, string objectName, bool locationTrack, bool orientationTrack, string axis, float offset, float locPos, int rotationOrder) 
+        public float Value { get; set; }
+
+        public SensorLegoInfo(Lego.Ev3.Core.InputPort inputPort, string boneName, string objectName, bool locationTrack, bool orientationTrack, string axis, float offset, float locPos, int rotationOrder) 
          {
-             this.InputPort = inputPort;
-             this.ObjectName = objectName;
-             this.BoneName = boneName;
-             this.LocationTrack = locationTrack;
-             this.OrientationTrack = orientationTrack;
-             this.Axis = axis;
-             this.Offset = offset;
-             this.LocPos = locPos;
-             this.RotationOrder = rotationOrder;
+            this.InputPort = inputPort;
+            this.ObjectName = objectName;
+            this.BoneName = boneName;
+            this.LocationTrack = locationTrack;
+            this.OrientationTrack = orientationTrack;
+            this.Axis = axis;
+            this.Offset = offset;
+            this.LocPos = locPos;
+            this.RotationOrder = rotationOrder;
+
+            this.Value = 0;
         }
          
+
+
      }
 
     class SensorKinectInfo : SensorInfo

@@ -9,7 +9,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
     class KinectSkeleton
     {
         // DoFs of Kinect Skeleton
-        public const int KINECT_SKELETON_DOF = 27;
+        public const int KINECT_SKELETON_DOF = 27;        
 
         public static List<List<Bone>> GetKinectPartition()
         {
@@ -203,7 +203,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             
 
             Bone shoulder_right = new Bone("Shoulder.R_NUI");
-            shoulder_right.rot_DoF = new List<char>() { 'z' };
+            shoulder_right.rot_DoF = new List<char>() { 'x','z' };
             shoulder_right.loc_DoF = axis;
             shoulder_right.level = 0;
             shoulder_right.parent = "Shoulder_NUI";
@@ -240,7 +240,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
 
             Bone shoulder_left = new Bone("Shoulder.L_NUI");
-            shoulder_left.rot_DoF = new List<char>() { 'z' };
+            shoulder_left.rot_DoF = new List<char>() { 'x','z' };
             shoulder_left.loc_DoF = axis;
             shoulder_left.level = 0;
             shoulder_left.parent = "Shoulder_NUI";
@@ -326,7 +326,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             knee_right.children = new List<string>() { "Ankle.R_NUI" };
 
             Bone ankle_right = new Bone("Ankle.R_NUI");
-            ankle_right.rot_DoF = new List<char>() { 'x', 'z' };
+            ankle_right.rot_DoF = new List<char>() { 'x' };
             ankle_right.loc_DoF = axis;
             ankle_right.level = 2;
             ankle_right.parent = "Knee.R_NUI";
@@ -362,7 +362,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             knee_left.children = new List<string>() { "Ankle.L_NUI" };
 
             Bone ankle_left = new Bone("Ankle.L_NUI");
-            ankle_left.rot_DoF = new List<char>() { 'x', 'z' };
+            ankle_left.rot_DoF = new List<char>() { 'x' };
             ankle_left.loc_DoF = axis;
             ankle_left.level = 2;
             ankle_left.parent = "Knee.L_NUI";

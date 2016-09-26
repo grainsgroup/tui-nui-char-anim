@@ -469,7 +469,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             return armatures;
         }
 
-        private static List<Bone> GetAncestor(List<Bone> list, Bone lastBoneAnalyzed)
+        public static List<Bone> GetAncestor(List<Bone> list, Bone lastBoneAnalyzed)
         {
             List<Bone> ancestors = new List<Bone>();
 
@@ -1261,8 +1261,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         bones.Add(b);
                         continue;
                     }
-
-
                 }
             }
             else

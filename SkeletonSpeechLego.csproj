@@ -142,6 +142,7 @@
     </Compile>
     <Compile Include="GraphVisualization.cs" />
     <Compile Include="HungarianAlgorithm.cs" />
+    <Compile Include="Instruction.cs" />
     <Compile Include="JsonManager.cs" />
     <Compile Include="KinectSkeleton.cs" />
     <Compile Include="Matrix.cs" />
@@ -190,6 +191,7 @@
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <None Include="docs\LEGO Mindstorms EV3 - Desktop.chm" />
     <None Include="packages.config" />

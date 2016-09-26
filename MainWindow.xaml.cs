@@ -64,12 +64,10 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
         Skeleton skeletonTracked;
 
-        public int currentFrame { get; set; }
-        
+        public int currentFrame { get; set; }        
         public float factor { get; set;}
         private Position startPosition { get; set; }
         private Position endPosition { get; set; }
-
         public float accuracy { get; set; }
         public int ghostFrameRange { get; set; }
         public int ghostFrameStep { get; set; }
@@ -79,9 +77,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         Boolean recFlag = false;
 
         public Brick legoBrick { get; set; }
-        
 
-        
+        public const float alpha = 0.30f;
+        public bool filterOn = true;
 
         /// <summary>
         /// Likelihood that a RecognizedaaPhrase matches a given input
@@ -206,7 +204,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             virtualArmature = false;
             currentPreset = string.Empty;
             startPosition = new Position();
-            endPosition = new Position();
+            endPosition = new Position();            
             
         }
 
@@ -777,9 +775,24 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                             }
                         }
 
-                        newMotion.vectorPos.locX = legoBrick.Ports[sf.InputPort].SIValue - sf.Offset + sf.LocPos;
-                        newMotion.vectorPos.locY = legoBrick.Ports[sf.InputPort].SIValue - sf.Offset + sf.LocPos;
-                        newMotion.vectorPos.locZ = legoBrick.Ports[sf.InputPort].SIValue - sf.Offset + sf.LocPos;
+                        float newValue = 0;
+                        
+                        if (filterOn)
+                        {
+                            newValue = sf.Value + alpha * (legoBrick.Ports[sf.InputPort].SIValue - sf.Value);
+                            newMotion.vectorPos.locX = newValue - sf.Offset + sf.LocPos;
+                            newMotion.vectorPos.locY = newValue - sf.Offset + sf.LocPos;
+                            newMotion.vectorPos.locZ = newValue - sf.Offset + sf.LocPos;
+                            sf.Value = newValue;
+                        }
+                        else
+                        {
+                            // No-fiter
+                            newValue = legoBrick.Ports[sf.InputPort].SIValue;
+                            newMotion.vectorPos.locX = legoBrick.Ports[sf.InputPort].SIValue - sf.Offset + sf.LocPos;
+                            newMotion.vectorPos.locY = legoBrick.Ports[sf.InputPort].SIValue - sf.Offset + sf.LocPos;
+                            newMotion.vectorPos.locZ = legoBrick.Ports[sf.InputPort].SIValue - sf.Offset + sf.LocPos;
+                        }
 
                         switch (sf.Axis)
                         {
@@ -815,7 +828,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                 if (sf.LocationTrack)
                                 {
                                     newMotion.locXTrack = true;
-                                    newMotion.vectorPos.locX = -legoBrick.Ports[sf.InputPort].SIValue + sf.Offset;
+                                    
+                                    newMotion.vectorPos.locX = -newValue + sf.Offset;
+                                     
                                 }
                                 if (sf.OrientationTrack)
                                 {
@@ -877,8 +892,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                     // using wordspace
                                     else
                                         newMotion.locZTrack = true;
+
+                                    newMotion.vectorPos.locY = -newValue + sf.Offset;
                                     
-                                    newMotion.vectorPos.locY = -legoBrick.Ports[sf.InputPort].SIValue + sf.Offset;
                                 }
                                 if (sf.OrientationTrack)
                                 {
@@ -935,7 +951,10 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                     else
                                         newMotion.locYTrack = true;
 
-                                    newMotion.vectorPos.locZ = -legoBrick.Ports[sf.InputPort].SIValue + sf.Offset;
+                                    newMotion.vectorPos.locZ = -newValue + sf.Offset;
+                                    /* No filter value
+                                     * newMotion.vectorPos.locZ = -legoBrick.Ports[sf.InputPort].SIValue + sf.Offset;
+                                     */
                                 }
                                 if (sf.OrientationTrack)
                                 {
@@ -1654,8 +1673,23 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 SendCommand(Command.FAST_FORWARD, "");
             }
 
+            if (e.Key == Key.B && Keyboard.IsKeyDown(Key.LeftCtrl))
+            {
+                filterOn = !filterOn;
+                if (filterOn)
+                    this.statusBarText.Text = "Low Pass Filter On ";
+                else
+                    this.statusBarText.Text = "Low Pass Filter Off ";
+            }
 
-            // 
+
+
+            if (e.Key == Key.D && Keyboard.IsKeyDown(Key.LeftCtrl))
+            {
+                
+            }
+            
+            /* 
             if (e.Key == Key.L && Keyboard.IsKeyDown(Key.RightCtrl))
             {
                 await legoBrick.DirectCommand.StopMotorAsync(OutputPort.All, true);
@@ -1679,10 +1713,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 
                 LoadPose(0,0,0,0);
             }
-
-
-            
-        }
+            */            
+        }                     
 
         private async void LockPos()
         {
