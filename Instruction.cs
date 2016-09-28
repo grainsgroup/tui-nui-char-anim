@@ -325,4 +325,219 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         
     }
 
+    public class Instruction 
+    {
+        public static List<Bone> SplitHandlers(List<Bone> handlers)
+        {
+            List<Bone> result = new List<Bone>();
+            handlers.Sort(delegate(Bone b1, Bone b2) { return b1.level.CompareTo(b2.level); });
+            foreach (Bone currentHandler in handlers)
+            {
+                List<string> components = SplitNameInBricks(currentHandler.name);
+
+                // Finds the level of the parent
+                int parentIndex = handlers.FindIndex(x => x.name.Equals(currentHandler.parent));
+                int startLevel = 0;
+                string parentComponentName = "";
+                if (parentIndex >= 0)
+                {
+                    // This bone is not the root of the armature
+                    List<string> parentComponents = SplitNameInBricks(handlers[parentIndex].name);
+
+                    // Last component of the parent in assemblyArm
+                    parentComponentName = parentComponents[parentComponents.Count - 1];
+                    int j = result.FindIndex(x => x.name.Equals(parentComponentName));
+                    startLevel = result[j].level + 1;
+                }
+
+                for (int level = 0; level < components.Count; level++)
+                {
+                    string s = components[level];
+
+                    Bone boneToAdd = new Bone(s);
+                    //Calculate level from parents
+                    boneToAdd.level = startLevel + level;
+                    //Updates the parentComponentName for the next bone 
+                    boneToAdd.parent = parentComponentName;
+                    parentComponentName = s;
+
+                    if (level < components.Count - 1)
+                    {
+                        boneToAdd.children.Add(components[level + 1]);
+                    }
+                    else
+                    {
+                        foreach (string child in currentHandler.children)
+                        {
+                            boneToAdd.children.Add(SplitNameInBricks(child)[0]);
+                        }
+                    }
+
+                    result.Add(boneToAdd);
+
+                }
+            }
+            return result;
+        }
+
+        public static List<string> SplitNameInBricks(string name)
+        {
+            name = name.Replace(" ", "");
+            List<string> bricks = name.Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+            bricks.RemoveAll(x => x.Contains("_NUI"));
+            return bricks;
+        }
+
+        public static List<LegoJoint> GetLegoAssembly(List<Bone> armature)
+        {
+            List<LegoJoint> result = new List<LegoJoint>();
+            List<List<Bone>> levels = new List<List<Bone>>();
+            LegoJoint jointToAdd;
+
+            // subdivides based on the level nodes
+            for (int i = 0; i < AutomaticMapping.GetMaxLengthChain(armature); i++)
+            {
+                levels.Add(new List<Bone>());
+                foreach (Bone b in armature)
+                {
+                    if (b.level == i)
+                    {
+                        levels[i].Add(b);
+                    }
+                }
+            }
+
+            int displacementLevel0 = 0;
+            for (int i = 0; i < AutomaticMapping.GetMaxLengthChain(armature); i++)
+            {
+                foreach (Bone currentBone in levels[i])
+                {
+                    jointToAdd = new LegoJoint();
+                    jointToAdd.name = currentBone.name.Substring(0, currentBone.name.IndexOf("(PORT-")) + "_" +
+                        currentBone.name.Substring(currentBone.name.IndexOf("ROT"), 6);
+                    jointToAdd.port = currentBone.name.Substring(currentBone.name.IndexOf("(PORT-") + 6, 2);
+                    jointToAdd.split = currentBone.children.Count;
+
+
+                    if (currentBone.level == 0)
+                    {
+                        jointToAdd.position[0] = 0;
+                        jointToAdd.position[1] = 0;
+                        jointToAdd.position[2] = displacementLevel0;
+                        result.Add(jointToAdd);
+                        displacementLevel0 += 30;
+                    }
+                    else
+                    {
+                        jointToAdd.name = currentBone.name.Substring(0, currentBone.name.IndexOf("(PORT-")) + "_" +
+                        currentBone.name.Substring(currentBone.name.IndexOf("ROT"), 6);
+
+                        string jointParent = currentBone.parent.Substring(0, currentBone.parent.IndexOf("(PORT-")) + "_" +
+                        currentBone.parent.Substring(currentBone.parent.IndexOf("ROT"), 6);
+
+                        int parentLegoJointIndex = result.FindIndex(
+                            x => x.name.Equals(jointParent) &&
+                            x.port.Equals(currentBone.parent.Substring(currentBone.parent.IndexOf("(PORT-") + 6, 2)));
+                        int parentBoneIndex = armature.FindIndex(x => x.name.Equals(currentBone.parent));
+
+                        //
+                        // POS(i) = POS(i.parent) + Delta(i.parent) + Delta(neighbor)
+                        //
+
+                        // POS(i.parent) 
+                        //jointToAdd.position = result[parentLegoJointIndex].position; 
+                        jointToAdd.position[0] = result[parentLegoJointIndex].position[0];
+                        jointToAdd.position[1] = result[parentLegoJointIndex].position[1];
+                        jointToAdd.position[2] = result[parentLegoJointIndex].position[2];
+
+                        // Delta(i.parent)
+                        UpdateDeltaFromJointType(jointToAdd, result[parentLegoJointIndex].name);
+
+                        // Delta(neighbor)
+                        UpdateDeltaFromNeighbor(jointToAdd, armature[parentBoneIndex], currentBone);
+                        result.Add(jointToAdd);
+
+                    }
+                }
+            }
+
+
+            return result;
+        }
+
+        public static void UpdateDeltaFromNeighbor(LegoJoint jointToAdd, Bone parent, Bone current)
+        {
+            if (parent.children.Count > 1)
+            {
+                int indexChild = parent.children.FindIndex(x => x.Equals(current.name));
+                int deltaNeigh = (indexChild - parent.children.Count / 2) * BoneNode.DELTA_SPIT;
+                if (deltaNeigh >= 0)
+                    deltaNeigh += BoneNode.DELTA_SPIT;
+                jointToAdd.position[2] += deltaNeigh;
+            }
+            //+,-8
+        }
+
+        public static void UpdateDeltaFromJointType(LegoJoint jointToAdd, string jointType)
+        {
+
+            //string legoJoint = GetLegoJoint(b.name);
+            switch (jointType)
+            {
+                case "LMotor_ROT(x)":
+                    jointToAdd.position[0] += 16;
+                    break;
+
+                case "LMotor_ROT(y)":
+                    jointToAdd.position[0] += 13.7f;
+                    jointToAdd.position[2] += -5.6f;
+                    break;
+
+                case "LMotor_ROT(z)":
+                    jointToAdd.position[0] += 12;
+                    jointToAdd.position[1] += 4.8f;
+                    jointToAdd.position[2] += -3.2f;
+                    break;
+
+                case "MMotor_ROT(x)":
+                    jointToAdd.position[0] += 13.6f;
+                    jointToAdd.position[1] += -4;
+                    break;
+
+                case "MMotor_ROT(y)":
+                    jointToAdd.position[0] += 14.48f;
+                    jointToAdd.position[1] += 0.8f;
+                    break;
+
+                case "MMotor_ROT(z)":
+                    jointToAdd.position[0] += 9.6f;
+                    jointToAdd.position[1] += 2.4f;
+                    break;
+
+
+                case "Gyroscope_ROT(x)":
+                    jointToAdd.position[0] += 18.4f;
+                    jointToAdd.position[1] += 1.6f;
+                    jointToAdd.position[2] += 2.4f;
+                    break;
+
+                case "Gyroscope_ROT(y)":
+                    jointToAdd.position[0] += 15.2f;
+                    jointToAdd.position[2] += 0.8f;
+                    break;
+
+                case "Gyroscope_ROT(z)":
+                    jointToAdd.position[0] += 16;
+                    jointToAdd.position[1] += 1.6f;
+                    jointToAdd.position[2] += -1.6f;
+                    break;
+
+
+            }
+
+
+
+        }
+    }
+
 }
