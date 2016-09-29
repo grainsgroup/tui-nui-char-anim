@@ -1232,50 +1232,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
             // DEBUG
             return new AxisArrangement(combToReturn.ToArray(), cost);            
-        }
-
-        public static PartitionAssignment ComputeAssignement(List<Bone> partition, List<Bone> virtualArmature, int maxLenghtChain, Dictionary<string, List<List<char>>> dictionary, string configurationName)
-        {
-
-            // Solves assignment problem with Hungarian Algorithm                                        
-            //float[,] costsMatrix = new float[partition.Count, virtualArmature.Count];
-
-            // Computes node similarity
-            float[,] costsMatrix = Metrics.NodeSimilarityScore(partition, virtualArmature);
-
-            // Defines the costs
-            for (int row = 0; row < partition.Count; row++)
-            {
-                for (int col = 0; col < virtualArmature.Count; col++)
-                {
-                    costsMatrix[row, col] +=
-                        Metrics.DofCoverageScore(partition[row], virtualArmature[col], dictionary) +
-                        Metrics.ComponentRangeScore(partition[row], virtualArmature[col]) +
-                        Metrics.ComponentAnnoyanceScore(partition[row], virtualArmature[col]) +
-                        Metrics.ChainLengthScore(partition[row], virtualArmature[col], maxLenghtChain) +
-                        Metrics.SymmetryScore(partition[row], virtualArmature[col]);
-                }
-            }
-
-            int[] assignment = HungarianAlgorithm.FindAssignments(costsMatrix);
-
-            float score = ComputeCostAssignment(costsMatrix, assignment);
-
-            PartitionAssignment result =
-                new PartitionAssignment(configurationName, assignment, partition, virtualArmature, score);
-
-            /*
-            if (AutomaticMapping.KinectAssignmentConsistency(result))
-            {
-                return result;
-            }
-            else
-            {
-                return null;
-            }
-            */
-            return result;
-        }
+        }        
 
         public static float ComputeCostAssignment(float[,] costsMatrix, int[] assignment)
         {

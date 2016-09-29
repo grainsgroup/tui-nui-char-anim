@@ -1287,6 +1287,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         
         public List<List<List<Bone>>> GraphPartitioning(int motors, BidirectionalGraph<Bone, Edge<Bone>> graph, List<List<Bone>> components, List<List<List<Bone>>> graphPartitions, bool splitDofCheckBox, bool isRotOnly)
         {
+            
+            
+            
             if (!splitDofCheckBox)
             {
                 foreach (List<Bone> armatureComponent in components)
@@ -1297,10 +1300,10 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     {
                         if (isRotOnly)
                             partialGraphPartitions =
-                                PartitionArmatureComponent(armatureComponent, graph, motors, isRotOnly);
+                                PartitionConnectedComp_ROT(armatureComponent, graph, motors, isRotOnly);
                         else
                             partialGraphPartitions =
-                                PartitionArmatureComponent_LOCROT(armatureComponent, graph, motors, isRotOnly);
+                                PartitionConnectedComp_LOCROT(armatureComponent, graph, motors, isRotOnly);
                     }
                     catch (ApplicationException ex)
                     {
@@ -1339,7 +1342,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             return graphPartitions;
         }
         
-        private static List<List<List<Bone>>> PartitionArmatureComponent(List<Bone> armature, BidirectionalGraph<Bone, Edge<Bone>> graph, int motors, bool isRotOnly)
+        private static List<List<List<Bone>>> PartitionConnectedComp_ROT(List<Bone> armature, BidirectionalGraph<Bone, Edge<Bone>> graph, int motors, bool isRotOnly)
         {
 
             List<List<List<Bone>>> graphPartitions = new List<List<List<Bone>>>();
@@ -1348,7 +1351,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 throw new ApplicationException();
             }
 
-            for (; motors >= 3 ; motors--)
+            int limit = 3;
+            for (; motors >= limit ; motors--)
             {
                 foreach (Bone startBone in armature)
                 {
@@ -1508,7 +1512,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
         }
 
-        private static List<List<List<Bone>>> PartitionArmatureComponent_LOCROT(List<Bone> armature, BidirectionalGraph<Bone, Edge<Bone>> graph, int motors, bool isRotOnly)
+        private static List<List<List<Bone>>> PartitionConnectedComp_LOCROT(List<Bone> armature, BidirectionalGraph<Bone, Edge<Bone>> graph, int motors, bool isRotOnly)
         {
 
             List<List<List<Bone>>> graphPartitions = new List<List<List<Bone>>>();
