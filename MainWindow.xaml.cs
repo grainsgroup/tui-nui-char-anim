@@ -780,18 +780,18 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         if (filterOn)
                         {
                             newValue = sf.Value + alpha * (legoBrick.Ports[sf.InputPort].SIValue - sf.Value);
-                            newMotion.vectorPos.locX = newValue - sf.Offset + sf.LocPos;
-                            newMotion.vectorPos.locY = newValue - sf.Offset + sf.LocPos;
-                            newMotion.vectorPos.locZ = newValue - sf.Offset + sf.LocPos;
+                            //newMotion.vectorPos.locX = newValue - sf.Offset + sf.LocPos;
+                            //newMotion.vectorPos.locY = newValue - sf.Offset + sf.LocPos;
+                            //newMotion.vectorPos.locZ = newValue - sf.Offset + sf.LocPos;
                             sf.Value = newValue;
                         }
                         else
                         {
                             // No-fiter
                             newValue = legoBrick.Ports[sf.InputPort].SIValue;
-                            newMotion.vectorPos.locX = legoBrick.Ports[sf.InputPort].SIValue - sf.Offset + sf.LocPos;
-                            newMotion.vectorPos.locY = legoBrick.Ports[sf.InputPort].SIValue - sf.Offset + sf.LocPos;
-                            newMotion.vectorPos.locZ = legoBrick.Ports[sf.InputPort].SIValue - sf.Offset + sf.LocPos;
+                            //newMotion.vectorPos.locX = legoBrick.Ports[sf.InputPort].SIValue - sf.Offset + sf.LocPos;
+                            //newMotion.vectorPos.locY = legoBrick.Ports[sf.InputPort].SIValue - sf.Offset + sf.LocPos;
+                            //newMotion.vectorPos.locZ = legoBrick.Ports[sf.InputPort].SIValue - sf.Offset + sf.LocPos;
                         }
 
                         switch (sf.Axis)
@@ -800,6 +800,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                 if (sf.LocationTrack)
                                 {
                                     newMotion.locXTrack = true;
+                                    newMotion.vectorPos.locX = newValue - sf.Offset + sf.LocPos;
                                 }
                                 if (sf.OrientationTrack)
                                 {
@@ -828,7 +829,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                 if (sf.LocationTrack)
                                 {
                                     newMotion.locXTrack = true;
-                                    
                                     newMotion.vectorPos.locX = -newValue + sf.Offset;
                                      
                                 }
@@ -842,7 +842,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
                                     // Compute w,x,y,z coordinates the new rotation matrix
                                     newMotion.vectorOr.W = 
-                                        (float)Math.Sqrt(Convert.ToDouble(1.0f + rotToApply.M11 + rotToApply.M22 + rotToApply.M33)) / 2;
+                                        (float)Math.Sqrt(Convert.ToDouble(1.0f + rotToApply.M11 + rotToApply.M22 + rotToApply.M33))/2;
                                     newMotion.vectorOr.X = 
                                         (rotToApply.M32 - rotToApply.M23) / (4 * newMotion.vectorOr.W);
                                     newMotion.vectorOr.Y = 
@@ -857,10 +857,16 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                 {
                                     // if is an armature using Blender local space
                                     if (!sf.BoneName.Equals(""))
+                                    {
                                         newMotion.locYTrack = true;
+                                        newMotion.vectorPos.locY = newValue - sf.Offset + sf.LocPos;
+                                    }
                                     // using wordspace
                                     else
+                                    {
                                         newMotion.locZTrack = true;
+                                        newMotion.vectorPos.locY = newValue - sf.Offset + sf.LocPos;
+                                    }
                                 }
                                 if (sf.OrientationTrack)
                                 {
@@ -871,15 +877,13 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                         (legoBrick.Ports[sf.InputPort].SIValue - sf.Offset) / accuracy, sf.RotationOrder);
                                     
                                     newMotion.vectorOr.W = 
-                                        (float)Math.Sqrt(Convert.ToDouble(1.0f + rotToApply.M11 + rotToApply.M22 + rotToApply.M33)) / 2;
+                                        (float)Math.Sqrt(Convert.ToDouble(1.0f + rotToApply.M11 + rotToApply.M22 + rotToApply.M33))/2;
                                     newMotion.vectorOr.X = 
                                         (rotToApply.M32 - rotToApply.M23) / (4 * newMotion.vectorOr.W);
                                     newMotion.vectorOr.Y = 
                                         (rotToApply.M13 - rotToApply.M31) / (4 * newMotion.vectorOr.W);
                                     newMotion.vectorOr.Z = 
-                                        (rotToApply.M21 - rotToApply.M12) / (4 * newMotion.vectorOr.W);
-
-                                    
+                                        (rotToApply.M21 - rotToApply.M12) / (4 * newMotion.vectorOr.W);                                
                                 }
                                 break;
 
@@ -888,13 +892,17 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                 {
                                     // if is an armature using Blender local space
                                     if (!sf.BoneName.Equals(""))
+                                    {
                                         newMotion.locYTrack = true;
+                                        newMotion.vectorPos.locY = -newValue + sf.Offset;
+                                    }
                                     // using wordspace
                                     else
+                                    {
                                         newMotion.locZTrack = true;
-
-                                    newMotion.vectorPos.locY = -newValue + sf.Offset;
-                                    
+                                        newMotion.vectorPos.locY = -newValue + sf.Offset;
+                                    }
+                                                                        
                                 }
                                 if (sf.OrientationTrack)
                                 {
@@ -905,7 +913,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                         (-legoBrick.Ports[sf.InputPort].SIValue + sf.Offset) / accuracy, sf.RotationOrder);
                                     
                                     newMotion.vectorOr.W = 
-                                        (float)Math.Sqrt(Convert.ToDouble(1.0f + rotToApply.M11 + rotToApply.M22 + rotToApply.M33)) / 2;
+                                        (float)Math.Sqrt(Convert.ToDouble(1.0f + rotToApply.M11 + rotToApply.M22 + rotToApply.M33))/2;
                                     newMotion.vectorOr.X = 
                                         (rotToApply.M32 - rotToApply.M23) / (4 * newMotion.vectorOr.W);
                                     newMotion.vectorOr.Y = 
@@ -919,9 +927,15 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                 if (sf.LocationTrack)
                                 {
                                     if (!sf.BoneName.Equals(""))
+                                    {
                                         newMotion.locZTrack = true;
+                                        newMotion.vectorPos.locZ = newValue - sf.Offset + sf.LocPos;
+                                    }
                                     else
+                                    {
                                         newMotion.locYTrack = true;
+                                        newMotion.vectorPos.locZ = newValue - sf.Offset + sf.LocPos;
+                                    }
                                 }
                                 if (sf.OrientationTrack)
                                 {
@@ -933,7 +947,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                         (legoBrick.Ports[sf.InputPort].SIValue - sf.Offset) / accuracy, sf.RotationOrder);
 
                                     // calcolare le coordinate w,x,y,z -> scriverle in motion
-                                    newMotion.vectorOr.W = (float)Math.Sqrt(Convert.ToDouble(1.0f + rotToApply.M11 + rotToApply.M22 + rotToApply.M33)) / 2;
+                                    newMotion.vectorOr.W = 
+                                        (float)Math.Sqrt(Convert.ToDouble(1.0f + rotToApply.M11 + rotToApply.M22 + rotToApply.M33))/2;
                                     newMotion.vectorOr.X = 
                                         (rotToApply.M32 - rotToApply.M23) / (4 * newMotion.vectorOr.W);
                                     newMotion.vectorOr.Y = 
@@ -947,11 +962,16 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                 if (sf.LocationTrack)
                                 {
                                     if (!sf.BoneName.Equals(""))
+                                    {
                                         newMotion.locZTrack = true;
+                                        newMotion.vectorPos.locZ = -newValue + sf.Offset;
+                                    }
                                     else
+                                    {
                                         newMotion.locYTrack = true;
-
-                                    newMotion.vectorPos.locZ = -newValue + sf.Offset;
+                                        newMotion.vectorPos.locZ = -newValue + sf.Offset;
+                                    }
+                                    
                                     /* No filter value
                                      * newMotion.vectorPos.locZ = -legoBrick.Ports[sf.InputPort].SIValue + sf.Offset;
                                      */
@@ -967,7 +987,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
                                     // calcolare le coordinate w,x,y,z -> scriverle in motion
                                     newMotion.vectorOr.W = 
-                                        (float)Math.Sqrt(Convert.ToDouble(1.0f + rotToApply.M11 + rotToApply.M22 + rotToApply.M33)) / 2;
+                                        (float)Math.Sqrt(Convert.ToDouble(1.0f + rotToApply.M11 + rotToApply.M22 + rotToApply.M33))/2;
                                     newMotion.vectorOr.X = 
                                         (rotToApply.M32 - rotToApply.M23) / (4 * newMotion.vectorOr.W);
                                     newMotion.vectorOr.Y = 
