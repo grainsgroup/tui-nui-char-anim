@@ -961,8 +961,10 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     List<List<List<Bone>>> graphPartitions = new List<List<List<Bone>>>();
                     try
                     {
+                        //graphPartitions = GraphPartitioning (bricksAvailable, graph, graphComponents, graphPartitions,
+                        //    this.SplitDofCheckBox.IsChecked.Value, true);
                         graphPartitions = GraphPartitioning (bricksAvailable, graph, graphComponents, graphPartitions,
-                            this.SplitDofCheckBox.IsChecked.Value, true);
+                            this.SplitDofCheckBox.IsChecked.Value, false);
                     }
                     catch (ApplicationException)
                     {
@@ -1286,15 +1288,14 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         }        
         
         public List<List<List<Bone>>> GraphPartitioning(int motors, BidirectionalGraph<Bone, Edge<Bone>> graph, List<List<Bone>> components, List<List<List<Bone>>> graphPartitions, bool splitDofCheckBox, bool isRotOnly)
-        {
-            
-            
-            
+        {                                    
             if (!splitDofCheckBox)
             {
                 foreach (List<Bone> armatureComponent in components)
                 {
-                    // This list is called partial because contains only the partition for a specific connected component    
+                    // This list is called partial because contains 
+                    // only the partition for a specific connected component    
+                    
                     List<List<List<Bone>>> partialGraphPartitions = new List<List<List<Bone>>>();
                     try
                     {
@@ -1310,6 +1311,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         throw ex;
                     }
 
+                    // Item is not the first element
                     if (graphPartitions.Count > 0)
                     {
                         // Combines partitions
@@ -1512,155 +1514,333 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
         }
 
+        //private static List<List<List<Bone>>> PartitionConnectedComp_LOCROT(List<Bone> armature, BidirectionalGraph<Bone, Edge<Bone>> graph, int motors, bool isRotOnly)
+        //{
+
+        //    List<List<List<Bone>>> graphPartitions = new List<List<List<Bone>>>();
+
+            
+        //    if (AutomaticMapping.PartitionCapacityOverflow_LOCROT(armature, motors))
+        //    {
+        //        throw new ApplicationException();
+        //    }
+
+        //    foreach (Bone startBone in armature)
+        //    {
+        //        List<GraphTraversal> graphTraversalList = new List<GraphTraversal>();
+
+        //        GraphTraversal graphTraversal = new GraphTraversal(motors);
+        //        var dfs = new QuickGraph.Algorithms.Search.DepthFirstSearchAlgorithm<Bone, Edge<Bone>>(graph);
+        //        dfs.DiscoverVertex += new VertexAction<Bone>(graphTraversal.dfs_DiscoverVertex_MaxLocRotDoF);
+        //        dfs.Compute(startBone);
+        //        graphTraversalList.Add(graphTraversal);
+
+        //        while (graphTraversalList.Count > 0)
+        //        {
+        //            GraphTraversal currGraphTrav = graphTraversalList[0];
+
+        //            while (currGraphTrav.BonesToVisit.Count > 0)
+        //            {
+        //                Bone currentBone = currGraphTrav.BonesToVisit[0];
+
+        //                if (currentBone.children.Count > 1)
+        //                {
+        //                    // The bone is a split
+
+        //                    // Checks if the current partition can contain this bone:
+        //                    // 1. there are not enough available motors
+        //                    if ((currGraphTrav.MotorAvailable - currentBone.rot_DoF.Count - currentBone.loc_DoF.Count < 0) ||
+        //                        // 2. the new bone is not connected
+        //                        !AutomaticMapping.IsConnectedBone(currGraphTrav.Partition, currentBone) || 
+        //                        // 3. symmetric split check
+        //                        (currGraphTrav.Partition.Count > 0 &&
+        //                            currGraphTrav.Partition[currGraphTrav.Partition.Count - 1].name.Contains(".R")) ||
+        //                        (currGraphTrav.Partition.Count > 0 &&
+        //                            currGraphTrav.Partition[currGraphTrav.Partition.Count - 1].name.Contains(".L")))
+        //                    {
+        //                        // Terminates the inclusion into the current partition
+        //                        currGraphTrav.Decomposition.Add(currGraphTrav.Partition);
+        //                        currGraphTrav.Partition = new List<Bone>();
+        //                        currGraphTrav.MotorAvailable = motors;
+        //                    }
+        //                    else
+        //                    {
+        //                        currGraphTrav.Partition.Add(currentBone);
+        //                        currGraphTrav.BonesToVisit.RemoveAt(0);
+        //                        currGraphTrav.MotorAvailable -= currentBone.rot_DoF.Count + currentBone.loc_DoF.Count;
+        //                        bool currGraphTravEdited = false;
+
+        //                        // Explore neighborhood:
+
+        //                        // 1. Depth-First 
+        //                        List<List<Bone>> alternativePaths = AutomaticMapping.ChildrenWithDepthSearch
+        //                            (currentBone, currGraphTrav.BonesToVisit, currGraphTrav.MotorAvailable, graph);
+        //                        if (alternativePaths.Count > 0)
+        //                        {
+        //                            currGraphTravEdited = true;
+        //                            foreach (List<Bone> path in alternativePaths)
+        //                            {
+        //                                // Copies the old GraphTraversal values 
+        //                                GraphTraversal newGraphTr = new GraphTraversal(currGraphTrav.MotorAvailable);
+        //                                newGraphTr.BonesToVisit = currGraphTrav.BonesToVisit.ToList();
+        //                                newGraphTr.Decomposition = currGraphTrav.Decomposition.ToList();
+        //                                newGraphTr.Partition = currGraphTrav.Partition.ToList();
+
+        //                                // Updates new GraphTraversal object, adding new bone visited
+        //                                foreach (Bone childToAdd in path)
+        //                                {
+        //                                    newGraphTr.Partition.Add(childToAdd);
+        //                                    newGraphTr.BonesToVisit.Remove(childToAdd);
+        //                                    newGraphTr.MotorAvailable -= childToAdd.rot_DoF.Count;
+        //                                }
+
+        //                                newGraphTr.Decomposition.Add(newGraphTr.Partition);
+        //                                newGraphTr.Partition = new List<Bone>();
+        //                                newGraphTr.MotorAvailable = motors;
+
+        //                                graphTraversalList.Add(newGraphTr);
+        //                            }
+        //                        }
+
+        //                        // 2. Breadth-first
+        //                        List<Bone> neighborsToAdd = AutomaticMapping.ChildrenWithBreadthFirst
+        //                            (currentBone, currGraphTrav.BonesToVisit, currGraphTrav.MotorAvailable, graph);
+
+        //                        if (neighborsToAdd.Count > 1)
+        //                        {
+        //                            currGraphTravEdited = true;
+
+        //                            // Copies the old GraphTraversal values 
+        //                            GraphTraversal newGraphTr = new GraphTraversal(currGraphTrav.MotorAvailable);
+        //                            newGraphTr.BonesToVisit = currGraphTrav.BonesToVisit.ToList();
+        //                            newGraphTr.Decomposition = currGraphTrav.Decomposition.ToList();
+        //                            newGraphTr.Partition = currGraphTrav.Partition.ToList();
+
+        //                            foreach (Bone childToAdd in neighborsToAdd)
+        //                            {
+        //                                newGraphTr.Partition.Add(childToAdd);
+        //                                newGraphTr.BonesToVisit.Remove(childToAdd);
+        //                                newGraphTr.MotorAvailable -= childToAdd.rot_DoF.Count;
+        //                            }
+
+        //                            newGraphTr.Decomposition.Add(newGraphTr.Partition);
+        //                            newGraphTr.Partition = new List<Bone>();
+        //                            newGraphTr.MotorAvailable = motors;
+
+        //                            graphTraversalList.Add(newGraphTr);
+        //                        }
+
+
+        //                        if (currGraphTravEdited)
+        //                        {
+        //                            graphTraversalList.Remove(currGraphTrav);
+        //                            currGraphTrav = graphTraversalList[0];
+        //                        }
+        //                        else
+        //                        {
+        //                            currGraphTrav.Decomposition.Add(currGraphTrav.Partition);
+        //                            currGraphTrav.Partition = new List<Bone>();
+        //                            currGraphTrav.MotorAvailable = motors;
+        //                        }
+        //                    }
+        //                }
+        //                else
+        //                {
+        //                    // Current bone is a sequential bone
+        //                    AutomaticMapping.UpdatePartition_LOCROT(motors, currGraphTrav.Decomposition,
+        //                        ref currGraphTrav.MotorAvailable,
+        //                        ref currGraphTrav.Partition, currentBone);
+        //                    currGraphTrav.BonesToVisit.RemoveAt(0);
+        //                }
+        //            }
+
+        //            if (currGraphTrav.Partition.Count > 0)
+        //            {
+        //                // Adds last partition
+        //                currGraphTrav.Decomposition.Add(currGraphTrav.Partition);
+        //            }
+
+        //            graphPartitions.Add(currGraphTrav.Decomposition.ToList());
+        //            currGraphTrav.Decomposition = new List<List<Bone>>();
+        //            graphTraversalList.RemoveAt(0);
+        //        }
+
+        //    }
+
+        //    // Remove decompositions from graphPartitions that propose the same partitioning
+        //    for (int i = 0; i < graphPartitions.Count; i++)
+        //    {
+        //        for (int j = i + 1; j < graphPartitions.Count; j++)
+        //        {
+        //            if (AutomaticMapping.IsEqualDecomposition(graphPartitions[i], graphPartitions[j]))
+        //            {
+        //                graphPartitions.RemoveAt(j);
+        //                j--;
+        //            }
+        //        }
+        //    }
+
+        //    return graphPartitions;
+
+        //}
+
         private static List<List<List<Bone>>> PartitionConnectedComp_LOCROT(List<Bone> armature, BidirectionalGraph<Bone, Edge<Bone>> graph, int motors, bool isRotOnly)
         {
 
             List<List<List<Bone>>> graphPartitions = new List<List<List<Bone>>>();
-
-            //if(ConfigurationPanel.DofCountTest(armature,isRotOnly))
             if (AutomaticMapping.PartitionCapacityOverflow_LOCROT(armature, motors))
             {
                 throw new ApplicationException();
             }
 
-            foreach (Bone startBone in armature)
+            int limit = 3;
+            for (; motors >= limit; motors--)
             {
-                List<GraphTraversal> graphTraversalList = new List<GraphTraversal>();
-
-                GraphTraversal graphTraversal = new GraphTraversal(motors);
-                var dfs = new QuickGraph.Algorithms.Search.DepthFirstSearchAlgorithm<Bone, Edge<Bone>>(graph);
-                dfs.DiscoverVertex += new VertexAction<Bone>(graphTraversal.dfs_DiscoverVertex_MaxLocRotDoF);
-                dfs.Compute(startBone);
-                graphTraversalList.Add(graphTraversal);
-
-                while (graphTraversalList.Count > 0)
+                foreach (Bone startBone in armature)
                 {
-                    GraphTraversal currGraphTrav = graphTraversalList[0];
+                    List<GraphTraversal> graphTraversalList = new List<GraphTraversal>();
 
-                    while (currGraphTrav.BonesToVisit.Count > 0)
+                    GraphTraversal graphTraversal = new GraphTraversal(motors);
+                    var dfs = new QuickGraph.Algorithms.Search.DepthFirstSearchAlgorithm<Bone, Edge<Bone>>(graph);
+                    dfs.DiscoverVertex += new VertexAction<Bone>(graphTraversal.dfs_DiscoverVertex_MaxLocRotDoF);
+                    dfs.Compute(startBone);
+                    graphTraversalList.Add(graphTraversal);
+                    
+                    while (graphTraversalList.Count > 0)
                     {
-                        Bone currentBone = currGraphTrav.BonesToVisit[0];
+                        GraphTraversal currGraphTrav = graphTraversalList[0];
 
-                        if (currentBone.children.Count > 1)
+                        while (currGraphTrav.BonesToVisit.Count > 0)
                         {
-                            // The bone is a split
+                            Bone currentBone = currGraphTrav.BonesToVisit[0];
 
-                            // Checks if the current partition can contain this bone
-                            if ((currGraphTrav.MotorAvailable - currentBone.rot_DoF.Count - currentBone.loc_DoF.Count < 0) || // there are not enough available motors
-                                !AutomaticMapping.IsConnectedBone(currGraphTrav.Partition, currentBone) || // the new bone is not connected
-                                // symmetric split check
-                                (currGraphTrav.Partition.Count > 0 &&
-                                    currGraphTrav.Partition[currGraphTrav.Partition.Count - 1].name.Contains(".R")) ||
-                                (currGraphTrav.Partition.Count > 0 &&
-                                    currGraphTrav.Partition[currGraphTrav.Partition.Count - 1].name.Contains(".L")))
+                            if (currentBone.children.Count > 1)
                             {
-                                // Terminates the inclusion into the current partition
-                                currGraphTrav.Decomposition.Add(currGraphTrav.Partition);
-                                currGraphTrav.Partition = new List<Bone>();
-                                currGraphTrav.MotorAvailable = motors;
-                            }
-                            else
-                            {
-                                currGraphTrav.Partition.Add(currentBone);
-                                currGraphTrav.BonesToVisit.RemoveAt(0);
-                                currGraphTrav.MotorAvailable -= currentBone.rot_DoF.Count + currentBone.loc_DoF.Count;
-                                bool currGraphTravEdited = false;
+                                // The bone is a split
 
-                                // Explore neighborhood:
-
-                                // 1. Depth-First 
-                                List<List<Bone>> alternativePaths = AutomaticMapping.ChildrenWithDepthSearch
-                                    (currentBone, currGraphTrav.BonesToVisit, currGraphTrav.MotorAvailable, graph);
-                                if (alternativePaths.Count > 0)
+                                // Checks if the current partition can contain this bone:
+                                
+                                // 1. There are not enough available motors
+                                if ((currGraphTrav.MotorAvailable + 3 - (currentBone.rot_DoF.Count + currentBone.loc_DoF.Count) < 0) ||
+                                    // 2. The new bone is not connected
+                                    !AutomaticMapping.IsConnectedBone(currGraphTrav.Partition, currentBone) || 
+                                    // 3. Symmetric split check
+                                    (currGraphTrav.Partition.Count > 0 &&
+                                        currGraphTrav.Partition[currGraphTrav.Partition.Count - 1].name.Contains(".R")) ||
+                                    (currGraphTrav.Partition.Count > 0 &&
+                                        currGraphTrav.Partition[currGraphTrav.Partition.Count - 1].name.Contains(".L")))
                                 {
-                                    currGraphTravEdited = true;
-                                    foreach (List<Bone> path in alternativePaths)
-                                    {
-                                        // Copies the old GraphTraversal values 
-                                        GraphTraversal newGraphTr = new GraphTraversal(currGraphTrav.MotorAvailable);
-                                        newGraphTr.BonesToVisit = currGraphTrav.BonesToVisit.ToList();
-                                        newGraphTr.Decomposition = currGraphTrav.Decomposition.ToList();
-                                        newGraphTr.Partition = currGraphTrav.Partition.ToList();
-
-                                        // Updates new GraphTraversal object, adding new bone visited
-                                        foreach (Bone childToAdd in path)
-                                        {
-                                            newGraphTr.Partition.Add(childToAdd);
-                                            newGraphTr.BonesToVisit.Remove(childToAdd);
-                                            newGraphTr.MotorAvailable -= childToAdd.rot_DoF.Count;
-                                        }
-
-                                        newGraphTr.Decomposition.Add(newGraphTr.Partition);
-                                        newGraphTr.Partition = new List<Bone>();
-                                        newGraphTr.MotorAvailable = motors;
-
-                                        graphTraversalList.Add(newGraphTr);
-                                    }
-                                }
-
-                                // 2. Breadth-first
-                                List<Bone> neighborsToAdd = AutomaticMapping.ChildrenWithBreadthFirst
-                                    (currentBone, currGraphTrav.BonesToVisit, currGraphTrav.MotorAvailable, graph);
-
-                                if (neighborsToAdd.Count > 1)
-                                {
-                                    currGraphTravEdited = true;
-
-                                    // Copies the old GraphTraversal values 
-                                    GraphTraversal newGraphTr = new GraphTraversal(currGraphTrav.MotorAvailable);
-                                    newGraphTr.BonesToVisit = currGraphTrav.BonesToVisit.ToList();
-                                    newGraphTr.Decomposition = currGraphTrav.Decomposition.ToList();
-                                    newGraphTr.Partition = currGraphTrav.Partition.ToList();
-
-                                    foreach (Bone childToAdd in neighborsToAdd)
-                                    {
-                                        newGraphTr.Partition.Add(childToAdd);
-                                        newGraphTr.BonesToVisit.Remove(childToAdd);
-                                        newGraphTr.MotorAvailable -= childToAdd.rot_DoF.Count;
-                                    }
-
-                                    newGraphTr.Decomposition.Add(newGraphTr.Partition);
-                                    newGraphTr.Partition = new List<Bone>();
-                                    newGraphTr.MotorAvailable = motors;
-
-                                    graphTraversalList.Add(newGraphTr);
-                                }
-
-
-                                if (currGraphTravEdited)
-                                {
-                                    graphTraversalList.Remove(currGraphTrav);
-                                    currGraphTrav = graphTraversalList[0];
-                                }
-                                else
-                                {
+                                    // Terminates the inclusion into the current partition
                                     currGraphTrav.Decomposition.Add(currGraphTrav.Partition);
                                     currGraphTrav.Partition = new List<Bone>();
                                     currGraphTrav.MotorAvailable = motors;
                                 }
+                                else
+                                {
+                                    
+                                    currGraphTrav.Partition.Add(currentBone);
+                                    currGraphTrav.BonesToVisit.RemoveAt(0);
+                                    currGraphTrav.MotorAvailable -= currentBone.rot_DoF.Count + currentBone.loc_DoF.Count;
+                                    bool currGraphTravEdited = false;
+
+                                    if (currGraphTrav.MotorAvailable >= 0)
+                                    {
+                                        // Explore neighborhood:
+
+                                        // 1. Depth-First 
+                                        List<List<Bone>> alternativePaths = AutomaticMapping.ChildrenWithDepthSearch_LOCROT
+                                            (currentBone, currGraphTrav.BonesToVisit, currGraphTrav.MotorAvailable, graph);
+                                        if (alternativePaths.Count > 0)
+                                        {
+                                            currGraphTravEdited = true;
+                                            foreach (List<Bone> path in alternativePaths)
+                                            {
+                                                // Copies the old GraphTraversal values 
+                                                GraphTraversal newGraphTr = new GraphTraversal(currGraphTrav.MotorAvailable);
+                                                newGraphTr.BonesToVisit = currGraphTrav.BonesToVisit.ToList();
+                                                newGraphTr.Decomposition = currGraphTrav.Decomposition.ToList();
+                                                newGraphTr.Partition = currGraphTrav.Partition.ToList();
+
+                                                // Updates new GraphTraversal object, adding new bone visited
+                                                foreach (Bone childToAdd in path)
+                                                {
+                                                    newGraphTr.Partition.Add(childToAdd);
+                                                    newGraphTr.BonesToVisit.Remove(childToAdd);
+                                                    newGraphTr.MotorAvailable -= (childToAdd.rot_DoF.Count + childToAdd.loc_DoF.Count) ;
+                                                }
+
+                                                newGraphTr.Decomposition.Add(newGraphTr.Partition);
+                                                newGraphTr.Partition = new List<Bone>();
+                                                newGraphTr.MotorAvailable = motors;
+
+                                                graphTraversalList.Add(newGraphTr);
+                                            }
+                                        }
+
+                                        // 2. Breadth-first
+                                        List<Bone> neighborsToAdd = AutomaticMapping.ChildrenWithBreadthFirst_LOCROT
+                                            (currentBone, currGraphTrav.BonesToVisit, currGraphTrav.MotorAvailable, graph);
+
+                                        if (neighborsToAdd.Count > 1)
+                                        {
+                                            currGraphTravEdited = true;
+
+                                            // Copies the old GraphTraversal values 
+                                            GraphTraversal newGraphTr = new GraphTraversal(currGraphTrav.MotorAvailable);
+                                            newGraphTr.BonesToVisit = currGraphTrav.BonesToVisit.ToList();
+                                            newGraphTr.Decomposition = currGraphTrav.Decomposition.ToList();
+                                            newGraphTr.Partition = currGraphTrav.Partition.ToList();
+
+                                            foreach (Bone childToAdd in neighborsToAdd)
+                                            {
+                                                newGraphTr.Partition.Add(childToAdd);
+                                                newGraphTr.BonesToVisit.Remove(childToAdd);
+                                                newGraphTr.MotorAvailable -= childToAdd.rot_DoF.Count;
+                                            }
+
+                                            newGraphTr.Decomposition.Add(newGraphTr.Partition);
+                                            newGraphTr.Partition = new List<Bone>();
+                                            newGraphTr.MotorAvailable = motors;
+
+                                            graphTraversalList.Add(newGraphTr);
+                                        }
+                                    }
+                                                  
+                                    if (currGraphTravEdited)
+                                    {
+                                        graphTraversalList.Remove(currGraphTrav);
+                                        currGraphTrav = graphTraversalList[0];
+                                    }
+                                    else
+                                    {
+                                        currGraphTrav.Decomposition.Add(currGraphTrav.Partition);
+                                        currGraphTrav.Partition = new List<Bone>();
+                                        currGraphTrav.MotorAvailable = motors;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                // Current bone is a sequential bone
+                                AutomaticMapping.UpdatePartition_LOCROT(motors, currGraphTrav.Decomposition,
+                                    ref currGraphTrav.MotorAvailable,
+                                    ref currGraphTrav.Partition, currentBone);
+                                currGraphTrav.BonesToVisit.RemoveAt(0);
                             }
                         }
-                        else
+
+                        if (currGraphTrav.Partition.Count > 0)
                         {
-                            // Current bone is a sequential bone
-                            AutomaticMapping.UpdatePartition_LOCROT(motors, currGraphTrav.Decomposition,
-                                ref currGraphTrav.MotorAvailable,
-                                ref currGraphTrav.Partition, currentBone);
-                            currGraphTrav.BonesToVisit.RemoveAt(0);
+                            // Adds last partition
+                            currGraphTrav.Decomposition.Add(currGraphTrav.Partition);
                         }
+
+                        graphPartitions.Add(currGraphTrav.Decomposition.ToList());
+                        currGraphTrav.Decomposition = new List<List<Bone>>();
+                        graphTraversalList.RemoveAt(0);
                     }
 
-                    if (currGraphTrav.Partition.Count > 0)
-                    {
-                        // Adds last partition
-                        currGraphTrav.Decomposition.Add(currGraphTrav.Partition);
-                    }
-
-                    graphPartitions.Add(currGraphTrav.Decomposition.ToList());
-                    currGraphTrav.Decomposition = new List<List<Bone>>();
-                    graphTraversalList.RemoveAt(0);
                 }
-
             }
 
             // Remove decompositions from graphPartitions that propose the same partitioning
@@ -1679,7 +1859,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             return graphPartitions;
 
         }
-        
         
 
         private List<List<Bone>> ComputeAlternatives(List<Bone> currentVirtualArmature, int componentAvailable)

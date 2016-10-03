@@ -26,12 +26,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
     using Microsoft.Kinect;
 
     using System;
-    using System.Collections;    
-    using System.Threading;
-    
+    using System.Collections;
+
     using System.Collections.Generic;
-    using System.ComponentModel;
-    using System.Text;    
     using System.Windows.Documents;
     using Microsoft.Speech.AudioFormat;
     using Microsoft.Speech.Recognition;
@@ -864,6 +861,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                     // using wordspace
                                     else
                                     {
+                                        // translates into Kinect coordinates
                                         newMotion.locZTrack = true;
                                         newMotion.vectorPos.locY = newValue - sf.Offset + sf.LocPos;
                                     }
@@ -899,6 +897,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                     // using wordspace
                                     else
                                     {
+                                        // translates into Kinect coordinates
                                         newMotion.locZTrack = true;
                                         newMotion.vectorPos.locY = -newValue + sf.Offset;
                                     }
