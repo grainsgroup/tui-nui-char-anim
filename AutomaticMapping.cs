@@ -551,7 +551,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
             return result;
         }
-
+        
         public static List<List<Bone>> ChildrenWithDepthSearch_LOCROT(Bone currentBone, List<Bone> armature, int motorAvailable, BidirectionalGraph<Bone, Edge<Bone>> graph)
         {
             List<List<Bone>> result = new List<List<Bone>>();
@@ -562,12 +562,11 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             foreach (var edge in graph.OutEdges(currentBone))
             {
                 Bone neighbor = edge.Target;
-                if (boneToVisit.Contains(neighbor) && (motorAvailable + 3  - (neighbor.rot_DoF.Count + neighbor.loc_DoF.Count)>= 0))
+                if (boneToVisit.Contains(neighbor) && (motorAvailable - (neighbor.rot_DoF.Count + neighbor.loc_DoF.Count)>= 0))
                 {
                     List<Bone> newBoneToVisit = boneToVisit.ToList();
                     newBoneToVisit.Remove(neighbor);
                     List<Bone> newPath = new List<Bone> { neighbor };
-                    // For each neighbour found initializes a new path
                     paths.Add(new PathExpansion
                         (newBoneToVisit, newPath, motorAvailable - (neighbor.rot_DoF.Count + neighbor.loc_DoF.Count)));
                 }
@@ -582,34 +581,31 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     PathExpansion pathToExpand = paths[0];
                     bool pathEdited = false;
 
-                    if (pathToExpand.MotorAvailable>=0)
+                    // Finds neighbors
+                    List<Bone> neighborhood = new List<Bone>();
+                    foreach (var edge in graph.OutEdges(pathToExpand.Path[pathToExpand.Path.Count - 1]))
                     {
-                        // Finds neighbors
-                        List<Bone> neighborhood = new List<Bone>();
-                        foreach (var edge in graph.OutEdges(pathToExpand.Path[pathToExpand.Path.Count - 1]))
+                        if (pathToExpand.NodeToExpand.Contains(edge.Target))
                         {
-                            if (pathToExpand.NodeToExpand.Contains(edge.Target))
-                            {
-                                neighborhood.Add(edge.Target);
-                            }
+                            neighborhood.Add(edge.Target);
                         }
+                    }
 
-                        foreach (Bone neighborToAdd in neighborhood)
+                    foreach (Bone neighborToAdd in neighborhood)
+                    {
+                        if (pathToExpand.MotorAvailable - (neighborToAdd.rot_DoF.Count + neighborToAdd.loc_DoF.Count) >= 0)
                         {
-                            if (pathToExpand.MotorAvailable + 3 - (neighborToAdd.rot_DoF.Count + neighborToAdd.loc_DoF.Count) >= 0)
-                            {
-                                PathExpansion newPathExpansion = new PathExpansion();
-                                newPathExpansion.MotorAvailable = pathToExpand.MotorAvailable;
-                                newPathExpansion.NodeToExpand = pathToExpand.NodeToExpand.ToList();
-                                newPathExpansion.Path = pathToExpand.Path.ToList();
-                                newPathExpansion.Path.Add(neighborToAdd);
-                                newPathExpansion.MotorAvailable -= (neighborToAdd.rot_DoF.Count + neighborToAdd.loc_DoF.Count);
-                                newPathExpansion.NodeToExpand.Remove(neighborToAdd);
+                            PathExpansion newPathExpansion = new PathExpansion();
+                            newPathExpansion.MotorAvailable = 
+                                pathToExpand.MotorAvailable - (neighborToAdd.rot_DoF.Count + neighborToAdd.loc_DoF.Count);
+                            newPathExpansion.NodeToExpand = pathToExpand.NodeToExpand.ToList();
+                            newPathExpansion.Path = pathToExpand.Path.ToList();
+                            newPathExpansion.Path.Add(neighborToAdd);                            
+                            newPathExpansion.NodeToExpand.Remove(neighborToAdd);
 
-                                pathEdited = true;
-                                paths.Add(newPathExpansion);
-                            }
-                        } 
+                            pathEdited = true;
+                            paths.Add(newPathExpansion);
+                        }
                     }
                     if (pathEdited)
                     {
@@ -625,6 +621,79 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
             return result;
         }
+        //public static List<List<Bone>> ChildrenWithDepthSearch_LOCROT(Bone currentBone, List<Bone> armature, int motorAvailable, BidirectionalGraph<Bone, Edge<Bone>> graph)
+        //{
+        //    List<List<Bone>> result = new List<List<Bone>>();
+        //    List<Bone> boneToVisit = armature.ToList();
+        //    List<PathExpansion> paths = new List<PathExpansion>();
+
+        //    // Gets neighbors
+        //    foreach (var edge in graph.OutEdges(currentBone))
+        //    {
+        //        Bone neighbor = edge.Target;
+        //        if (boneToVisit.Contains(neighbor) && (motorAvailable + 3  - (neighbor.rot_DoF.Count + neighbor.loc_DoF.Count)>= 0))
+        //        {
+        //            List<Bone> newBoneToVisit = boneToVisit.ToList();
+        //            newBoneToVisit.Remove(neighbor);
+        //            List<Bone> newPath = new List<Bone> { neighbor };
+        //            // For each neighbour found initializes a new path
+        //            paths.Add(new PathExpansion
+        //                (newBoneToVisit, newPath, motorAvailable - (neighbor.rot_DoF.Count + neighbor.loc_DoF.Count)));
+        //        }
+        //    }
+
+        //    bool executeComputation = SymmetricSplitCheck(paths);
+
+        //    if (executeComputation)
+        //    {
+        //        while (paths.Count > 0)
+        //        {
+        //            PathExpansion pathToExpand = paths[0];
+        //            bool pathEdited = false;
+
+        //            if (pathToExpand.MotorAvailable>=0)
+        //            {
+        //                // Finds neighbors
+        //                List<Bone> neighborhood = new List<Bone>();
+        //                foreach (var edge in graph.OutEdges(pathToExpand.Path[pathToExpand.Path.Count - 1]))
+        //                {
+        //                    if (pathToExpand.NodeToExpand.Contains(edge.Target))
+        //                    {
+        //                        neighborhood.Add(edge.Target);
+        //                    }
+        //                }
+
+        //                foreach (Bone neighborToAdd in neighborhood)
+        //                {
+        //                    if (pathToExpand.MotorAvailable + 3 - (neighborToAdd.rot_DoF.Count + neighborToAdd.loc_DoF.Count) >= 0)
+        //                    {
+        //                        PathExpansion newPathExpansion = new PathExpansion();
+        //                        newPathExpansion.MotorAvailable = pathToExpand.MotorAvailable;
+        //                        newPathExpansion.NodeToExpand = pathToExpand.NodeToExpand.ToList();
+        //                        newPathExpansion.Path = pathToExpand.Path.ToList();
+        //                        newPathExpansion.Path.Add(neighborToAdd);
+        //                        newPathExpansion.MotorAvailable -= (neighborToAdd.rot_DoF.Count + neighborToAdd.loc_DoF.Count);
+        //                        newPathExpansion.NodeToExpand.Remove(neighborToAdd);
+
+        //                        pathEdited = true;
+        //                        paths.Add(newPathExpansion);
+        //                    }
+        //                } 
+        //            }
+        //            if (pathEdited)
+        //            {
+        //                paths.RemoveAt(0);
+        //            }
+        //            else
+        //            {
+        //                result.Add(pathToExpand.Path);
+        //                paths.Remove(pathToExpand);
+        //            }
+        //        }
+        //    }
+
+        //    return result;
+        //}
 
         private static bool SymmetricSplitCheck(List<PathExpansion> paths)
         {
@@ -718,62 +787,44 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         {
             List<Bone> neighborsAtLevel = new List<Bone>();
             List<Bone> result = new List<Bone>();
-            List<Bone> currBonesToVisit = armature.ToList();
+            List<Bone> bonesToVisit = armature.ToList();
 
-            // Initializes neighborsAtLevel list and updates currBonesToVisit
+            // Initializes neighborsAtLevel list and updates bonesToVisit
             foreach (var edge in graph.OutEdges(currentBone))
             {
                 Bone neighbor = edge.Target;
-                if (currBonesToVisit.Contains(neighbor))
+                if (bonesToVisit.Contains(neighbor))
                 {
                     neighborsAtLevel.Add(neighbor);
-                    currBonesToVisit.Remove(neighbor);
+                    bonesToVisit.Remove(neighbor);
                 }
             }
 
             for (int level = 0; level < GetMaxLengthChain(armature); level++)
             {
-                bool partitionNotCompleted = true;
-                int currMotorAvailabe = motorAvailable;
-                for (int boneNeighborsIndex = 0; boneNeighborsIndex < neighborsAtLevel.Count; boneNeighborsIndex++)
-                {
-                    int dofToAdd = neighborsAtLevel[boneNeighborsIndex].rot_DoF.Count + neighborsAtLevel[boneNeighborsIndex].loc_DoF.Count;
-                    
-                    // deve essere sempre maggiore o uguale a zero tranne nell'ultimo osso in cui può essere < 0 ma comnque sempre maggiore di 3 altrimenti anche l'hip non ci basta
-                    currMotorAvailabe-= dofToAdd;
-                    if (currMotorAvailabe < 0)
-                    {
-                        if (boneNeighborsIndex != neighborsAtLevel.Count - 1 || currMotorAvailabe < -3)
-                            partitionNotCompleted = false;
-                    }
-
-                }
-
-
-                //if (CountArmatureDofs(neighborsAtLevel) <= motorAvailable && SymmetricSplitCheck(neighborsAtLevel))
-                if (partitionNotCompleted && SymmetricSplitCheck(neighborsAtLevel))
+                if (CountArmatureDofs(neighborsAtLevel) <= motorAvailable && SymmetricSplitCheck(neighborsAtLevel))
                 {
                     result = neighborsAtLevel.ToList();
 
                     // Adds neighbors of next level
-                    List<Bone> connectedNeighbors = new List<Bone>();
-                    foreach (Bone newNeighbor in currBonesToVisit)
+                    List<Bone> boneToAdd = new List<Bone>();
+                    foreach (Bone boneToVisit in bonesToVisit)
                     {
                         foreach (Bone bone in neighborsAtLevel)
                         {
                             // Checks if the boneToVisit is connected to a bone in the list neighborsAtLevel
-                            if (bone.children.Contains(newNeighbor.name) || bone.parent.Equals(newNeighbor.name))
+                            if (bone.children.Contains(boneToVisit.name) || bone.parent.Equals(boneToVisit.name))
                             {
-                                connectedNeighbors.Add(newNeighbor);
+                                boneToAdd.Add(boneToVisit);
                                 // Bone is connected, continue with the next boneToVisit
                                 break;
                             }
                         }
                     }
-                    foreach (Bone b in connectedNeighbors)
+                    foreach (Bone b in boneToAdd)
                     {
                         neighborsAtLevel.Add(b);
-                        currBonesToVisit.Remove(b);
+                        bonesToVisit.Remove(b);
                     }
                 }
                 else
@@ -785,6 +836,77 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
             return result;
         }
+        //public static List<Bone> ChildrenWithBreadthFirst_LOCROT(Bone currentBone, List<Bone> armature, int motorAvailable, BidirectionalGraph<Bone, Edge<Bone>> graph)
+        //{
+        //    List<Bone> neighborsAtLevel = new List<Bone>();
+        //    List<Bone> result = new List<Bone>();
+        //    List<Bone> currBonesToVisit = armature.ToList();
+
+        //    // Initializes neighborsAtLevel list and updates currBonesToVisit
+        //    foreach (var edge in graph.OutEdges(currentBone))
+        //    {
+        //        Bone neighbor = edge.Target;
+        //        if (currBonesToVisit.Contains(neighbor))
+        //        {
+        //            neighborsAtLevel.Add(neighbor);
+        //            currBonesToVisit.Remove(neighbor);
+        //        }
+        //    }
+
+        //    for (int level = 0; level < GetMaxLengthChain(armature); level++)
+        //    {
+        //        bool partitionNotCompleted = true;
+        //        int currMotorAvailabe = motorAvailable;
+        //        for (int boneNeighborsIndex = 0; boneNeighborsIndex < neighborsAtLevel.Count; boneNeighborsIndex++)
+        //        {
+        //            int dofToAdd = neighborsAtLevel[boneNeighborsIndex].rot_DoF.Count + neighborsAtLevel[boneNeighborsIndex].loc_DoF.Count;
+                    
+        //            // deve essere sempre maggiore o uguale a zero tranne nell'ultimo osso in cui può essere < 0 ma comnque sempre maggiore di 3 altrimenti anche l'hip non ci basta
+        //            currMotorAvailabe-= dofToAdd;
+        //            if (currMotorAvailabe < 0)
+        //            {
+        //                if (boneNeighborsIndex != neighborsAtLevel.Count - 1 || currMotorAvailabe < -3)
+        //                    partitionNotCompleted = false;
+        //            }
+
+        //        }
+
+
+        //        //if (CountArmatureDofs(neighborsAtLevel) <= motorAvailable && SymmetricSplitCheck(neighborsAtLevel))
+        //        if (partitionNotCompleted && SymmetricSplitCheck(neighborsAtLevel))
+        //        {
+        //            result = neighborsAtLevel.ToList();
+
+        //            // Adds neighbors of next level
+        //            List<Bone> connectedNeighbors = new List<Bone>();
+        //            foreach (Bone newNeighbor in currBonesToVisit)
+        //            {
+        //                foreach (Bone bone in neighborsAtLevel)
+        //                {
+        //                    // Checks if the boneToVisit is connected to a bone in the list neighborsAtLevel
+        //                    if (bone.children.Contains(newNeighbor.name) || bone.parent.Equals(newNeighbor.name))
+        //                    {
+        //                        connectedNeighbors.Add(newNeighbor);
+        //                        // Bone is connected, continue with the next boneToVisit
+        //                        break;
+        //                    }
+        //                }
+        //            }
+        //            foreach (Bone b in connectedNeighbors)
+        //            {
+        //                neighborsAtLevel.Add(b);
+        //                currBonesToVisit.Remove(b);
+        //            }
+        //        }
+        //        else
+        //        {
+        //            // Partition can not contain another level of children
+        //            break;
+        //        }
+        //    }
+
+        //    return result;
+        //}
 
 
         public static bool PartitionCapacityOverflow(List<Bone> armature, int motors)
@@ -805,7 +927,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             bool result = false;
             foreach (Bone b in armature)
             {
-                if (b.rot_DoF.Count + b.loc_DoF.Count > motors + 3)
+                if (b.rot_DoF.Count + b.loc_DoF.Count > motors)
                 {
                     return true;
                 }
@@ -832,58 +954,79 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 motorAvailable = motors - currentBone.rot_DoF.Count;
             }
 
-        }                
+        }
 
         public static void UpdatePartition_LOCROT(int motors, List<List<Bone>> decomposition, ref int motorAvailable, ref List<Bone> partition, Bone currentBone)
         {
-            int dofToAdd = currentBone.loc_DoF.Count + currentBone.rot_DoF.Count;
 
+            int dofToAdd = currentBone.rot_DoF.Count + currentBone.loc_DoF.Count;
             // Inserts the first element into the partition
-            if (partition.Count == 0)
+            if ((partition.Count == 0) ||
+                (IsConnectedBone(partition, currentBone) && (motorAvailable - dofToAdd >= 0)))
             {
                 partition.Add(currentBone);
-
-                if (motorAvailable - dofToAdd >= 0)
-                {
-                    motorAvailable -= dofToAdd;
-                }
-                else
-                {
-                    //partitions is completed
-                    decomposition.Add(partition);
-                    partition = new List<Bone>();
-                    motorAvailable = motors;
-                }
-            }                
-                
-            else if(IsConnectedBone(partition, currentBone))
-            {
-                // +3 is to consider the HIP
-                if (dofToAdd > motorAvailable + 3)
-                {
-                    AddBoneIntoNewPartition(motors, decomposition, ref motorAvailable, ref partition, currentBone);
-                }
-                else
-                {
-                    partition.Add(currentBone);
-                    if (motorAvailable - dofToAdd >= 0)
-                    {
-                        motorAvailable -= dofToAdd;
-                    }
-                    else
-                    {
-                        //partitions is completed
-                        decomposition.Add(partition);
-                        partition = new List<Bone>();
-                        motorAvailable = motors;
-                    }
-                }
-            } 
+                motorAvailable -= dofToAdd;
+            }
             else
             {
-                AddBoneIntoNewPartition(motors, decomposition, ref motorAvailable, ref partition, currentBone);
+                // partitions is full or new bone is not a child or parent of bones in the partition
+                decomposition.Add(partition);
+                partition = new List<Bone>();
+                partition.Add(currentBone);
+                motorAvailable = motors - dofToAdd;
             }
-        }
+
+        }       
+
+        //public static void UpdatePartition_LOCROT(int motors, List<List<Bone>> decomposition, ref int motorAvailable, ref List<Bone> partition, Bone currentBone)
+        //{
+        //    int dofToAdd = currentBone.loc_DoF.Count + currentBone.rot_DoF.Count;
+
+        //    // Inserts the first element into the partition
+        //    if (partition.Count == 0)
+        //    {
+        //        partition.Add(currentBone);
+
+        //        if (motorAvailable - dofToAdd >= 0)
+        //        {
+        //            motorAvailable -= dofToAdd;
+        //        }
+        //        else
+        //        {
+        //            //partitions is completed
+        //            decomposition.Add(partition);
+        //            partition = new List<Bone>();
+        //            motorAvailable = motors;
+        //        }
+        //    }                                
+        //    else if(IsConnectedBone(partition, currentBone))
+        //    {
+        //        // +3 is to consider the HIP
+        //        if (dofToAdd > motorAvailable + 3)
+        //        {
+        //            AddBoneIntoNewPartition(motors, decomposition, ref motorAvailable, ref partition, currentBone);
+        //        }
+        //        else
+        //        {
+        //            partition.Add(currentBone);
+        //            if (motorAvailable - dofToAdd >= 0)
+        //            {
+        //                motorAvailable -= dofToAdd;
+        //            }
+        //            else
+        //            {
+        //                //partitions is completed
+        //                decomposition.Add(partition);
+        //                partition = new List<Bone>();
+        //                motorAvailable = motors;
+        //            }
+        //        }
+        //    } 
+        //    else
+        //    {
+        //        AddBoneIntoNewPartition(motors, decomposition, ref motorAvailable, ref partition, currentBone);
+        //    }
+        //}
 
         private static void AddBoneIntoNewPartition(int motors, List<List<Bone>> decomposition, ref int motorAvailable, ref List<Bone> partition, Bone currentBone)
         {

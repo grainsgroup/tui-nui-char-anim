@@ -346,9 +346,9 @@
                     <Canvas Margin="50,50,0,0" x:Name="AutoConfigCanvas" HorizontalAlignment="Left">
                         <Button Content="Generate" Width="68" Click="ButtonAutoConfig_Click" Canvas.Left="780" Canvas.Top="471"/>
                         <Label Content="Preference" HorizontalAlignment="Left" Margin="7,-15,0,0" VerticalAlignment="Top" FontSize="14"/>
-                        <CheckBox x:Name="UseSensorCheckBox" Content="Use Sensor" Canvas.Top="39" Canvas.Left="30"/>
+                        <CheckBox x:Name="UseSensorCheckBox" Content="Use Sensor" Canvas.Top="40" Canvas.Left="30"/>
                         <CheckBox x:Name="SplitDofCheckBox" Content="Split DoF" Canvas.Top="60" Canvas.Left="30"/>
-                        <!-- <CheckBox x:Name="LeftHandedCheckBox" Content="Left-Handed" Canvas.Top="90" Canvas.Left="30"/> -->
+                        <CheckBox x:Name="LocRotCheckBox" Content="Partition Loc+Rot " Canvas.Top="80" Canvas.Left="30"/>
                         <Label  HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Canvas.Top="126" Width="55" Canvas.Left="-16">
                             <TextBlock Text="Body Tracking" TextWrapping="Wrap" TextAlignment="Center" FontSize="12" />
                         </Label>
