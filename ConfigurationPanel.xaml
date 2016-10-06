@@ -21,7 +21,7 @@
             <Label VerticalAlignment="Top" Margin="210,604,0,0" Height="26" HorizontalAlignment="Left" ContentStringFormat="{}{0:#}" Content="{Binding Value, ElementName=factorSlider}"/>
             <CheckBox VerticalAlignment="Top" x:Name="VirtualArmatureCheckBox" Margin="1046,675,0,0" HorizontalAlignment="Left" Content="Virtual Armature" ToolTip="Abilita armatura virtuale"/>
 
-            <TabControl Margin="8,3,358,136" Background="White">
+            <TabControl Margin="8,9,358,130" Background="White">
                 <TabItem Header="Body Tracking">
                     <Canvas Width="780" VerticalAlignment="Top" x:Name="Canvas" Margin="52,22,0,0" Height="536" HorizontalAlignment="Left">
                         <Canvas.Background>
@@ -346,16 +346,15 @@
                     <Canvas Margin="50,50,0,0" x:Name="AutoConfigCanvas" HorizontalAlignment="Left">
                         <Button Content="Generate" Width="68" Click="ButtonAutoConfig_Click" Canvas.Left="780" Canvas.Top="471"/>
                         <Label Content="Preference" HorizontalAlignment="Left" Margin="7,-15,0,0" VerticalAlignment="Top" FontSize="14"/>
-                        <CheckBox x:Name="UseSensorCheckBox" Content="Use Sensor" Canvas.Top="40" Canvas.Left="30"/>
-                        <CheckBox x:Name="SplitDofCheckBox" Content="Split DoF" Canvas.Top="60" Canvas.Left="30"/>
-                        <CheckBox x:Name="LocRotCheckBox" Content="Partition Loc+Rot " Canvas.Top="80" Canvas.Left="30"/>
+                        <CheckBox x:Name="UseSensorCheckBox" Content="Use Sensor" Canvas.Top="40" Canvas.Left="30" IsChecked="True"/>
+                        <CheckBox x:Name="LocRotCheckBox" Content="Partition Loc+Rot " Canvas.Top="61" Canvas.Left="30" IsChecked="True"/>
                         <Label  HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Canvas.Top="126" Width="55" Canvas.Left="-16">
                             <TextBlock Text="Body Tracking" TextWrapping="Wrap" TextAlignment="Center" FontSize="12" />
                         </Label>
                         <Label HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Canvas.Left="95" Canvas.Top="127" Width="84">
                             <TextBlock Text="Tangible User Interface" TextWrapping="Wrap" TextAlignment="Center" FontSize="12" />
                         </Label>
-                        <Slider x:Name="UserPreferenceSlider" Height="24" Width="60" Canvas.Left="37" Canvas.Top="134" Minimum="-1" Maximum="1" SmallChange="1" IsSnapToTickEnabled="True" Ticks="-1,0,1"/>
+                        <Slider x:Name="UserPreferenceSlider" Height="24" Width="60" Canvas.Left="37" Canvas.Top="134" Minimum="-1" Maximum="1" SmallChange="1" IsSnapToTickEnabled="True" Ticks="-1,0,1" Value="1"/>
                         <TextBox x:Name="NodSim" Height="23" TextWrapping="Wrap" Text="1" Width="50" Canvas.Left="580" Canvas.Top="73"/>
                         <TextBox x:Name="DofCov" Height="23" TextWrapping="Wrap" Text="1" Width="50" Canvas.Left="580" Canvas.Top="101"/>
                         <TextBox x:Name="ComRan" Height="23" TextWrapping="Wrap" Text="1" Width="50" Canvas.Left="580" Canvas.Top="129"/>

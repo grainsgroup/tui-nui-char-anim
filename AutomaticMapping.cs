@@ -502,9 +502,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 }
             }
 
-            bool executeComputation = SymmetricSplitCheck(paths);
+           RemovePathsWithSymmetries(paths);
 
-            if (executeComputation)
+            if (paths.Count > 0)
             {
                 while (paths.Count > 0)
                 {
@@ -551,8 +551,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
             return result;
         }
-        
-        public static List<List<Bone>> ChildrenWithDepthSearch_LOCROT(Bone currentBone, List<Bone> armature, int motorAvailable, BidirectionalGraph<Bone, Edge<Bone>> graph)
+
+        public static List<List<Bone>> ChildrenWithDepthSearch_LOCROT(Bone currentBone, List<Bone> armature, int motorAvailable, BidirectionalGraph<Bone, Edge<Bone>> graph, int currPartitionCount, int limitBoneChain)
         {
             List<List<Bone>> result = new List<List<Bone>>();
             List<Bone> boneToVisit = armature.ToList();
@@ -562,7 +562,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             foreach (var edge in graph.OutEdges(currentBone))
             {
                 Bone neighbor = edge.Target;
-                if (boneToVisit.Contains(neighbor) && (motorAvailable - (neighbor.rot_DoF.Count + neighbor.loc_DoF.Count)>= 0))
+                if ((boneToVisit.Contains(neighbor)) && 
+                    (motorAvailable - (neighbor.rot_DoF.Count + neighbor.loc_DoF.Count)>= 0) &&
+                    (currPartitionCount < limitBoneChain))                    
                 {
                     List<Bone> newBoneToVisit = boneToVisit.ToList();
                     newBoneToVisit.Remove(neighbor);
@@ -572,52 +574,52 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 }
             }
 
-            bool executeComputation = SymmetricSplitCheck(paths);
-
-            if (executeComputation)
+            RemovePathsWithSymmetries(paths);
+            
+            while (paths.Count > 0)
             {
-                while (paths.Count > 0)
+                PathExpansion pathToExpand = paths[0];
+                bool pathEdited = false;
+
+                // Finds neighbors
+                List<Bone> neighborhood = new List<Bone>();
+                foreach (var edge in graph.OutEdges(pathToExpand.Path[pathToExpand.Path.Count - 1]))
                 {
-                    PathExpansion pathToExpand = paths[0];
-                    bool pathEdited = false;
-
-                    // Finds neighbors
-                    List<Bone> neighborhood = new List<Bone>();
-                    foreach (var edge in graph.OutEdges(pathToExpand.Path[pathToExpand.Path.Count - 1]))
+                    if (pathToExpand.NodeToExpand.Contains(edge.Target))
                     {
-                        if (pathToExpand.NodeToExpand.Contains(edge.Target))
-                        {
-                            neighborhood.Add(edge.Target);
-                        }
-                    }
-
-                    foreach (Bone neighborToAdd in neighborhood)
-                    {
-                        if (pathToExpand.MotorAvailable - (neighborToAdd.rot_DoF.Count + neighborToAdd.loc_DoF.Count) >= 0)
-                        {
-                            PathExpansion newPathExpansion = new PathExpansion();
-                            newPathExpansion.MotorAvailable = 
-                                pathToExpand.MotorAvailable - (neighborToAdd.rot_DoF.Count + neighborToAdd.loc_DoF.Count);
-                            newPathExpansion.NodeToExpand = pathToExpand.NodeToExpand.ToList();
-                            newPathExpansion.Path = pathToExpand.Path.ToList();
-                            newPathExpansion.Path.Add(neighborToAdd);                            
-                            newPathExpansion.NodeToExpand.Remove(neighborToAdd);
-
-                            pathEdited = true;
-                            paths.Add(newPathExpansion);
-                        }
-                    }
-                    if (pathEdited)
-                    {
-                        paths.RemoveAt(0);
-                    }
-                    else
-                    {
-                        result.Add(pathToExpand.Path);
-                        paths.Remove(pathToExpand);
+                        neighborhood.Add(edge.Target);
                     }
                 }
+
+                foreach (Bone neighborToAdd in neighborhood)
+                {
+                    if ((pathToExpand.MotorAvailable - (neighborToAdd.rot_DoF.Count + neighborToAdd.loc_DoF.Count) >= 0) &&
+                        (currPartitionCount + pathToExpand.Path.Count < limitBoneChain))
+                    {
+                        PathExpansion newPathExpansion = new PathExpansion();
+                        newPathExpansion.MotorAvailable = 
+                            pathToExpand.MotorAvailable - (neighborToAdd.rot_DoF.Count + neighborToAdd.loc_DoF.Count);
+                        newPathExpansion.NodeToExpand = pathToExpand.NodeToExpand.ToList();
+                        newPathExpansion.Path = pathToExpand.Path.ToList();
+                        newPathExpansion.Path.Add(neighborToAdd);                            
+                        newPathExpansion.NodeToExpand.Remove(neighborToAdd);
+
+                        pathEdited = true;
+                        paths.Add(newPathExpansion);
+                    }
+                }
+                if (pathEdited)
+                {
+                    // Removes the old version of the path
+                    paths.RemoveAt(0);
+                }
+                else
+                {
+                    result.Add(pathToExpand.Path);
+                    paths.Remove(pathToExpand);
+                }
             }
+            
 
             return result;
         }
@@ -695,14 +697,17 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         //    return result;
         //}
 
-        private static bool SymmetricSplitCheck(List<PathExpansion> paths)
+        private static void RemovePathsWithSymmetries(List<PathExpansion> paths)
         {
-            foreach (PathExpansion p in paths)
+            for (int i = 0; i < paths.Count;i++)
             {
+                PathExpansion p = paths[i];
                 if (p.Path[0].name.Contains(".R") || p.Path[0].name.Contains(".L"))
-                    return false;
-            }
-            return true;
+                {
+                    paths.Remove(p);
+                    i--;
+                }
+            }            
         }
 
         private static bool SymmetricSplitCheck(List<Bone> neighborsAtLevel)
@@ -783,7 +788,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             return result;
         }
 
-        public static List<Bone> ChildrenWithBreadthFirst_LOCROT(Bone currentBone, List<Bone> armature, int motorAvailable, BidirectionalGraph<Bone, Edge<Bone>> graph)
+        public static List<Bone> ChildrenWithBreadthFirst_LOCROT(Bone currentBone, List<Bone> armature, int motorAvailable, BidirectionalGraph<Bone, Edge<Bone>> graph, int currPartitionCount, int limitBoneCount)
         {
             List<Bone> neighborsAtLevel = new List<Bone>();
             List<Bone> result = new List<Bone>();
@@ -802,12 +807,16 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
             for (int level = 0; level < GetMaxLengthChain(armature); level++)
             {
-                if (CountArmatureDofs(neighborsAtLevel) <= motorAvailable && SymmetricSplitCheck(neighborsAtLevel))
+                if (CountArmatureDofs(neighborsAtLevel) <= motorAvailable && 
+                    neighborsAtLevel.Count + currPartitionCount < limitBoneCount &&
+                    SymmetricSplitCheck(neighborsAtLevel) )
                 {
                     result = neighborsAtLevel.ToList();
 
                     // Adds neighbors of next level
                     List<Bone> boneToAdd = new List<Bone>();
+
+                    // Searches between the bones that remain to visit the next level of neighbors
                     foreach (Bone boneToVisit in bonesToVisit)
                     {
                         foreach (Bone bone in neighborsAtLevel)
@@ -821,6 +830,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                             }
                         }
                     }
+
                     foreach (Bone b in boneToAdd)
                     {
                         neighborsAtLevel.Add(b);
@@ -956,20 +966,22 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
         }
 
-        public static void UpdatePartition_LOCROT(int motors, List<List<Bone>> decomposition, ref int motorAvailable, ref List<Bone> partition, Bone currentBone)
+        public static void UpdatePartition_LOCROT(int motors, List<List<Bone>> decomposition, ref int motorAvailable, ref List<Bone> partition, Bone currentBone, int limitBoneChain)
         {
 
             int dofToAdd = currentBone.rot_DoF.Count + currentBone.loc_DoF.Count;
             // Inserts the first element into the partition
             if ((partition.Count == 0) ||
-                (IsConnectedBone(partition, currentBone) && (motorAvailable - dofToAdd >= 0)))
+                (IsConnectedBone(partition, currentBone) && 
+                (motorAvailable - dofToAdd >= 0) && 
+                (partition.Count < limitBoneChain)))
             {
                 partition.Add(currentBone);
                 motorAvailable -= dofToAdd;
             }
             else
             {
-                // partitions is full or new bone is not a child or parent of bones in the partition
+                // partitions is completed, new bone is not connected to the last bones in the partition, 
                 decomposition.Add(partition);
                 partition = new List<Bone>();
                 partition.Add(currentBone);
@@ -1635,7 +1647,34 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             return maxPartitionCount;
         }
 
-        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="components"></param>
+        /// <returns>[0] LOC + ROT DoFs, [1] ROT DoFs,[2] LOC DoFs</returns>
+        public static int[] GetMaxBoneDofCount(List<List<Bone>> components)
+        {
+            int[] maxDofCounts = new int[3];
+
+            foreach(List<Bone> component in components)
+            {
+                foreach (Bone bone in component)
+                {
+                    // [0] LOC + ROT DoFs
+                    if (bone.rot_DoF.Count + bone.loc_DoF.Count > maxDofCounts[0])
+                        maxDofCounts[0] = bone.rot_DoF.Count + bone.loc_DoF.Count;
+                    // [1] ROT DoFs
+                    if (bone.rot_DoF.Count > maxDofCounts[1])
+                        maxDofCounts[1] = bone.rot_DoF.Count;
+                    // [2] LOC DoFs
+                    if (bone.loc_DoF.Count > maxDofCounts[2])
+                        maxDofCounts[2] = bone.loc_DoF.Count;
+                }
+            }
+            return maxDofCounts;
+        }
+
+
     }
 
 }
