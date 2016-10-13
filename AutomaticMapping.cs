@@ -112,104 +112,168 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             }
             return graph;
         }
-
-        // dofType: { _ROT, _LOC }: type of dofs 
-        public static List<List<Bone>> CreateArmaturesFromComb(char[] comb, Brick brick, string[] doFType)
+        
+        public static List<List<Bone>> CreateArmaturesFromComb
+            (char[] comb, Brick brick, int componentAvailable, bool locRotArm, bool useSensor) 
         {
-            // IMPLEMENTATION WITH OPERATION SEQUENCE REPRESENTATION (OSR)
-
-            // List of possible bone type ()
-            List<string[]> dofTypeSequence = new List<string[]>();
-            foreach (var c in Combinatorics.CombinationsWithRepetition(doFType, comb.Length))
+            // IMPLEMENTATION WITH OPERATION_SEQUENCE_REPRESENTATION (OSR)           
+            string[] doFType;
+            List<List<int>> dofSequence = new List<List<int>>();
+            if (locRotArm)
             {
-                //char[] array = c.ToCharArray();
-                //dofTypeSequence.Add(array);
-                string[] array = c.Split(new char[] { '_' }, StringSplitOptions.RemoveEmptyEntries);
-                dofTypeSequence.Add(array);
-            }
-
-            /*
-            // Permutation of Dof 
-            List<string[]> permutations = new List<string[]>();
-            var result = Combinatorics.GetPermutations(Enumerable.Range(0, comb.Length), comb.Length);
-            foreach (var perm in result)
-            {
-                string[] g = new string[comb.Length];
-                int i = 0;
-                foreach (var c in perm)
+                doFType = new string[] { "_ROT", "_LOC" };
+                
+                // list of possible position
+                var list = Enumerable.Range(0, componentAvailable).ToList();
+                
+                // Calculates permutation of list to identify padding position
+                var result = Combinatorics.GetDispositions(list, comb.Length);
+                int index = 0;
+                foreach (var perm in result)
                 {
-                    g[i] = c.ToString();
-                    i++;
-                }
-                permutations.Add(g);
-            }
-            */
-
-            string[] perm = new string[comb.Length];
-            for (int i = 0; i < comb.Length; i++)
-            {
-                perm[i] = i.ToString();
-            }
-            List<string[]> permutations = new List<string[]>() { perm };
-
-
-            // combines combPermutation with types of dof
-            List<List<string>> typedSequence_Dof = new List<List<string>>();
-            foreach (string[] cp in permutations)
-            {
-                foreach (string[] dt in dofTypeSequence)
-                {
-                    List<string> sequenceToAdd = new List<string>();
-
-                    for (int i = 0; i < comb.Length; i++)
-                    {
-                        sequenceToAdd.Add(dt[i] + "(" + comb[Int32.Parse(cp[i])] + ")");
-                    }
-
-                    // Assigns the best componet for each dof in the sequence
-                    int index = 0;
-                    foreach (string assignedComp in Metrics.AssignName
-                        (new List<List<string>>() { sequenceToAdd.ToList() }, true, brick, true))
-                    {
-                        sequenceToAdd[index] = assignedComp;
+                    int[] g = Enumerable.Repeat(-1, componentAvailable).ToArray();
+                    index = 0;
+                    foreach (var c in perm)
+                    {                        
+                        g[Convert.ToInt32(c)] = index;
                         index++;
-                    }
-
-                    // Removes duplicate sequences
-                    bool sequenceExist = false;
-                    foreach (List<string> item in typedSequence_Dof)
+                    }                    
+                    
+                    index = comb.Length;
+                    for (int pos = 0; pos< g.Length; pos++)
                     {
-                        if (item.SequenceEqual(sequenceToAdd))
+                        if (g[pos] == -1) 
                         {
-                            sequenceExist = true;
-                            break;
+                            g[pos] = index;
+                            index++;
                         }
-                    }
-                    if (!sequenceExist)
-                    {
-                        typedSequence_Dof.Add(sequenceToAdd);
-                    }
-
+                    }                                       
+                    dofSequence.Add(g.ToList());
                 }
+                
+                comb = InitilizeComb(comb, componentAvailable);
+
+            }
+            else 
+            {
+                doFType = new string[] { "_ROT" };
+                comb = InitilizeComb(comb, comb.Length);
+                dofSequence.Add(Enumerable.Range(0, comb.Length).ToList());
             }
 
-            List<List<Bone>> armatures = CreateArmature(comb, typedSequence_Dof);
-
+            //List<string[]> dofTypeSequence = new List<string[]>();
+            //foreach (var c in Combinatorics.CombinationsWithRepetition(doFType, dofSequence[0].Count))
+            //{
+            //    string[] array = c.Split(new char[] { '_' }, StringSplitOptions.RemoveEmptyEntries);
+            //    dofTypeSequence.Add(array);
+            //}
+            // Assigns a component to the first dof sequence
+            //// Compute combination
+            //foreach (List<int> dSeq in dofSequence)
+            //{
+            //    foreach (string[] dType in dofTypeSequence)
+            //    {
+            //        List<string> sequenceToAdd = new List<string>();
+            //        bool sequenceCompleted = true;
+            //        for (int i = 0; i < dofSequence[0].Count; i++)
+            //        {
+            //            if ((dType[i].Equals("ROT") && comb[dSeq[i]].Equals('L')) ||
+            //                (dType[i].Equals("LOC") && !comb[dSeq[i]].Equals('L')))
+            //            {
+            //                sequenceCompleted = false;
+            //                break;
+            //            }
+            //            else
+            //            {
+            //                sequenceToAdd.Add(dType[i] + "(" + comb[dSeq[i]] + ")");
+            //            }
+            //        }
+            //        if (sequenceCompleted)
+            //        {
+            //            // Removes duplicate sequences
+            //            bool sequenceExist = false;
+            //            foreach (List<string> item in typedSequence_Dof)
+            //            {
+            //                if (item.SequenceEqual(sequenceToAdd))
+            //                {
+            //                    sequenceExist = true;
+            //                    break;
+            //                }
+            //            }
+            //            if (!sequenceExist)
+            //            {
+            //                typedSequence_Dof.Add(sequenceToAdd);
+            //            }
+            //        }
+            //    }
+            //}                                
+            List<string> combAssigned = new List<string>();
+            foreach (int dof in dofSequence[0])
+            {
+                if (!comb[dof].Equals('L'))
+                {
+                    combAssigned.Add("ROT(" + comb[dof] + ")");
+                }
+                else 
+                {
+                    combAssigned.Add("LOC(L)");
+                }
+            }
+            combAssigned = Metrics.AssignName (new List<List<string>>() { combAssigned }, brick, useSensor, useSensor);
+            
+            // Assigns the components to the remaining sequences
+            List<List<string>> dofAssigned = new List<List<string>>();
+            List<List<char>> sourceSequence = new List<List<char>>();
+            foreach (List<int> dSeq in dofSequence)
+            {
+                List<string> sequenceToAdd = new List<string>();
+                List<char> source = new List<char>();
+                foreach (int dof in dSeq)
+                {
+                    sequenceToAdd.Add(combAssigned[dof]);
+                    source.Add(comb[dof]);
+                }
+                dofAssigned.Add(sequenceToAdd);
+                sourceSequence.Add(source);
+            }
+            
+            // Converts typed dof sequence into possible armatures
+            List<List<Bone>> armatures = CreateArmature(sourceSequence, dofAssigned);
+            
             return armatures;
         }
 
-        public static List<List<Bone>> CreateArmature(char[] comb, List<List<string>> typedSequence_Dof)
+        private static char[] InitilizeComb(char[] comb, int componentAvailable)
         {
-            /* Possible operation with two dof
+            char[] newComb = new char[componentAvailable];
+            // Adds Loc Dof to the sequence
+            for (int i = 0; i < componentAvailable; i++)
+            {
+                if (i < comb.Length)
+                {
+                    newComb[i] = comb[i];
+                }
+                else
+                {
+                    newComb[i] = 'L';
+                }
+            }
+            comb = newComb;
+            return comb;
+        }
+                      
+        public static List<List<Bone>> CreateArmature(List<List<char>> sourceSequence, List<List<string>> dofAssigned)
+        {
+            /* Possible operation with two DoF
              * - P = creates two bones in parallel; 
              * - S = creates two bones in series; 
              * - B = put dofs in the same bone)
              */
-            string[] operations = { "P", "S", "B" };
+            string[] operations = { "P", "S"/*, "B" */};
 
             // List of possible order of operation to apply
             List<char[]> operationsOrder = new List<char[]>();
-            foreach (var c in Combinatorics.CombinationsWithRepetition(operations, comb.Length - 1))
+            foreach (var c in Combinatorics.CombinationsWithRepetition(operations, sourceSequence[0].Count - 1))
             {
                 char[] array = c.ToCharArray();
                 operationsOrder.Add(array);
@@ -217,15 +281,13 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
             // Combines dof and componentes permutation with all possible operation order to obtain armature
             List<List<string>> dofSequences = new List<List<string>>();
-            for (int seq = 0; seq < typedSequence_Dof.Count; seq++)
+            for (int seq = 0; seq < dofAssigned.Count; seq++)
             {
-                List<string> dofs = typedSequence_Dof[seq];
-
+                List<string> dofs = dofAssigned[seq];
                 foreach (char[] order in operationsOrder)
                 {
                     List<string> arm_dof = new List<string>();
-
-                    for (int i = 0; i < comb.Length - 1; i++)
+                    for (int i = 0; i < sourceSequence[0].Count - 1; i++)
                     {
                         // Adds dof
                         arm_dof.Add(dofs[i]);
@@ -234,16 +296,21 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     }
 
                     //Adds the last dof
-                    arm_dof.Add(dofs[comb.Length - 1]);
+                    arm_dof.Add(dofs[sourceSequence[0].Count - 1]);
                     dofSequences.Add(arm_dof);
                 }
             }
 
-            // For each sequence creates the armor which represent it
-            List<List<Bone>> armatures = new List<List<Bone>>();
+            // For each sequence creates the armature which represent it
+            List<List<List<Bone>>> armaturesAtLevel = new List<List<List<Bone>>>();
+            for (int i = 0; i < dofAssigned[0].Count; i++)
+            {
+                armaturesAtLevel.Add(new List<List<Bone>>());
+            }
+
+
             for (int i = 0; i < dofSequences.Count; i++)
             {
-
                 // initialization
                 List<string> sequenceItem = dofSequences[i];
                 List<Bone> virtualArmature = new List<Bone>();
@@ -252,8 +319,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
                 // Adds the first bone of the sequence
                 Bone firstBone = InitializeBoneFromItem(sequenceItem[0]);
-                // DEBUG TEST:
-                firstBone.name += "[seqID: " + i + "]" + Metrics.GetDofString(comb.ToList());
+                // DEBUG INFO TEST:
+                firstBone.name += "[seqID: " + i + "]" + Metrics.GetDofString(sourceSequence[i / operationsOrder.Count]);
                 firstBone.level = level;
                 partialArmatures.Add(new PartialArmature(new List<Bone>() { firstBone }, firstBone));
 
@@ -379,11 +446,15 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                             // Adds loc dof
                             foreach (char dof in boneToAdd.loc_DoF)
                             {
-                                if (!boneToUpdate.loc_DoF.Contains(dof))
-                                {
-                                    boneToUpdate.loc_DoF.Add(dof);
-                                    boneToUpdate.name += " | " + boneToAdd.name;
-                                }
+                                //if (!boneToUpdate.loc_DoF.Contains(dof))
+                                //{
+                                //    boneToUpdate.loc_DoF.Add(dof);
+                                //    boneToUpdate.name += " | " + boneToAdd.name;
+                                //}
+
+                                // Dof duplicates
+                                boneToUpdate.loc_DoF.Add(dof);
+                                boneToUpdate.name += " | " + boneToAdd.name;
                             }
 
                             if (!boneToUpdate.parent.Equals(""))
@@ -405,10 +476,37 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
                 foreach (PartialArmature pa in partialArmatures)
                 {
-                    armatures.Add(pa.virtualArmature);
+                    EquivalentArmatureTest(pa.virtualArmature, armaturesAtLevel[pa.virtualArmature.Count]);
+                    //armatures.Add(pa.virtualArmature);
                 }
             }
+
+            ////////////////////// DEBUG TEST ////////////////////
+            //for(int index = 0; index < armatures.Count; index++) 
+            //{
+            //    if (armatures[index].Count == 1)
+            //        Console.WriteLine(index);
+            //}
+            ///////////////////////////////////////////////////////
+
+            List<List<Bone>> armatures = new List<List<Bone>>();
+            
             return armatures;
+        }
+
+        private static void EquivalentArmatureTest(List<Bone> armatureToAdd, List<List<Bone>> armatures)
+        {
+            // se non c'è una armature equivalente aggiungila alle armatureList
+            
+            bool found = false;
+            foreach (List<Bone> arm in armatures)
+            {
+                
+            }
+            if (!found)
+            {
+                armatures.Add(armatureToAdd);
+            }
         }
 
         public static List<Bone> GetAncestor(List<Bone> list, Bone lastBoneAnalyzed)
@@ -1374,12 +1472,12 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             return min;
         }
 
-        public static List<Bone> GetTuiArmature(List<Bone> controlledAramature, bool useSensor, Brick brick, Dictionary<string, List<List<char>>> dictionary)
+        public static List<Bone> GetTuiArmature(List<Bone> controlledArmature, bool useSensor, Brick brick, Dictionary<string, List<List<char>>> dictionary)
         {
             List<Bone> armature = new List<Bone>();
 
             // Gets the dof[i] and the bone to which it belongs
-            List<List<DofBoneAssociation>> dofBoneAss = GetDofsBoneAssociation(controlledAramature, dictionary);
+            List<List<DofBoneAssociation>> dofBoneAss = GetDofsBoneAssociation(controlledArmature, dictionary);
 
             // Gets only the dof sequence of the controlled armature (Blender armature)
             List<List<string>> dofsAlternatives = new List<List<string>>();
@@ -1393,25 +1491,25 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 dofsAlternatives.Add(dofs);
             }
 
-            List<string> dofsAssigned = Metrics.AssignName(dofsAlternatives, useSensor, brick, true);
+            List<string> dofsAssigned = Metrics.AssignName(dofsAlternatives, brick, useSensor, true);
             int componentIndex = 0;
-            for (int i = 0; i < controlledAramature.Count; i++)
+            for (int i = 0; i < controlledArmature.Count; i++)
             {
                 Bone bone = new Bone("");
-                bone.level = controlledAramature[i].level;
-                bone.rot_DoF = controlledAramature[i].rot_DoF.ToList();
-                bone.loc_DoF = controlledAramature[i].loc_DoF.ToList();
-                bone.parent = controlledAramature.FindIndex(x => x.name.Equals(controlledAramature[i].parent)).ToString();
-                foreach (string child in controlledAramature[i].children)
+                bone.level = controlledArmature[i].level;
+                bone.rot_DoF = controlledArmature[i].rot_DoF.ToList();
+                bone.loc_DoF = controlledArmature[i].loc_DoF.ToList();
+                bone.parent = controlledArmature.FindIndex(x => x.name.Equals(controlledArmature[i].parent)).ToString();
+                foreach (string child in controlledArmature[i].children)
                 {
-                    controlledAramature[i].children.ToList();
-                    bone.children.Add(controlledAramature.FindIndex(x => x.name.Equals(child)).ToString());
+                    controlledArmature[i].children.ToList();
+                    bone.children.Add(controlledArmature.FindIndex(x => x.name.Equals(child)).ToString());
                 }
 
                 // Creates a name that contain the component name assigned
                 for (int j = componentIndex; j < dofsAssigned.Count; j++)
                 {
-                    if (controlledAramature[i].name.Equals(dofBoneAss[0][j].ReferenceBone.name))
+                    if (controlledArmature[i].name.Equals(dofBoneAss[0][j].ReferenceBone.name))
                     {
                         bone.name += dofsAssigned[componentIndex] + " | ";
                         componentIndex++;
@@ -1672,6 +1770,19 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 }
             }
             return maxDofCounts;
+        }
+
+        public static List<char[]> ComputeDofCombination(int componentAvailable)
+        {
+            // Creates combination with repetition of n element (x,y,z) choose k (number of motor available) 
+            List<char[]> combination = new List<char[]>();
+            foreach (var c in Combinatorics.CombinationsWithRepetition
+                (new string[] { "x", "y", "z" }, componentAvailable))
+            {
+                char[] array = c.ToCharArray();
+                combination.Add(array);
+            }
+            return combination;
         }
 
 

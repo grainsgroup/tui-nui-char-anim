@@ -136,8 +136,15 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             if (compareAxisArrangement == null)
                 return 1;
             else
-            { 
-                return this.Score.CompareTo(compareAxisArrangement.Score);
+            {
+                if (this.Score == compareAxisArrangement.Score)
+                {
+                    return this.AxisCombination.Length.CompareTo(compareAxisArrangement.AxisCombination.Length);
+                }
+                else
+                {
+                    return this.Score.CompareTo(compareAxisArrangement.Score);
+                }
             }        
         }
 

@@ -581,15 +581,66 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                             tempScore += 1; continue;
                         }
                     }
-                    if (item[j] == 'x' && motorDecomposition[j] == 'x') { dofCovered++; currentDofUsed[j] = true; continue; }
-                    if (item[j] == 'x' && motorDecomposition[j] == 'y') { tempScore += 2; dofCovered++; currentDofUsed[j] = true; continue; }
-                    if (item[j] == 'x' && motorDecomposition[j] == 'z') { tempScore += 1; dofCovered++; currentDofUsed[j] = true; continue; }
-                    if (item[j] == 'y' && motorDecomposition[j] == 'y') { dofCovered++; currentDofUsed[j] = true; continue; }
-                    if (item[j] == 'y' && motorDecomposition[j] == 'x') { tempScore += 2; dofCovered++; currentDofUsed[j] = true; continue; }
-                    if (item[j] == 'y' && motorDecomposition[j] == 'z') { tempScore += 2; dofCovered++; currentDofUsed[j] = true; continue; }
-                    if (item[j] == 'z' && motorDecomposition[j] == 'z') { dofCovered++; currentDofUsed[j] = true; continue; }
-                    if (item[j] == 'z' && motorDecomposition[j] == 'x') { tempScore += 1; dofCovered++; currentDofUsed[j] = true; continue; }
-                    if (item[j] == 'z' && motorDecomposition[j] == 'y') { tempScore += 2; dofCovered++; currentDofUsed[j] = true; continue; }
+                    if (item[j] == 'x' && motorDecomposition[j] == 'x') 
+                    { 
+                        dofCovered++;
+                        currentDofUsed[j] = true; 
+                        continue; 
+                    }                    
+                    if (item[j] == 'x' && motorDecomposition[j] == 'y') 
+                    { 
+                        tempScore += 2; 
+                        dofCovered++; 
+                        currentDofUsed[j] = true; 
+                        continue; 
+                    }
+                    if (item[j] == 'x' && motorDecomposition[j] == 'z') 
+                    { 
+                        tempScore += 1; 
+                        dofCovered++; 
+                        currentDofUsed[j] = true; 
+                        continue; 
+                    }
+                    if (item[j] == 'y' && motorDecomposition[j] == 'y') 
+                    { 
+                        dofCovered++; 
+                        currentDofUsed[j] = true; 
+                        continue; 
+                    }
+                    if (item[j] == 'y' && motorDecomposition[j] == 'x') 
+                    { 
+                        tempScore += 2; 
+                        dofCovered++; 
+                        currentDofUsed[j] = true; 
+                        continue; 
+                    }
+                    if (item[j] == 'y' && motorDecomposition[j] == 'z') 
+                    { 
+                        tempScore += 2; 
+                        dofCovered++; 
+                        currentDofUsed[j] = true; 
+                        continue; 
+                    }
+                    if (item[j] == 'z' && motorDecomposition[j] == 'z') 
+                    { 
+                        dofCovered++; 
+                        currentDofUsed[j] = true; 
+                        continue; 
+                    }
+                    if (item[j] == 'z' && motorDecomposition[j] == 'x') 
+                    { 
+                        tempScore += 1; 
+                        dofCovered++; 
+                        currentDofUsed[j] = true; 
+                        continue; 
+                    }
+                    if (item[j] == 'z' && motorDecomposition[j] == 'y') 
+                    { 
+                        tempScore += 2; 
+                        dofCovered++; 
+                        currentDofUsed[j] = true; 
+                        continue; 
+                    }
 
                 }
 
@@ -807,7 +858,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
         // UTILITY FUNCTIONS
 
-        public static List<string> AssignName(List<List<string>> boneDoF, bool useSensor, Brick brick, bool useHipJoint)
+        public static List<string> AssignName(List<List<string>> boneDoF, Brick brick, bool useSensor, bool useHipJoint)
         {
             List<string> result = new List<string>();
             float bestCost = float.MaxValue;
@@ -815,9 +866,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             List<string> tuiPieces = AutomaticMapping.GetTuiComponentList(useSensor, brick);
             if (useHipJoint)
             {
-                tuiPieces.Add("Hip_NUI");
-                tuiPieces.Add("Hip_NUI");
-                tuiPieces.Add("Hip_NUI");
+                tuiPieces.Add("Hip_NUI(z)");
+                tuiPieces.Add("Hip_NUI(y)");
+                tuiPieces.Add("Hip_NUI(x)");
             }
 
             foreach (List<string> item in boneDoF)
@@ -1229,8 +1280,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     combToReturn.Add(comb[i]);
             }
 
-
-            // DEBUG
             return new AxisArrangement(combToReturn.ToArray(), cost);            
         }        
 
