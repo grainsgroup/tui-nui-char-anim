@@ -154,7 +154,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         }
 
 
-        internal static float[,] VectorToCostMatrix(double[] costVector, int controlledBones, int virtualBones, int range)
+        internal static float[,] VectorToCostMatrix(double[] costVector, int controlledBones, int virtualBones)
         {        
             // verifica che il vettore viene incolonnato bene nella matrice
             double max = costVector.Max();

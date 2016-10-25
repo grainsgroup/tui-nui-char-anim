@@ -88,6 +88,15 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             return (s.name.Equals(this.name));
         }
 
+        public string GetHash() 
+        {
+            
+            string a = Metrics.GetDofString(this.rot_DoF).GetHashCode().ToString();
+            string b = Metrics.GetDofString(this.loc_DoF).GetHashCode().ToString();
+            string c = this.level.ToString().GetHashCode().ToString();
+            return a + b + c;
+        }
+
     }
 
   

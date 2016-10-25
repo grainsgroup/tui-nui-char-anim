@@ -362,13 +362,13 @@
                         <TextBox x:Name="PosInC" Height="23" TextWrapping="Wrap" Text="1" Width="50" Canvas.Left="580" Canvas.Top="185"/>
                         <TextBox x:Name="Sym" Height="23" TextWrapping="Wrap" Text="1" Width="50" Canvas.Left="580" Canvas.Top="213"/>
                         <TextBox x:Name="ParCou" Height="23" TextWrapping="Wrap" Text="1" Width="50" Canvas.Left="580" Canvas.Top="241"/>
-                        <Label x:Name="ArrangementsOrderLabel_Copy" Content="Node Similarity" Canvas.Left="450" Canvas.Top="71" Width="120"/>
-                        <Label x:Name="ArrangementsOrderLabel_Copy1" Content="DofCoverage" Canvas.Left="450" Canvas.Top="99" Width="108"/>
-                        <Label x:Name="ArrangementsOrderLabel_Copy2" Content="CompRange " Canvas.Left="450" Canvas.Top="127" Width="108"/>
-                        <Label x:Name="ArrangementsOrderLabel_Copy3" Content="CompAnnoyance" Canvas.Left="450" Canvas.Top="155" Width="136"/>
-                        <Label x:Name="ArrangementsOrderLabel_Copy4" Content="PositionInChain" Canvas.Left="450" Canvas.Top="183" Width="122"/>
-                        <Label x:Name="ArrangementsOrderLabel_Copy5" Content="Symmetry" Canvas.Left="450" Canvas.Top="211" Width="92"/>
-                        <Label x:Name="ArrangementsOrderLabel_Copy6" Content="PartitionCount" Canvas.Left="450" Canvas.Top="239" Width="116"/>
+                        <Label x:Name="NodeSimilarityFactorLabel" Content="Node Similarity" Canvas.Left="450" Canvas.Top="71" Width="120"/>
+                        <Label x:Name="DofCoverageFactorLabel" Content="DofCoverage" Canvas.Left="450" Canvas.Top="99" Width="108"/>
+                        <Label x:Name="CompRangeFactorLabel" Content="CompRange " Canvas.Left="450" Canvas.Top="127" Width="108"/>
+                        <Label x:Name="CompAnnoyanceFactorLabel" Content="CompAnnoyance" Canvas.Left="450" Canvas.Top="155" Width="136"/>
+                        <Label x:Name="PositionInChainFactorLabel" Content="PositionInChain" Canvas.Left="450" Canvas.Top="183" Width="122"/>
+                        <Label x:Name="SymmetryFactorLabel" Content="Symmetry" Canvas.Left="450" Canvas.Top="211" Width="92"/>
+                        <Label x:Name="PartitionCountFactorLabel" Content="PartitionCount" Canvas.Left="450" Canvas.Top="239" Width="116"/>
                     </Canvas >
                 </TabItem>
 

@@ -11,9 +11,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
     {
         public const int MAX_COST = 100;
 
-        
-        // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-        // METRICS
+                
         
         /// <summary>
         /// Cost = Abs(bone.level - handler.level)
@@ -22,9 +20,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         /// <param name="handler"></param>
         /// <param name="MaxLenghtChain"></param>
         /// <returns></returns>
-        public static float ChainLengthScore(Bone bone, Bone handler, int MaxLenghtChain)
+        public static float ChainLengthScore(Bone bone, Bone handler, int MaxLenghtChain, int minLenghtChain)
         {
-            float cost = Math.Abs(bone.level - handler.level) / (float)MaxLenghtChain * MAX_COST;            
+            float cost = Math.Abs(bone.level - minLenghtChain - handler.level) / (float)MaxLenghtChain * MAX_COST;            
             return cost;
         }
 
@@ -65,16 +63,16 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             }
 
             return cost;
-        }
-*/
+        }*/
 
         public static float ComponentRangeScore(Bone bone, Bone handler)
         {
-
+            
             List<Bone> components = new List<Bone>();
             int dofCount = 0;
             float cost = 0;
 
+            // Splits combined handler
             if (handler.name.Contains(" | "))
             {
                 components = DecomposeHandler(handler);
@@ -117,13 +115,12 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         dofCount++;
                     }
                 }
-            }
-            
-            return cost/dofCount;
+            }            
+            return cost/dofCount;          
         }
 
         public static float ComponentAnnoyanceScore(Bone bone, Bone handler)
-        {
+        {            
             List<Bone> components = new List<Bone>();
             int dofCount = 0;
             float cost = 0;
@@ -170,9 +167,56 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 }
             }
 
-            return cost / dofCount;
+            return cost / dofCount;            
+           
         }
 
+        public static float CompoenteRangeAnnoyanceScore(Bone bone, Bone handler, float RangeWeight, float AnnoyanceWeight) 
+        {
+            List<Bone> components = new List<Bone>();
+            if (handler.name.Contains(" | "))
+            {
+                components = DecomposeHandler(handler);
+            }
+            else
+            {
+                components.Add(handler);
+            }
+
+            if (bone.rot_DoF.Count + bone.loc_DoF.Count > handler.rot_DoF.Count + handler.loc_DoF.Count)
+            {
+                return MAX_COST;
+            }
+            else
+            {
+                List<string> boneDof = new List<string>();
+                foreach (char dof in bone.rot_DoF)
+                {
+                    boneDof.Add("ROT(" + dof + ")");
+                }
+                foreach (char dof in bone.loc_DoF)
+                {
+                    boneDof.Add("LOC(" + dof + ")");
+                }
+
+                float[,] costsMatrix = new float[boneDof.Count, components.Count];
+                // initialize costsMatrix
+                for (int row = 0; row < boneDof.Count; row++)
+                {
+                    for (int col = 0; col < components.Count; col++)
+                    {
+                        costsMatrix[row, col] =
+                            GetComponentRangeCost(boneDof[row], components[col].name) * RangeWeight +
+                            GetAnnoyanceCost(boneDof[row], components[col].name) * AnnoyanceWeight;
+                    }
+                }
+
+                int[] assignment = HungarianAlgorithm.FindAssignments(costsMatrix);
+                float score = ComputeCostAssignment(costsMatrix, assignment);
+                return score / (bone.rot_DoF.Count + bone.loc_DoF.Count);
+            }            
+        }
+        
         public static float DofCoverageScore(Bone bone, Bone handler, Dictionary<string, List<List<char>>> dictionary)
         {
             // Vers 3.0
@@ -229,7 +273,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 }
                 else
                 {
-                    // this motorDisposition is not able to control this partition
+                    // this motorDisposition is not able to control the rot DoFs of this partition
                     return MAX_COST;
                 }
 
@@ -260,24 +304,16 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
             if (bone.loc_DoF.Count > 0)
             {
-                foreach (char dof in bone.loc_DoF)
+                if (bone.loc_DoF.Count + bone.rot_DoF.Count > handler.rot_DoF.Count + handler.loc_DoF.Count)
+                    return MAX_COST;
+                else
                 {
-                    if (!handler.loc_DoF.Contains(dof))
-                    {
-                        locCost++;
-                    }
+                    locCost = Math.Max(0, bone.loc_DoF.Count - (handler.rot_DoF.Count - bone.rot_DoF.Count) - handler.loc_DoF.Count);
+                    locCost = locCost / (bone.loc_DoF.Count) * MAX_COST;
                 }
-
-                locCost = locCost / bone.loc_DoF.Count * MAX_COST; 
             }
 
-            return rotCost + locCost;
-
-/* 
-// Version 1/2
-            float rotCost = 0;
-            float locCost = 0;
-*/
+            return (rotCost + locCost)/2;
             
 /* 
 // Version 1
@@ -330,7 +366,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
 /* 
 // Version 2
-
             if (bone.rot_DoF.Count > 0)
             {           
                 rotCost = bone.rot_DoF.Count + handler.rot_DoF.Count;
@@ -393,42 +428,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             return (rotCost + locCost) / 2;
 */
         }
-
-
-        // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
         
-
-
-
-        public static float LocDoFSimilarityScore(Bone locBone, Bone handler)
-        {
-            int cost = 0;
-            foreach (char c in locBone.loc_DoF)
-            {
-                if (!handler.loc_DoF.Contains(c))
-                {
-                    cost = MAX_COST;
-                    break;
-                }
-            }
-            return cost;
-        }
-
-        /* private static int UserPreferenceScore(Bone bone, bool leftHanded)
-       {
-           int cost = 1;
-           if (leftHanded && bone.name.Contains(".L"))
-           {
-               cost = 0;
-           }
-           if (!leftHanded && bone.name.Contains(".R"))
-           {
-               cost = 0;
-           }
-           return cost;
-       }
-       */              
-
         public static float SymmetryScore(Bone bone, Bone handler)
         {
             // Kinect
@@ -459,20 +459,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             }
 
             else return 0;
-        }
-
-        public static float RotDofSimilarityScore(Bone bone, Bone handler)
-        {
-            int cost = 0;
-            foreach (char c in bone.rot_DoF)
-            {
-                if (!handler.rot_DoF.Contains(c))
-                {
-                    cost = MAX_COST;
-                    break;
-                }
-            }
-            return cost;
         }
 
         public static int RotDofDifferenceScore(List<Bone> partition, List<char> motorDecomposition, Dictionary<string, List<List<char>>> dictionary, ref bool[] dofUsed)
@@ -662,162 +648,145 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             
             return minScore;
         }
-
-        public static float ComponentRequiredScore(List<char> motorDecomposition, bool useSensor, Brick brick)
-        {
-            List<string> tuiPieces = AutomaticMapping.GetTuiComponentList(useSensor, brick);
-            float[,] costsMatrix = new float[motorDecomposition.Count, tuiPieces.Count];
-            // initialize costsMatrix
-            for (int row = 0; row < motorDecomposition.Count; row++)
-            {
-                for (int col = 0; col < tuiPieces.Count; col++)
-                {
-                    costsMatrix[row, col] = GetAnnoyanceCost("ROT(" + motorDecomposition[row].ToString() + ")", tuiPieces[col]);
-                }
-            }
-
-            int[] assignment = HungarianAlgorithm.FindAssignments(costsMatrix);
-
-            float totalCost = ComputeCostAssignment(costsMatrix, assignment);
-
-            return totalCost / (motorDecomposition.Count * MAX_COST) * MAX_COST;
-        }        
-
+        
         public static float[,] NodeSimilarityScore(List<Bone> partition, List<Bone> virtualArmature)
         {                        
-            var graphControlledArmature = AutomaticMapping.CreateUndirectedGraph(partition);
-            var graphVirtualArmature = AutomaticMapping.CreateUndirectedGraph(virtualArmature);
+            float[,] costMatrix = new float[partition.Count,virtualArmature.Count];
 
-            int[,] A = Matrix.GetAdjacencyMatrix(partition, graphControlledArmature);
-            int[,] B = Matrix.GetAdjacencyMatrix(virtualArmature, graphVirtualArmature);            
+            if (partition.Count > 1)
+            {
+                var graphControlledArmature = AutomaticMapping.CreateUndirectedGraph(partition);
+                var graphVirtualArmature = AutomaticMapping.CreateUndirectedGraph(virtualArmature);
 
-            int[,] AT = Matrix.TransposeMatrix(A);
-            int[,] BT = Matrix.TransposeMatrix(B);
+                int[,] A = Matrix.GetAdjacencyMatrix(partition, graphControlledArmature);
+                int[,] B = Matrix.GetAdjacencyMatrix(virtualArmature, graphVirtualArmature);
 
-            int[,] DAs = Matrix.GetSourceDiagonalMatrix(partition, graphControlledArmature);
-            int[,] DAt = Matrix.GetTerminalDiagonalMatrix(partition, graphControlledArmature);
+                int[,] AT = Matrix.TransposeMatrix(A);
+                int[,] BT = Matrix.TransposeMatrix(B);
 
-            int[,] DBs = Matrix.GetSourceDiagonalMatrix(virtualArmature, graphVirtualArmature);
-            int[,] DBt = Matrix.GetTerminalDiagonalMatrix(virtualArmature, graphVirtualArmature);
+                int[,] DAs = Matrix.GetSourceDiagonalMatrix(partition, graphControlledArmature);
+                int[,] DAt = Matrix.GetTerminalDiagonalMatrix(partition, graphControlledArmature);
 
-            // Matrices taken from article: "Graph similarity scoring and matching" 
-            // http://www.sciencedirect.com/science/article/pii/S0893965907001012
-            /*
-            int[,] A = new int[,] { 
-            { 0, 1, 0 }, 
-            { 0, 0, 1 }, 
-            { 0, 0, 0 } };
+                int[,] DBs = Matrix.GetSourceDiagonalMatrix(virtualArmature, graphVirtualArmature);
+                int[,] DBt = Matrix.GetTerminalDiagonalMatrix(virtualArmature, graphVirtualArmature);
 
-            int[,] B = new int[,]{ 
-            { 0, 1, 0, 0, 0, 0 }, 
-            { 0, 0, 0, 1, 1, 0 },
-            { 0, 0, 0, 1, 0, 0 },
-            { 0, 0, 0, 0, 1, 0 },
-            { 0, 0, 0, 0, 0, 1 },
-            { 0, 0, 0, 0, 0, 0 } };
+                // Matrices taken from article: "Graph similarity scoring and matching" 
+                // http://www.sciencedirect.com/science/article/pii/S0893965907001012
+                /*
+                int[,] A = new int[,] { 
+                { 0, 1, 0 }, 
+                { 0, 0, 1 }, 
+                { 0, 0, 0 } };
+
+                int[,] B = new int[,]{ 
+                { 0, 1, 0, 0, 0, 0 }, 
+                { 0, 0, 0, 1, 1, 0 },
+                { 0, 0, 0, 1, 0, 0 },
+                { 0, 0, 0, 0, 1, 0 },
+                { 0, 0, 0, 0, 0, 1 },
+                { 0, 0, 0, 0, 0, 0 } };
 
 
-            int[,] AT = Matrix.TransposeMatrix(A);
-            int[,] BT = Matrix.TransposeMatrix(B);
+                int[,] AT = Matrix.TransposeMatrix(A);
+                int[,] BT = Matrix.TransposeMatrix(B);
 
-            int[,] DAs = new int[,] { 
-            { 1, 0, 0 }, 
-            { 0, 1, 0 }, 
-            { 0, 0, 0 } 
-            };
+                int[,] DAs = new int[,] { 
+                { 1, 0, 0 }, 
+                { 0, 1, 0 }, 
+                { 0, 0, 0 } 
+                };
 
-            int[,] DAt = new int[,] { 
-            { 0, 0, 0 }, 
-            { 0, 1, 0 }, 
-            { 0, 0, 1 } 
-            };
+                int[,] DAt = new int[,] { 
+                { 0, 0, 0 }, 
+                { 0, 1, 0 }, 
+                { 0, 0, 1 } 
+                };
 
-            int[,] DBs = new int[,] { 
-            { 1, 0, 0, 0, 0, 0 }, 
-            { 0, 2, 0, 0, 0, 0 },
-            { 0, 0, 1, 0, 0, 0 },
-            { 0, 0, 0, 1, 0, 0 },
-            { 0, 0, 0, 0, 1, 0 },
-            { 0, 0, 0, 0, 0, 0 },
-            };
+                int[,] DBs = new int[,] { 
+                { 1, 0, 0, 0, 0, 0 }, 
+                { 0, 2, 0, 0, 0, 0 },
+                { 0, 0, 1, 0, 0, 0 },
+                { 0, 0, 0, 1, 0, 0 },
+                { 0, 0, 0, 0, 1, 0 },
+                { 0, 0, 0, 0, 0, 0 },
+                };
             
-            int[,] DBt = new int[,] {
-            { 0, 0, 0, 0, 0, 0 }, 
-            { 0, 1, 0, 0, 0, 0 },
-            { 0, 0, 0, 0, 0, 0 },
-            { 0, 0, 0, 2, 0, 0 },
-            { 0, 0, 0, 0, 2, 0 },
-            { 0, 0, 0, 0, 0, 1 },
-            };
-            */
+                int[,] DBt = new int[,] {
+                { 0, 0, 0, 0, 0, 0 }, 
+                { 0, 1, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 2, 0, 0 },
+                { 0, 0, 0, 0, 2, 0 },
+                { 0, 0, 0, 0, 0, 1 },
+                };
+                */
 
-            /*
-            Matrix.PrintMatrix(A, "A");
-            Matrix.PrintMatrix(B, "B");
-            Matrix.PrintMatrix(AT, "AT");
-            Matrix.PrintMatrix(BT, "BT");
-            Matrix.PrintMatrix(DAs, "DAs");
-            Matrix.PrintMatrix(DAt, "DAt");
-            Matrix.PrintMatrix(DBs, "DBs");
-            Matrix.PrintMatrix(DBt, "DBt");
-            */
+                /*
+                Matrix.PrintMatrix(A, "A");
+                Matrix.PrintMatrix(B, "B");
+                Matrix.PrintMatrix(AT, "AT");
+                Matrix.PrintMatrix(BT, "BT");
+                Matrix.PrintMatrix(DAs, "DAs");
+                Matrix.PrintMatrix(DAt, "DAt");
+                Matrix.PrintMatrix(DBs, "DBs");
+                Matrix.PrintMatrix(DBt, "DBt");
+                */
 
-            int[,] kroneckerAxB = Matrix.KroneckerProduct(A, B);
-            //Matrix.PrintMatrix(kroneckerAxB, "kroneckerAxB");
+                int[,] kroneckerAxB = Matrix.KroneckerProduct(A, B);
+                //Matrix.PrintMatrix(kroneckerAxB, "kroneckerAxB");
 
-            int[,] kroneckerATxBT = Matrix.KroneckerProduct(AT, BT);
-            //Matrix.PrintMatrix(kroneckerATxBT, "kroneckerATxBT");
+                int[,] kroneckerATxBT = Matrix.KroneckerProduct(AT, BT);
+                //Matrix.PrintMatrix(kroneckerATxBT, "kroneckerATxBT");
 
-            int[,] kroneckerDAsxDBs = Matrix.KroneckerProduct(DAs, DBs);
-            //Matrix.PrintMatrix(kroneckerDAsxDBs, "kroneckerDAsxDBs");
+                int[,] kroneckerDAsxDBs = Matrix.KroneckerProduct(DAs, DBs);
+                //Matrix.PrintMatrix(kroneckerDAsxDBs, "kroneckerDAsxDBs");
 
-            int[,] kroneckerDAtxDBt = Matrix.KroneckerProduct(DAt, DBt);
-            //Matrix.PrintMatrix(kroneckerDAtxDBt, "kroneckerDAtxDBt");
+                int[,] kroneckerDAtxDBt = Matrix.KroneckerProduct(DAt, DBt);
+                //Matrix.PrintMatrix(kroneckerDAtxDBt, "kroneckerDAtxDBt");
 
-            int[,] MatricesSummation = Matrix.ComputeMatricesSummation
-                (new List<int[,]>() { kroneckerAxB, kroneckerATxBT, kroneckerDAsxDBs, kroneckerDAtxDBt });
-            //Matrix.PrintMatrix(MatricesSummation, "MatricesSummation");
-
-
-            // Start iterating procedure
-            double[] costVector = Matrix.GetAllOneVector(MatricesSummation.GetLength(0));
+                int[,] MatricesSummation = Matrix.ComputeMatricesSummation
+                    (new List<int[,]>() { kroneckerAxB, kroneckerATxBT, kroneckerDAsxDBs, kroneckerDAtxDBt });
+                //Matrix.PrintMatrix(MatricesSummation, "MatricesSummation");
 
 
-            for (int step = 0; step < 15; step++)
-            {
-                costVector = Matrix.Product(MatricesSummation, costVector);
-                costVector = Matrix.NormalizeVector(costVector);
-                //Console.WriteLine(" ===========================================");
-                //Console.WriteLine("  STEP n." + step);
-                // DEBUG TEST : LOG
-                // Matrix.VectorToCostMatrix(costVector, B.GetLength(0), A.GetLength(0), 10);   
+                // Start iterating procedure
+                double[] costVector = Matrix.GetAllOneVector(MatricesSummation.GetLength(0));
+
+
+                for (int step = 0; step < 15; step++)
+                {
+                    costVector = Matrix.Product(MatricesSummation, costVector);
+                    costVector = Matrix.NormalizeVector(costVector);
+                    //Console.WriteLine(" ===========================================");
+                    //Console.WriteLine("  STEP n." + step);
+                    // DEBUG TEST : LOG
+                    // Matrix.VectorToCostMatrix(costVector, B.GetLength(0), A.GetLength(0), 10);   
+                }
+
+                /*
+                Console.WriteLine("VIRTUAL ARMATURE COMPONENTS");
+                for (int i = 0; i < virtualArmature.Count; i++)
+                {
+                    Console.Write("[" + i + "] = " + virtualArmature[i].name + "; ");
+                }
+                Console.WriteLine("\nBLENDER BONES");
+                for (int i = 0; i < partition.Count; i++)
+                {
+                    Console.Write("[" + i + "] = " + partition[i].name + "; ");
+                }             
+                */
+
+                costMatrix = Matrix.VectorToCostMatrix(costVector, B.GetLength(0), A.GetLength(0));
+
+                //GraphComparison(costMatrix, partition, virtualArmature); 
             }
-
-            /*
-            Console.WriteLine("VIRTUAL ARMATURE COMPONENTS");
-            for (int i = 0; i < virtualArmature.Count; i++)
-            {
-                Console.Write("[" + i + "] = " + virtualArmature[i].name + "; ");
-            }
-            Console.WriteLine("\nBLENDER BONES");
-            for (int i = 0; i < partition.Count; i++)
-            {
-                Console.Write("[" + i + "] = " + partition[i].name + "; ");
-            }             
-            */
-
-            float[,] costMatrix = Matrix.VectorToCostMatrix(costVector, B.GetLength(0), A.GetLength(0), 10);
-            
-            GraphComparison(costMatrix, partition, virtualArmature);
-
-                
+                            
             return costMatrix;
             
         }
 
         private static void GraphComparison(float[,] costMatrix, List<Bone> partition, List<Bone> virtualArmature)
         {
-
             for (int row = 0; row < costMatrix.GetLength(0); row++)
             {
                 float[] scores = Matrix.GetRow(costMatrix, row);
@@ -847,7 +816,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         
                     }
 
-                    //if(bone.parent.Equals("") && Armature[col].parent.Equals("") && )
+                    
                 }
             }
         }
@@ -866,9 +835,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             List<string> tuiPieces = AutomaticMapping.GetTuiComponentList(useSensor, brick);
             if (useHipJoint)
             {
-                tuiPieces.Add("Hip_NUI(z)");
-                tuiPieces.Add("Hip_NUI(y)");
                 tuiPieces.Add("Hip_NUI(x)");
+                tuiPieces.Add("Hip_NUI(y)");
+                tuiPieces.Add("Hip_NUI(z)");
             }
 
             foreach (List<string> item in boneDoF)
@@ -880,8 +849,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     for (int col = 0; col < tuiPieces.Count; col++)
                     {
                         costsMatrix[row, col] =
-                            GetAnnoyanceCost(item[row], tuiPieces[col]) +
-                            GetComponentRangeCost(item[row], tuiPieces[col]);
+                            GetAnnoyanceCost(item[row], tuiPieces[col])/* +
+                            GetComponentRangeCost(item[row], tuiPieces[col])*/;
                     }
                 }
 
@@ -915,7 +884,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         public static float GetKinectRotRangeCost(string DoF, string ComponentType)
         {
             float cost = MAX_COST;
-            
+            float factor = 0;
+
             if (ComponentType.Contains("_ROT"))
                 ComponentType = ComponentType.Remove(ComponentType.IndexOf("_ROT"));
 
@@ -926,64 +896,64 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             {
                 case "Head" :
                     if (DoF.Equals("ROT(x)"))
-                        cost = MAX_COST - (85 / 360) * MAX_COST;
+                        factor = 85.0f / 360.0f;
                     if (DoF.Equals("ROT(z)"))
-                        cost = MAX_COST - (60 / 360) * MAX_COST;
+                        factor = 60.0f / 360.0f;
                     break;
                 
                 case "Shoulder.R":
                 case "Shoulder.L":
                     if (DoF.Equals("ROT(x)"))
-                        cost = MAX_COST - (60 / 360) * MAX_COST;
+                        factor = 60.0f / 360.0f;
                     if (DoF.Equals("ROT(z)"))
-                        cost = MAX_COST - (10 / 360) * MAX_COST;                
+                        factor = 10.0f / 360.0f;                
                     break;
                 
                 case "Elbow.R":
                 case "Elbow.L":
                     if (DoF.Equals("ROT(x)"))
-                        cost = MAX_COST - (170 / 360) * MAX_COST;
+                        factor = 170.0f / 360.0f;
                     if (DoF.Equals("ROT(y)"))
-                        cost = MAX_COST - (170 / 360) * MAX_COST;
+                        factor = 170.0f / 360.0f;
                     if (DoF.Equals("ROT(z)"))
-                        cost = MAX_COST - (120 / 360) * MAX_COST;
+                        factor = 120.0f / 360.0f;
                     break;
                 
                 case "Wrist.R":
                 case "Wrist.L":
                     if (DoF.Equals("ROT(x)"))
-                        cost = MAX_COST - (160 / 360) * MAX_COST;
+                        factor = 160.0f / 360.0f;
                     break;
 
                 case "Hand.R":
                 case "Hand.L":
                     if (DoF.Equals("ROT(x)"))
-                        cost = MAX_COST - (50 / 360) * MAX_COST;
+                        factor = 50.0f / 360.0f;
                     if (DoF.Equals("ROT(z)"))
-                        cost = MAX_COST - (50 / 360) * MAX_COST;
+                        factor = 50.0f / 360.0f;
                     break;
 
                 case "Hip":
                     if (DoF.Equals("ROT(x)"))
-                        cost = MAX_COST - (90 / 360) * MAX_COST;
+                        factor = 90.0f / 360.0f;
                     if (DoF.Equals("ROT(y)"))
-                        cost = MAX_COST - (80 / 360) * MAX_COST;
+                        factor = 80.0f / 360.0f;
                     if (DoF.Equals("ROT(z)"))
-                        cost = MAX_COST - (60 / 360) * MAX_COST;
+                        factor = 60.0f / 360.0f;                    
                     break;                
                 
                 case "Knee.R":
                 case "Knee.L":
                     if (DoF.Equals("ROT(x)"))
-                        cost = MAX_COST - (120 / 360) * MAX_COST;
+                        factor = 120.0f / 360.0f;
                     if (DoF.Equals("ROT(z)"))
-                        cost = MAX_COST - (90 / 360) * MAX_COST;
+                        factor = 90.0f / 360.0f;
                     break;
 
                 case "Ankle.R":
                 case "Ankle.L":
                     if (DoF.Equals("ROT(x)"))
-                        cost = MAX_COST - (50 / 360) * MAX_COST;
+                        factor = 50.0f / 360.0f;
                     break;
 
                 case "Hip.R":
@@ -992,10 +962,10 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 case "Foot.L":
                 case "Shoulder":
                 case "Spine":
-                    cost = MAX_COST;
+                    factor = 0;
                     break;
             }
-            return cost;
+            return MAX_COST - factor * MAX_COST;
         }
 
         public static int GetKinectRotRangeCost(string ComponentType)
@@ -1114,19 +1084,13 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 return MAX_COST;
 
             // Loc mapped on Tui component
-            if ((DoF.Equals("LOC(x)") || DoF.Equals("LOC(y)") || DoF.Equals("LOC(z)")) &&
-                ComponentType.Contains(DeviceType.LMotor.ToString()))
+            if ((DoF.Equals("LOC(x)") || DoF.Equals("LOC(y)") || DoF.Equals("LOC(z)") || DoF.Equals("LOC(L)")) &&
+                (ComponentType.Contains(DeviceType.LMotor.ToString()) ||
+                 ComponentType.Contains(DeviceType.MMotor.ToString()) ||
+                 ComponentType.Contains(DeviceType.Gyroscope.ToString())))
                 return MAX_COST;
 
-            if ((DoF.Equals("LOC(x)") || DoF.Equals("LOC(y)") || DoF.Equals("LOC(z)")) &&
-                ComponentType.Contains(DeviceType.MMotor.ToString()))
-                return MAX_COST;
-
-            if ((DoF.Equals("LOC(x)") || DoF.Equals("LOC(y)") || DoF.Equals("LOC(z)")) &&
-                ComponentType.Contains(DeviceType.Gyroscope.ToString()))
-                return MAX_COST;
-
-            if ((DoF.Equals("LOC(x)") || DoF.Equals("LOC(y)") || DoF.Equals("LOC(z)")) &&
+            if ((DoF.Equals("LOC(x)") || DoF.Equals("LOC(y)") || DoF.Equals("LOC(z)") || DoF.Equals("LOC(L)")) &&
                 ComponentType.Contains(DeviceType.Ultrasonic.ToString()))
                 return 0;
 
@@ -1137,7 +1101,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 return MAX_COST;
 
             // Loc mapped on Kinect joints
-            if ((DoF.Equals("LOC(x)") || DoF.Equals("LOC(y)") || DoF.Equals("LOC(z)")) &&
+            if ((DoF.Equals("LOC(x)") || DoF.Equals("LOC(y)") || DoF.Equals("LOC(z)") || DoF.Equals("LOC(L)")) &&
                 ComponentType.Contains("_NUI"))
                 return 0;
 
@@ -1180,6 +1144,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             }
             else if(ComponentType.Contains("_NUI"))
             {
+                ComponentType = ComponentType.Substring(0, ComponentType.IndexOf("_NUI") + 4);
+                
                 if (DoF.Contains("LOC(x)"))
                     cost = MAX_COST / 4 * (4 - 3.80f);
 
@@ -1198,6 +1164,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 }
                 if (DoF.Contains("LOC(z)"))
                     cost = MAX_COST / 4 * (4 - 3.2f);
+                 
+                if (DoF.Contains("LOC(L)"))
+                    cost = MAX_COST / 4 * (4 - 0.90f); // average distance between feets and hip
 
                 if (DoF.Contains("ROT("))
                     cost = GetKinectRotRangeCost(DoF, ComponentType);

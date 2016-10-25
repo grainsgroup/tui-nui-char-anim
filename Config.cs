@@ -157,6 +157,11 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             AxisArrangement s = (AxisArrangement)obj;
             return (Metrics.GetDofString(AxisCombination.ToList()).Equals(Metrics.GetDofString(s.AxisCombination.ToList())));
         }
+
+        public override int GetHashCode()
+        {
+            return Metrics.GetDofString(this.AxisCombination.ToList()).GetHashCode();
+        }
     }
 
     public class PartitionAssignment : IComparable<PartitionAssignment>
@@ -168,12 +173,12 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         public List<Bone> Handler { get; set; }        
         public float Score { get; set; }                
 
-        public PartitionAssignment(string name, int[] assignment, List<Bone> partition, List<Bone>motorDeomposition, float score) 
+        public PartitionAssignment(string name, int[] assignment, List<Bone> partition, List<Bone>motorDecomposition, float score) 
         {
             this.Name = name;
             this.Assignment = assignment;
             this.Partition = partition;
-            this.Handler = motorDeomposition;
+            this.Handler = motorDecomposition;
             this.Score = score;            
         }
 

@@ -113,7 +113,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             return graph;
         }
         
-        public static List<List<Bone>> CreateArmaturesFromComb
+        public static List<List<List<Bone>>> CreateArmaturesFromComb 
             (char[] comb, Brick brick, int componentAvailable, bool locRotArm, bool useSensor) 
         {
             // IMPLEMENTATION WITH OPERATION_SEQUENCE_REPRESENTATION (OSR)           
@@ -238,10 +238,12 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             }
             
             // Converts typed dof sequence into possible armatures
-            List<List<Bone>> armatures = CreateArmature(sourceSequence, dofAssigned);
+            List<List<List<Bone>>> armatures = CreateArmature(sourceSequence, dofAssigned);
             
             return armatures;
         }
+
+
 
         private static char[] InitilizeComb(char[] comb, int componentAvailable)
         {
@@ -262,14 +264,14 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             return comb;
         }
                       
-        public static List<List<Bone>> CreateArmature(List<List<char>> sourceSequence, List<List<string>> dofAssigned)
+        public static List<List<List<Bone>>> CreateArmature(List<List<char>> sourceSequence, List<List<string>> dofAssigned)
         {
             /* Possible operation with two DoF
              * - P = creates two bones in parallel; 
              * - S = creates two bones in series; 
              * - B = put dofs in the same bone)
              */
-            string[] operations = { "P", "S"/*, "B" */};
+            string[] operations = { "P", "S", "B" };
 
             // List of possible order of operation to apply
             List<char[]> operationsOrder = new List<char[]>();
@@ -302,13 +304,13 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             }
 
             // For each sequence creates the armature which represent it
-            List<List<List<Bone>>> armaturesAtLevel = new List<List<List<Bone>>>();
-            for (int i = 0; i < dofAssigned[0].Count; i++)
-            {
-                armaturesAtLevel.Add(new List<List<Bone>>());
-            }
-
-
+            // Data structure for:
+            // 1. Improve comparison phase
+            HashSet<string> armaturesHash = new HashSet<string>();
+            // 2. Return resulted armatures
+            List<List<Bone>> sequentialArm = new List<List<Bone>>();
+            List<List<Bone>> splittedArm = new List<List<Bone>>();
+            
             for (int i = 0; i < dofSequences.Count; i++)
             {
                 // initialization
@@ -439,9 +441,12 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                 //    parentToUpdate.name += " | " + boneToAdd.name;
                                 //}
 
-                                // Dof duplicates
-                                boneToUpdate.rot_DoF.Add(dof);
-                                boneToUpdate.name += " | " + boneToAdd.name;
+                                // Creates bones with at most 3 degrees of freedom and with duplicates DoFs
+                                if (boneToUpdate.rot_DoF.Count < 3)
+                                {
+                                    boneToUpdate.rot_DoF.Add(dof);
+                                    boneToUpdate.name += " | " + boneToAdd.name;
+                                }
                             }
                             // Adds loc dof
                             foreach (char dof in boneToAdd.loc_DoF)
@@ -452,9 +457,12 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                 //    boneToUpdate.name += " | " + boneToAdd.name;
                                 //}
 
-                                // Dof duplicates
-                                boneToUpdate.loc_DoF.Add(dof);
-                                boneToUpdate.name += " | " + boneToAdd.name;
+                                // Creates bones with at most 3 degrees of freedom and with duplicates DoFs
+                                if (boneToUpdate.loc_DoF.Count < 3)
+                                {
+                                    boneToUpdate.loc_DoF.Add(dof);
+                                    boneToUpdate.name += " | " + boneToAdd.name;
+                                }
                             }
 
                             if (!boneToUpdate.parent.Equals(""))
@@ -476,38 +484,75 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
                 foreach (PartialArmature pa in partialArmatures)
                 {
-                    EquivalentArmatureTest(pa.virtualArmature, armaturesAtLevel[pa.virtualArmature.Count]);
-                    //armatures.Add(pa.virtualArmature);
+                    string hash = ComputeArmatureHash(pa.virtualArmature,0);
+
+                    if (!armaturesHash.Contains(hash))
+                    {
+                        armaturesHash.Add(hash);
+                        if (IsSplittedArmature(pa.virtualArmature))
+                        {
+                            splittedArm.Add(pa.virtualArmature);
+                        }
+                        else
+                        {
+                            sequentialArm.Add(pa.virtualArmature);
+                        }
+                    }
                 }
             }
-
-            ////////////////////// DEBUG TEST ////////////////////
-            //for(int index = 0; index < armatures.Count; index++) 
-            //{
-            //    if (armatures[index].Count == 1)
-            //        Console.WriteLine(index);
-            //}
-            ///////////////////////////////////////////////////////
-
-            List<List<Bone>> armatures = new List<List<Bone>>();
             
-            return armatures;
+            return new List<List<List<Bone>>>() {sequentialArm, splittedArm};
         }
 
-        private static void EquivalentArmatureTest(List<Bone> armatureToAdd, List<List<Bone>> armatures)
+        public static string ComputeArmatureHash(List<Bone> list, int minLevel)
         {
-            // se non c'è una armature equivalente aggiungila alle armatureList
+            string hashCode = string.Empty;
+
+            Bone root = new Bone("");
+            root.level =  minLevel - 1;
+            root.loc_DoF = new List<char>();
+            root.rot_DoF = new List<char>();
+            root.parent = null;
+            foreach (Bone b in list)
+            {
+                if (b.level == minLevel)
+                    root.children.Add(b.name);
+            }
+            list.Add(root);
+            hashCode = recursiveHash(root, list);
             
-            bool found = false;
-            foreach (List<Bone> arm in armatures)
-            {
-                
-            }
-            if (!found)
-            {
-                armatures.Add(armatureToAdd);
-            }
+            // Removes the root             
+            list.Remove(root);            
+            return hashCode;
         }
+
+        private static string recursiveHash(Bone bone, List<Bone> list)
+        {
+            if (bone.children.Count == 0)
+            {
+                return bone.GetHash();
+            }
+            else
+            {
+                List<string> codes = new List<string>();
+                foreach (string children in bone.children) 
+                {
+                    // If the list of bone contain the current children
+                    if(!list.FindIndex(x=>x.name.Equals(children)).Equals(-1))
+                        codes.Add(recursiveHash(GetBoneFromName(children, list), list));
+                }
+                
+                codes.Sort();
+                string result = "";
+                if(!bone.name.Equals(""))
+                    result = bone.GetHash();
+                foreach(string cod in codes)
+                {
+                    result+= cod;
+                }
+                return result;                
+            }
+        }        
 
         public static List<Bone> GetAncestor(List<Bone> list, Bone lastBoneAnalyzed)
         {
@@ -1717,6 +1762,11 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 {
                     comb.Add(c);
                 }
+
+                foreach (char c in b.loc_DoF)
+                {
+                    comb.Add(c);
+                }
             }
             return comb;
         }
@@ -1749,7 +1799,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         /// 
         /// </summary>
         /// <param name="components"></param>
-        /// <returns>[0] LOC + ROT DoFs, [1] ROT DoFs,[2] LOC DoFs</returns>
+        /// <returns> [0] LOC + ROT DoFs, [1] ROT DoFs, [2] LOC DoFs </returns>
         public static int[] GetMaxBoneDofCount(List<List<Bone>> components)
         {
             int[] maxDofCounts = new int[3];
@@ -1783,6 +1833,42 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 combination.Add(array);
             }
             return combination;
+        }
+
+
+
+        public static int ReduceCombList(List<List<Bone>> decomposition)
+        {
+            int maxRotBones = 1;
+            bool reduceCombFlag = true;
+            foreach (List<Bone> partition in decomposition)
+            {
+                int nRotBone = 0;
+                int threeRotBone = 0;
+                foreach (Bone b in partition)
+                {
+                    if (b.rot_DoF.Count > 0)
+                        nRotBone++;
+                    if (b.rot_DoF.Count == 3)
+                        threeRotBone++;
+                }
+                if (nRotBone <= 1 || threeRotBone == partition.Count)
+                {
+                    if (threeRotBone > maxRotBones)
+                        maxRotBones = threeRotBone;                    
+                }
+                else
+                {
+                    reduceCombFlag = false;
+                    break;
+                }
+            }
+
+            if (reduceCombFlag)
+                return maxRotBones;
+
+            else
+                return 0;
         }
 
 
