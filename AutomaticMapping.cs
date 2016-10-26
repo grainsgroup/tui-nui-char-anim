@@ -518,11 +518,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 if (b.level == minLevel)
                     root.children.Add(b.name);
             }
-            list.Add(root);
-            hashCode = recursiveHash(root, list);
-            
-            // Removes the root             
-            list.Remove(root);            
+            hashCode = recursiveHash(root, list);            
             return hashCode;
         }
 

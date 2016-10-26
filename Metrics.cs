@@ -173,48 +173,56 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
         public static float CompoenteRangeAnnoyanceScore(Bone bone, Bone handler, float RangeWeight, float AnnoyanceWeight) 
         {
-            List<Bone> components = new List<Bone>();
-            if (handler.name.Contains(" | "))
+            try
             {
-                components = DecomposeHandler(handler);
-            }
-            else
-            {
-                components.Add(handler);
-            }
-
-            if (bone.rot_DoF.Count + bone.loc_DoF.Count > handler.rot_DoF.Count + handler.loc_DoF.Count)
-            {
-                return MAX_COST;
-            }
-            else
-            {
-                List<string> boneDof = new List<string>();
-                foreach (char dof in bone.rot_DoF)
+                List<Bone> components = new List<Bone>();
+                if (handler.name.Contains(" | "))
                 {
-                    boneDof.Add("ROT(" + dof + ")");
+                    components = DecomposeHandler(handler);
                 }
-                foreach (char dof in bone.loc_DoF)
+                else
                 {
-                    boneDof.Add("LOC(" + dof + ")");
+                    components.Add(handler);
                 }
 
-                float[,] costsMatrix = new float[boneDof.Count, components.Count];
-                // initialize costsMatrix
-                for (int row = 0; row < boneDof.Count; row++)
+                if (bone.rot_DoF.Count + bone.loc_DoF.Count > handler.rot_DoF.Count + handler.loc_DoF.Count)
                 {
-                    for (int col = 0; col < components.Count; col++)
+                    return MAX_COST;
+                }
+                else
+                {
+                    List<string> boneDof = new List<string>();
+                    foreach (char dof in bone.rot_DoF)
                     {
-                        costsMatrix[row, col] =
-                            GetComponentRangeCost(boneDof[row], components[col].name) * RangeWeight +
-                            GetAnnoyanceCost(boneDof[row], components[col].name) * AnnoyanceWeight;
+                        boneDof.Add("ROT(" + dof + ")");
                     }
-                }
+                    foreach (char dof in bone.loc_DoF)
+                    {
+                        boneDof.Add("LOC(" + dof + ")");
+                    }
 
-                int[] assignment = HungarianAlgorithm.FindAssignments(costsMatrix);
-                float score = ComputeCostAssignment(costsMatrix, assignment);
-                return score / (bone.rot_DoF.Count + bone.loc_DoF.Count);
-            }            
+                    float[,] costsMatrix = new float[boneDof.Count, components.Count];
+                    // initialize costsMatrix
+                    for (int row = 0; row < boneDof.Count; row++)
+                    {
+                        for (int col = 0; col < components.Count; col++)
+                        {
+                            costsMatrix[row, col] =
+                                GetComponentRangeCost(boneDof[row], components[col].name) * RangeWeight +
+                                GetAnnoyanceCost(boneDof[row], components[col].name) * AnnoyanceWeight;
+                        }
+                    }
+
+                    int[] assignment = HungarianAlgorithm.FindAssignments(costsMatrix);
+                    float score = ComputeCostAssignment(costsMatrix, assignment);
+                    return score / (bone.rot_DoF.Count + bone.loc_DoF.Count);
+                }
+            }
+            catch (Exception)
+            {
+                Console.Write("");   
+                throw;
+            }           
         }
         
         public static float DofCoverageScore(Bone bone, Bone handler, Dictionary<string, List<List<char>>> dictionary)
@@ -871,7 +879,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             return result;
         }
 
-        public static string GetDofString(List<char> rot_DoF)
+        public static string GetDofString(IEnumerable<char> rot_DoF)
         {
             string DoF = "";
             foreach (char c in rot_DoF)
