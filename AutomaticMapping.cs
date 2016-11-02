@@ -12,11 +12,11 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
     {
         public List<Bone> virtualArmature { get; set; }
         public Bone currentBone { get; set; }
-
+        
         public PartialArmature(List<Bone> virtualArmature, Bone lastBone)
         {
             this.virtualArmature = virtualArmature;
-            this.currentBone = lastBone;
+            this.currentBone = lastBone;            
         }
     }
 
@@ -442,11 +442,11 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                 //}
 
                                 // Creates bones with at most 3 degrees of freedom and with duplicates DoFs
-                                if (boneToUpdate.rot_DoF.Count < 3)
-                                {
+                                //if (boneToUpdate.rot_DoF.Count < 3)
+                                //{
                                     boneToUpdate.rot_DoF.Add(dof);
-                                    boneToUpdate.name += " | " + boneToAdd.name;
-                                }
+                                    boneToUpdate.name += " | " + boneToAdd.name;                                    
+                                //}
                             }
                             // Adds loc dof
                             foreach (char dof in boneToAdd.loc_DoF)
@@ -458,11 +458,11 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                 //}
 
                                 // Creates bones with at most 3 degrees of freedom and with duplicates DoFs
-                                if (boneToUpdate.loc_DoF.Count < 3)
-                                {
+                                //if (boneToUpdate.loc_DoF.Count < 3)
+                                //{
                                     boneToUpdate.loc_DoF.Add(dof);
                                     boneToUpdate.name += " | " + boneToAdd.name;
-                                }
+                                //}
                             }
 
                             if (!boneToUpdate.parent.Equals(""))
@@ -484,11 +484,11 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
                 foreach (PartialArmature pa in partialArmatures)
                 {
-                    string hash = ComputeArmatureHash(pa.virtualArmature,0);
+                    string hash = ComputeArmatureHash(pa.virtualArmature);
 
                     if (!armaturesHash.Contains(hash))
                     {
-                        armaturesHash.Add(hash);
+                        armaturesHash.Add(hash);                        
                         if (IsSplittedArmature(pa.virtualArmature))
                         {
                             splittedArm.Add(pa.virtualArmature);
@@ -504,18 +504,18 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             return new List<List<List<Bone>>>() {sequentialArm, splittedArm};
         }
 
-        public static string ComputeArmatureHash(List<Bone> list, int minLevel)
+        public static string ComputeArmatureHash(List<Bone> list)
         {
             string hashCode = string.Empty;
-
+            
             Bone root = new Bone("");
-            root.level =  minLevel - 1;
+            root.level = -1;
             root.loc_DoF = new List<char>();
             root.rot_DoF = new List<char>();
             root.parent = null;
             foreach (Bone b in list)
-            {
-                if (b.level == minLevel)
+            {                
+                if (b.level == 0)
                     root.children.Add(b.name);
             }
             hashCode = recursiveHash(root, list);            

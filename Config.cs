@@ -117,8 +117,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
     {
         public char[] AxisCombination { get; set; }
         public float Score { get; set; }
-        
-        
+                
         public AxisArrangement(char[] comb, float score)
         {
             this.AxisCombination = comb;
@@ -200,6 +199,25 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 }
         }
         
+    }
+
+    public class PartitionAssignmentTmp 
+    {
+        public float Score {get;set;}
+        public float PartCountFact { get; set; }
+        public List<Bone> Handler { get; set; }
+        
+        public PartitionAssignmentTmp()
+        {
+
+        }
+
+        public PartitionAssignmentTmp(float score, float partCountFact, List<Bone> handler) 
+        {
+            this.Score = score;
+            this.PartCountFact = partCountFact;
+            this.Handler = handler;
+        }
     }
 
     public class DecompositionAssignment : IComparable<DecompositionAssignment>

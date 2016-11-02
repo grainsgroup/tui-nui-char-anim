@@ -20,9 +20,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         /// <param name="handler"></param>
         /// <param name="MaxLenghtChain"></param>
         /// <returns></returns>
-        public static float ChainLengthScore(Bone bone, Bone handler, int MaxLenghtChain, int minLenghtChain)
+        public static float ChainLengthScore(Bone bone, Bone handler, int MaxLenghtChain)
         {
-            float cost = Math.Abs(bone.level - minLenghtChain - handler.level) / (float)MaxLenghtChain * MAX_COST;            
+            float cost = Math.Abs(bone.level - handler.level) / (float)MaxLenghtChain * MAX_COST;            
             return cost;
         }
 
@@ -171,7 +171,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
            
         }
 
-        public static float CompoenteRangeAnnoyanceScore(Bone bone, Bone handler, float RangeWeight, float AnnoyanceWeight) 
+        public static float ComponentRangeAnnoyanceScore(Bone bone, Bone handler, float RangeWeight, float AnnoyanceWeight) 
         {
             try
             {
@@ -1271,9 +1271,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         }
 
 
-        public static float PartitionsCountScore(int currPartitionCount, int maxPartitionCount)
+        public static float PartitionsCountScore(int currDecCount, int maxPartitionCount)
         {
-            return (float)currPartitionCount / (float)maxPartitionCount * MAX_COST;
+            return (float)currDecCount / (float)maxPartitionCount * MAX_COST;
         }
     }
 }
