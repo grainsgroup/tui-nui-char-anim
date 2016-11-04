@@ -207,6 +207,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             //        }
             //    }
             //}                                
+            
             List<string> combAssigned = new List<string>();
             foreach (int dof in dofSequence[0])
             {
@@ -1318,6 +1319,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         {
                             score +=
                                 Metrics.GetAnnoyanceCost("ROT(" + alt[i].rot_DoF[0].ToString() + ")", alt[i].name);
+                            /*score += 
+                                Metrics.GetAnnoyanceCost2("ROT(" + alt[i].rot_DoF[0].ToString() + ")", alt[i].name);*/
                         }
                         if (score < bestScore)
                         {

@@ -209,7 +209,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         {
                             costsMatrix[row, col] =
                                 GetComponentRangeCost(boneDof[row], components[col].name) * RangeWeight +
-                                GetAnnoyanceCost(boneDof[row], components[col].name) * AnnoyanceWeight;
+                                GetAnnoyanceCost3(boneDof[row], components[col].name) * AnnoyanceWeight;
                         }
                     }
 
@@ -307,7 +307,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 }
 
                 rotCost = minScore / boneDoFPadded[0].Count * MAX_COST;
-
             }
 
             if (bone.loc_DoF.Count > 0)
@@ -316,7 +315,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     return MAX_COST;
                 else
                 {
-                    locCost = Math.Max(0, bone.loc_DoF.Count - (handler.rot_DoF.Count - bone.rot_DoF.Count) - handler.loc_DoF.Count);
+                    locCost = Math.Max(0, bone.loc_DoF.Count - 
+                        (handler.rot_DoF.Count - bone.rot_DoF.Count)/2 - 
+                        handler.loc_DoF.Count);
                     locCost = locCost / (bone.loc_DoF.Count) * MAX_COST;
                 }
             }
@@ -568,6 +569,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 for (int j = 0; j < item.Count; j++)
                 {
                     // Estimates dof proximity
+                    /*
                     if (item[j] == 0) 
                     {
                         if (dofCovered > 0 && dofCovered < partitionDoF[0].Count)
@@ -575,6 +577,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                             tempScore += 1; continue;
                         }
                     }
+                    */
                     if (item[j] == 'x' && motorDecomposition[j] == 'x') 
                     { 
                         dofCovered++;
@@ -843,9 +846,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             List<string> tuiPieces = AutomaticMapping.GetTuiComponentList(useSensor, brick);
             if (useHipJoint)
             {
-                tuiPieces.Add("Hip_NUI(x)");
-                tuiPieces.Add("Hip_NUI(y)");
-                tuiPieces.Add("Hip_NUI(z)");
+                tuiPieces.Add("Hip_NUI_DoF(x)");
+                tuiPieces.Add("Hip_NUI_DoF(y)");
+                tuiPieces.Add("Hip_NUI_DoF(z)");
             }
 
             foreach (List<string> item in boneDoF)
@@ -857,7 +860,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     for (int col = 0; col < tuiPieces.Count; col++)
                     {
                         costsMatrix[row, col] =
-                            GetAnnoyanceCost(item[row], tuiPieces[col])/* +
+                            GetAnnoyanceCost3(item[row], tuiPieces[col])/* +
                             GetComponentRangeCost(item[row], tuiPieces[col])*/;
                     }
                 }
@@ -1116,6 +1119,289 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             return MAX_COST;
         }
 
+        public static float GetAnnoyanceCost2(string DoF, string ComponentType)
+        {
+            // "Hip_NUI_DoF(z):ROT(z)[seqID: 242]zxxzxz"
+            string handlerDof = "0";
+            if(ComponentType.Contains("_NUI"))
+            {
+                if (ComponentType.Contains("_NUI_DoF("))
+                {
+                    handlerDof = ComponentType.Substring(ComponentType.IndexOf("_NUI_DoF(")+9,1);
+                }
+                else
+                {
+                    handlerDof = DoF.Substring(DoF.IndexOf("(")+1,1);
+                }
+            }
+
+            if(ComponentType.Contains(DeviceType.LMotor.ToString()))
+            {
+                switch (DoF) 
+                {
+                    case "ROT(x)":
+                        return 0;
+                    case "ROT(y)":
+                    case "ROT(z)":
+                        return (float)MAX_COST/(float)5;
+                    case "LOC(x)":
+                    case "LOC(y)":
+                    case "LOC(z)":
+                    case "LOC(L)":
+                        return (float)MAX_COST/(float)5 * 3;
+                }
+            }
+            if(ComponentType.Contains(DeviceType.MMotor.ToString()))
+            {
+                switch (DoF)
+                {
+                    case "ROT(y)":
+                        return 0;
+                    case "ROT(x)":
+                    case "ROT(z)":
+                        return (float)MAX_COST/(float)5;
+                    case "LOC(x)":
+                    case "LOC(y)":
+                    case "LOC(z)":
+                    case "LOC(L)":
+                        return (float)MAX_COST/(float)5 * 3;
+                }
+            }
+            if(ComponentType.Contains(DeviceType.Gyroscope.ToString()))
+            {
+                switch (DoF)
+                {
+                    case "ROT(x)":
+                    case "ROT(y)":
+                    case "ROT(z)":
+                        return (float)MAX_COST / (float)5 * 2;
+                    case "LOC(x)":
+                    case "LOC(y)":
+                    case "LOC(z)":
+                    case "LOC(L)":
+                        return (float)MAX_COST / (float)5 * 4;
+                }
+            }
+            if(ComponentType.Contains(DeviceType.Ultrasonic.ToString()))
+            {
+                switch (DoF)
+                {
+                    case "ROT(x)":
+                    case "ROT(y)":
+                    case "ROT(z)":
+                        return (float)MAX_COST / (float)5 * 4;
+                    case "LOC(x)":
+                    case "LOC(z)":
+                        return (float)MAX_COST / (float)5 * 3;
+                        //return 0;
+                    case "LOC(y)":
+                    case "LOC(L)":
+                        return (float)MAX_COST / (float)5 * 2;
+                        //return 0;
+                }
+            }
+            if (ComponentType.Contains("_NUI"))
+            {
+                
+                if(handlerDof.Contains("x"))
+                {
+                    switch (DoF)
+                    {
+                        case "ROT(x)":
+                            return (float)MAX_COST / (float)5 * 2;
+                        case "ROT(y)":
+                        case "ROT(z)":
+                            return (float)MAX_COST / (float)5 * 3;
+                        case "LOC(x)":
+                        case "LOC(L)":
+                            return (float)MAX_COST / (float)5;
+                        case "LOC(y)":
+                        case "LOC(z)":
+                            return (float)MAX_COST / (float)5 * 2;
+                    }
+                }
+
+                if(handlerDof.Contains("y"))
+                {
+                    switch (DoF)
+                    {
+                        case "ROT(x)":
+                        case "ROT(z)":
+                            return (float)MAX_COST / (float)5 * 4;
+                        case "ROT(y)":
+                            return (float)MAX_COST / (float)5 * 3;
+                        case "LOC(x)":
+                        case "LOC(z)":
+                            return (float)MAX_COST / (float)5 * 3;
+                        case "LOC(y)":
+                        case "LOC(L)":
+                            return (float)MAX_COST / (float)5 * 2;
+                    }
+                }
+
+                if (handlerDof.Contains("z"))
+                {
+                    switch (DoF)
+                    {
+                        case "ROT(x)":
+                        case "ROT(y)":
+                            return (float)MAX_COST / (float)5 * 3;
+                        case "ROT(z)":
+                            return (float)MAX_COST / (float)5 * 2;
+                        case "LOC(x)":
+                        case "LOC(y)":
+                            return (float)MAX_COST / (float)5 * 2;
+                        case "LOC(z)":
+                        case "LOC(L)":
+                            return (float)MAX_COST / (float)5;
+                    }
+                }                
+            }
+            return MAX_COST;
+            
+        }
+
+        public static float GetAnnoyanceCost3(string DoF, string ComponentType)
+        {
+            string handlerDof = "0";
+            if (ComponentType.Contains("_NUI"))
+            {
+                if (ComponentType.Contains("_NUI_DoF("))
+                {
+                    handlerDof = ComponentType.Substring(ComponentType.IndexOf("_NUI_DoF(") + 9, 1);
+                }
+                else
+                {
+                    handlerDof = DoF.Substring(DoF.IndexOf("(") + 1, 1);
+                }
+            }
+
+            if (ComponentType.Contains(DeviceType.LMotor.ToString()))
+            {
+                switch (DoF)
+                {
+                    case "ROT(x)":
+                        return 0;
+                    case "ROT(y)":
+                    case "ROT(z)":
+                        return 25;
+                    case "LOC(x)":
+                    case "LOC(y)":
+                    case "LOC(z)":
+                    case "LOC(L)":
+                        return 75;
+                }
+            }
+            if (ComponentType.Contains(DeviceType.MMotor.ToString()))
+            {
+                switch (DoF)
+                {
+                    case "ROT(y)":
+                        return 0;
+                    case "ROT(x)":
+                    case "ROT(z)":
+                        return 25;
+                    case "LOC(x)":
+                    case "LOC(y)":
+                    case "LOC(z)":
+                    case "LOC(L)":
+                        return 75;
+                }
+            }
+            if (ComponentType.Contains(DeviceType.Gyroscope.ToString()))
+            {
+                switch (DoF)
+                {
+                    case "ROT(x)":
+                    case "ROT(y)":
+                    case "ROT(z)":
+                        return 50;
+                    case "LOC(x)":
+                    case "LOC(y)":
+                    case "LOC(z)":
+                    case "LOC(L)":
+                        return 100;
+                }
+            }
+            if (ComponentType.Contains(DeviceType.Ultrasonic.ToString()))
+            {
+                switch (DoF)
+                {
+                    case "ROT(x)":
+                    case "ROT(y)":
+                    case "ROT(z)":
+                        return 75;
+                    case "LOC(x)":
+                    case "LOC(z)":
+                        return 50;
+                    //return 0;
+                    case "LOC(y)":
+                    case "LOC(L)":
+                        return 25;
+                    //return 0;
+                }
+            }
+            if (ComponentType.Contains("_NUI"))
+            {
+
+                if (handlerDof.Contains("x"))
+                {
+                    switch (DoF)
+                    {
+                        case "ROT(x)":
+                            return 50;
+                        case "ROT(y)":
+                        case "ROT(z)":
+                            return 75;
+                        case "LOC(x)":
+                        case "LOC(L)":
+                            return 25;
+                        case "LOC(y)":
+                        case "LOC(z)":
+                            return 50;
+                    }
+                }
+
+                if (handlerDof.Contains("y"))
+                {
+                    switch (DoF)
+                    {
+                        case "ROT(x)":
+                        case "ROT(z)":
+                            return 75;
+                        case "ROT(y)":
+                            return 50;
+                        case "LOC(x)":
+                        case "LOC(z)":
+                            return 50;
+                        case "LOC(y)":
+                        case "LOC(L)":
+                            return 25;
+                    }
+                }
+
+                if (handlerDof.Contains("z"))
+                {
+                    switch (DoF)
+                    {
+                        case "ROT(x)":
+                        case "ROT(y)":
+                            return 75;
+                        case "ROT(z)":
+                            return 50;
+                        case "LOC(x)":
+                        case "LOC(y)":
+                            return 50;
+                        case "LOC(z)":
+                        case "LOC(L)":
+                            return 25;
+                    }
+                }
+            }
+            return MAX_COST;
+
+        }
+
         /// <summary>
         /// cost = 4m(Max Distance read from Kinect specification) - range of the sensor
         /// range is calculated considering that the animator is at a distance of 3.5 meters from the kinect 
@@ -1152,7 +1438,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             }
             else if(ComponentType.Contains("_NUI"))
             {
-                ComponentType = ComponentType.Substring(0, ComponentType.IndexOf("_NUI") + 4);
+                if (ComponentType.Contains("_NUI"))
+                    ComponentType = ComponentType.Substring(0, ComponentType.IndexOf("_NUI") + 4);
                 
                 if (DoF.Contains("LOC(x)"))
                     cost = MAX_COST / 4 * (4 - 3.80f);
