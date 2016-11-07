@@ -369,8 +369,12 @@
                         <Label x:Name="PositionInChainFactorLabel" Content="PositionInChain" Canvas.Left="450" Canvas.Top="183" Width="122"/>
                         <Label x:Name="SymmetryFactorLabel" Content="Symmetry" Canvas.Left="450" Canvas.Top="211" Width="92"/>
                         <Label x:Name="PartitionCountFactorLabel" Content="PartitionCount" Canvas.Left="450" Canvas.Top="239" Width="116"/>
+                        <ProgressBar x:Name="ProgressBar" Height="22" Width="491" Canvas.Left="139" Canvas.Top="471" Minimum="0" Maximum="100"/>
+                        <Label x:Name="StartTime" Content="START AT:" Canvas.Left="23" Canvas.Top="470" Width="116"/>
+                        <Label x:Name="EndTime" Content="FINISH AT:" Canvas.Left="635" Canvas.Top="470" Width="116"/>
                     </Canvas >
                 </TabItem>
+
 
 
 

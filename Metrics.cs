@@ -183,7 +183,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 else
                 {
                     components.Add(handler);
-                }
+                }                
 
                 if (bone.rot_DoF.Count + bone.loc_DoF.Count > handler.rot_DoF.Count + handler.loc_DoF.Count)
                 {
@@ -224,7 +224,162 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 throw;
             }           
         }
-        
+
+        public static float ComponentRangeAnnoyanceScore2(Bone bone, Bone handler, float RangeWeight, float AnnoyanceWeight, Dictionary<string, List<List<char>>> dictionary)
+        {
+
+            List<Bone> components = new List<Bone>();
+            if (handler.name.Contains(" | "))
+            {
+                components = DecomposeHandler(handler);
+            }
+            else
+            {
+                components.Add(handler);
+            }
+
+            if (bone.rot_DoF.Count + bone.loc_DoF.Count > handler.rot_DoF.Count + handler.loc_DoF.Count)
+            {
+                return MAX_COST;
+            }
+            else
+            {
+                List<List<int>> handlerRotDofPos = new List<List<int>>();
+                List<List<char>> handlerRotDof = new List<List<char>>();
+                List<float> costs = new List<float>();
+
+                if (bone.rot_DoF.Count == 3)
+                {
+                    // Search the Euler angle sequence into the handler dofs
+                    // list of possible position
+                    var list = Enumerable.Range(0, handler.rot_DoF.Count).ToList();
+
+                    // Calculates permutation of list 
+                    var disposition = Combinatorics.GetDispositions(list, 3);
+                    foreach (var disp in disposition)
+                    {
+                        List<char> threeDofSequence = new List<char>();
+                        List<int> positions = new List<int>();
+                        foreach (var c in disp)
+                        {
+                            threeDofSequence.Add(handler.rot_DoF[Convert.ToInt32(c)]);
+                            positions.Add(Convert.ToInt32(c));
+                        }
+
+                        if (dictionary[Metrics.GetDofString(bone.rot_DoF)].FindIndex
+                            (x => x.SequenceEqual(threeDofSequence)) != -1)
+                        {
+                            handlerRotDofPos.Add(positions);
+                            handlerRotDof.Add(threeDofSequence);
+                        }
+                    }
+
+                    if (handlerRotDofPos.Count == 0 || handlerRotDof.Count == 0)
+                    {
+                        // The current handler have not euler angles sequence
+                        return MAX_COST;
+                    }
+
+                }
+                else 
+                {
+                    foreach (char c in bone.rot_DoF)
+                    {
+                        List<int> result = Enumerable.Range(0, handler.rot_DoF.Count).Where(i => handler.rot_DoF[i] == c).ToList();
+                        
+                        if (handlerRotDofPos.Count == 0)
+                        {
+                            foreach (int dofIndex in result)
+                            {                                
+                                handlerRotDofPos.Add(new List<int>() { dofIndex });
+                                handlerRotDof.Add(new List<char>() { c });
+                            }
+                        }
+                        else
+                        {
+                            int itemToModify = handlerRotDofPos.Count;
+                            for (int i = 0; i < itemToModify; i++)
+                            {
+                                
+                                foreach (int dofIndex in result)
+                                {
+                                    List<int> newPos = handlerRotDofPos[0].ToList();
+                                    List<char> newDofSequence = handlerRotDof[0].ToList();
+                                    newPos.Add(dofIndex);
+                                    newDofSequence.Add(c);
+                                    handlerRotDofPos.Add(newPos);
+                                    handlerRotDof.Add(newDofSequence);
+                                }
+                                handlerRotDofPos.RemoveAt(0);
+                                handlerRotDof.RemoveAt(0);
+                            }                                                        
+                        }
+                        if (handlerRotDofPos.Count == 0 || handlerRotDof.Count == 0) 
+                        {
+                            // The current bone have not bone dof sequence
+                            return MAX_COST;
+                        }
+                            
+                    }                    
+                }
+                
+                if(handlerRotDof.Count==0)
+                {
+                    // the current bone contains only loc dof
+                    handlerRotDof.Add(new List<char>(){' '});
+                    handlerRotDofPos.Add(new List<int>(){-1});
+                }
+
+                for (int i = 0; i < handlerRotDof.Count;i++) 
+                {
+                    float rotCost = 0;
+                    float locCost = 0;
+                    
+                    // Computes cost for rot dof
+                    if (bone.rot_DoF.Count>0)
+                    {
+                        for (int j = 0; j < handlerRotDof[i].Count; j++)
+                        {
+                            char dof = handlerRotDof[i][j];
+                            rotCost += GetComponentRangeCost("ROT(" + dof + ")", components[handlerRotDofPos[i][j]].name) * RangeWeight +
+                                    GetAnnoyanceCost3("ROT(" + dof + ")", components[handlerRotDofPos[i][j]].name) * AnnoyanceWeight;
+                        }
+                    }
+
+                    // Computes cost for loc dof 
+                    if (bone.loc_DoF.Count>0)
+                    {
+                        //  Get the remaining components
+                        List<Bone> handlerLoc = new List<Bone>();
+                        for (int pos = 0; pos < handler.rot_DoF.Count + handler.loc_DoF.Count; pos++)
+                        {
+                            if (!handlerRotDofPos[i].Contains(pos))
+                            {
+                                handlerLoc.Add(components[pos]);
+                            }
+                        }
+
+                        float[,] costsMatrix = new float[bone.loc_DoF.Count, handlerLoc.Count];
+                        // initialize costsMatrix
+                        for (int row = 0; row < bone.loc_DoF.Count; row++)
+                        {
+                            for (int col = 0; col < handlerLoc.Count; col++)
+                            {
+                                costsMatrix[row, col] =
+                                    GetComponentRangeCost("LOC(" + bone.loc_DoF[row] + ")", handlerLoc[col].name) * RangeWeight +
+                                    GetAnnoyanceCost3("LOC(" + bone.loc_DoF[row] + ")", handlerLoc[col].name) * AnnoyanceWeight;
+                            }
+                        }
+                        int[] assignment = HungarianAlgorithm.FindAssignments(costsMatrix);
+                        locCost = ComputeCostAssignment(costsMatrix, assignment);     
+                    }                                            
+                    
+                    costs.Add((locCost + rotCost)/(bone.loc_DoF.Count + bone.rot_DoF.Count));
+                }
+                return costs.Min();
+            }
+            
+        }
         public static float DofCoverageScore(Bone bone, Bone handler, Dictionary<string, List<List<char>>> dictionary)
         {
             // Vers 3.0
