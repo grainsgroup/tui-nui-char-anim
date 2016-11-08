@@ -372,6 +372,7 @@
                         <ProgressBar x:Name="ProgressBar" Height="22" Width="491" Canvas.Left="139" Canvas.Top="471" Minimum="0" Maximum="100"/>
                         <Label x:Name="StartTime" Content="START AT:" Canvas.Left="23" Canvas.Top="470" Width="116"/>
                         <Label x:Name="EndTime" Content="FINISH AT:" Canvas.Left="635" Canvas.Top="470" Width="116"/>
+                        <Label x:Name="Progress" Content="0 %" Canvas.Left="365" Canvas.Top="467" Width="55"/>
                     </Canvas >
                 </TabItem>
 

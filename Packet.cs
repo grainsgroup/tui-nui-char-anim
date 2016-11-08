@@ -59,7 +59,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         }
     }
 
-    public class Bone
+    public class Bone 
     {
         public string name { get; set; }
         public string parent { get; set; }
@@ -96,6 +96,21 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             string c = this.level.ToString().GetHashCode().ToString();
             return a + b + c;
         }
+        
+        ////Implement IDisposable.
+        //public void Dispose()
+        //{
+        //    Dispose(true);
+        //    GC.SuppressFinalize(this);
+        //}
+
+        //protected virtual void Dispose(bool disposing)
+        //{
+        //    if (disposing)
+        //    {
+        //        if (resource != null) resource.Dispose();
+        //    }
+        //}
 
     }
 

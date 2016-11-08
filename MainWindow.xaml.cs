@@ -373,7 +373,15 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
             if (null != recInfo)
             {
-                StartSpeechRecognition();               
+
+                try
+                {
+                    StartSpeechRecognition();
+                }
+                catch(Exception) 
+                {
+                    
+                }
             }
             else
             {
@@ -1478,7 +1486,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         public async void StartLegoConnection(string connType, string address)        
         {
             Console.WriteLine("LEGO");
-
+            
             try
             {
                 switch (connType)

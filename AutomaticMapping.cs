@@ -117,46 +117,42 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             (char[] comb, Brick brick, int componentAvailable, bool locRotArm, bool useSensor) 
         {
             // IMPLEMENTATION WITH OPERATION_SEQUENCE_REPRESENTATION (OSR)           
-            string[] doFType;
             List<List<int>> dofSequence = new List<List<int>>();
             if (locRotArm)
             {
-                doFType = new string[] { "_ROT", "_LOC" };
-                
-                // list of possible position
-                var list = Enumerable.Range(0, componentAvailable).ToList();
-                
-                // Calculates permutation of list to identify padding position
-                var result = Combinatorics.GetDispositions(list, comb.Length);
-                int index = 0;
-                foreach (var perm in result)
-                {
-                    int[] g = Enumerable.Repeat(-1, componentAvailable).ToArray();
-                    index = 0;
-                    foreach (var c in perm)
-                    {                        
-                        g[Convert.ToInt32(c)] = index;
-                        index++;
-                    }                    
-                    
-                    index = comb.Length;
-                    for (int pos = 0; pos< g.Length; pos++)
-                    {
-                        if (g[pos] == -1) 
-                        {
-                            g[pos] = index;
-                            index++;
-                        }
-                    }                                       
-                    dofSequence.Add(g.ToList());
-                }
+                //// list of possible position
+                //var list = Enumerable.Range(0, componentAvailable).ToList();
+
+                //// Calculates permutation of list to identify loc position
+                //var result = Combinatorics.GetDispositions(list, comb.Length);
+                //int index = 0;
+                //foreach (var perm in result)
+                //{
+                //    int[] g = Enumerable.Repeat(-1, componentAvailable).ToArray();
+                //    index = 0;
+                //    foreach (var c in perm)
+                //    {
+                //        g[Convert.ToInt32(c)] = index;
+                //        index++;
+                //    }
+
+                //    index = comb.Length;
+                //    for (int pos = 0; pos < g.Length; pos++)
+                //    {
+                //        if (g[pos] == -1)
+                //        {
+                //            g[pos] = index;
+                //            index++;
+                //        }
+                //    }
+                //    dofSequence.Add(g.ToList());
+                //}
                 
                 comb = InitilizeComb(comb, componentAvailable);
-
+                dofSequence.Add(Enumerable.Range(0, componentAvailable).ToList());
             }
             else 
             {
-                doFType = new string[] { "_ROT" };
                 comb = InitilizeComb(comb, comb.Length);
                 dofSequence.Add(Enumerable.Range(0, comb.Length).ToList());
             }
