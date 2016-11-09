@@ -69,5 +69,15 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         {
             return JsonConvert.DeserializeObject<string>(stringJson);
         }
+
+        internal static List<DecompositionAssignment> GetDecompositionAssignment(string stringJson) 
+        {
+            return JsonConvert.DeserializeObject<List<DecompositionAssignment>>(stringJson); 
+        }
+
+        internal static List<List<ComputationData>> GetComputationData(string stringJson)
+        {
+            return JsonConvert.DeserializeObject<List<List<ComputationData>>>(stringJson); 
+        }
     }
 }

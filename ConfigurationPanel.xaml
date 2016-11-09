@@ -252,7 +252,7 @@
                     </Canvas>
                 </TabItem>
 
-                <TabItem Header="Tangible User Interface">
+                <TabItem Header="Tangible User Interface" Height="23" VerticalAlignment="Bottom">
                     <Canvas Margin="50,50,0,0" x:Name="LocRotCanvas" HorizontalAlignment="Left">
                         <Label Content="RotationOrder" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="14" Canvas.Left="461" Canvas.Top="-20"/>
                         <Label Content="Axes" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="14" Canvas.Left="401" Canvas.Top="-20"/>
@@ -344,35 +344,66 @@
                 </TabItem>
                 <TabItem Header="Automatic Configuration">
                     <Canvas Margin="50,50,0,0" x:Name="AutoConfigCanvas" HorizontalAlignment="Left">
+                        <Canvas x:Name="HipDofCanvas" HorizontalAlignment="Left" Height="216" Canvas.Left="23" Canvas.Top="206" Width="608">
+                            <Label Content="RotationOrder" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="14" Canvas.Left="479" Canvas.Top="5"/>
+                            <Label Content="Axes" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="14" Canvas.Left="420" Canvas.Top="5"/>
+                            <Label Content="Reference Bone" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="14" Canvas.Left="268" Canvas.Top="5"/>
+                            <Label Content="Joint DoF" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="14" Canvas.Left="63" Canvas.Top="5"/>
+
+                            <Label x:Name="XLabel" Content="Hip Loc (x) :" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="14" Canvas.Left="48" Canvas.Top="60"/>
+                            <CheckBox x:Name="XLoc" Content="L" HorizontalAlignment="Left" VerticalAlignment="Top" Canvas.Left="170" Canvas.Top="65"/>
+                            <CheckBox x:Name="XRot" Content="R" HorizontalAlignment="Left" VerticalAlignment="Top" Canvas.Left="206" Canvas.Top="65"/>
+                            <ComboBox x:Name="XBoneName" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120" Canvas.Left="268" Canvas.Top="60"/>
+                            <ComboBox x:Name="XAxis" HorizontalAlignment="Left" VerticalAlignment="Top" Width="50" Canvas.Left="420" Canvas.Top="60"/>
+                            <ComboBox x:Name="XRotOrder" HorizontalAlignment="Center" VerticalAlignment="Top" Width="52" IsEnabled="{Binding IsChecked, ElementName=XRot}" Canvas.Left="500" Canvas.Top="60"/>
+                            <Label x:Name="XValueLabel" Content="Label" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Canvas.Left="48" Canvas.Top="75"/>
+
+                            <Label x:Name="YLabel" Content="Hip Loc (y) :" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="14" Canvas.Left="48" Canvas.Top="110"/>
+                            <CheckBox x:Name="YLoc" Content="L" HorizontalAlignment="Left" VerticalAlignment="Top" Canvas.Left="170" Canvas.Top="115"/>
+                            <CheckBox x:Name="YRot" Content="R" HorizontalAlignment="Left" VerticalAlignment="Top" Canvas.Left="206" Canvas.Top="115"/>
+                            <ComboBox x:Name="YBoneName" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120" Canvas.Left="268" Canvas.Top="110"/>
+                            <ComboBox x:Name="YAxis" HorizontalAlignment="Left" VerticalAlignment="Top" Width="50" Canvas.Left="420" Canvas.Top="110"/>
+                            <ComboBox x:Name="YRotOrder" HorizontalAlignment="Center" VerticalAlignment="Top" Width="52" IsEnabled="{Binding IsChecked, ElementName=YRot}" Canvas.Left="500" Canvas.Top="110"/>
+                            <Label x:Name="YValueLabel" Content="Label" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Canvas.Left="48" Canvas.Top="125"/>
+
+                            <Label x:Name="ZLabel" Content="Hip Loc (z) :" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="14" Canvas.Left="48" Canvas.Top="160"/>
+                            <CheckBox x:Name="ZLoc" Content="L" HorizontalAlignment="Left" VerticalAlignment="Top" Canvas.Left="170" Canvas.Top="165"/>
+                            <CheckBox x:Name="ZRot" Content="R" HorizontalAlignment="Left" VerticalAlignment="Top" Canvas.Left="206" Canvas.Top="165"/>
+                            <ComboBox x:Name="ZBoneName" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120" Canvas.Left="268" Canvas.Top="160"/>
+                            <ComboBox x:Name="ZAxis" HorizontalAlignment="Left" VerticalAlignment="Top" Width="50" Canvas.Left="420" Canvas.Top="160"/>
+                            <ComboBox x:Name="ZRotOrder" HorizontalAlignment="Center" VerticalAlignment="Top" Width="52" IsEnabled="{Binding IsChecked, ElementName=ZRot}" Canvas.Left="500" Canvas.Top="160"/>
+                            <Label x:Name="ZValueLabel" Content="Label" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Canvas.Left="48" Canvas.Top="175"/>
+                        </Canvas>
+
                         <Button Content="Generate" Width="68" Click="ButtonAutoConfig_Click" Canvas.Left="780" Canvas.Top="471"/>
                         <Label Content="Preference" HorizontalAlignment="Left" Margin="7,-15,0,0" VerticalAlignment="Top" FontSize="14"/>
                         <CheckBox x:Name="UseSensorCheckBox" Content="Use Sensor" Canvas.Top="40" Canvas.Left="30" IsChecked="True"/>
                         <CheckBox x:Name="LocRotCheckBox" Content="Partition Loc+Rot " Canvas.Top="61" Canvas.Left="30" IsChecked="True"/>
-                        <Label  HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Canvas.Top="126" Width="55" Canvas.Left="-16">
+                        <Label  HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Canvas.Top="34" Width="56" Canvas.Left="180">
                             <TextBlock Text="Body Tracking" TextWrapping="Wrap" TextAlignment="Center" FontSize="12" />
                         </Label>
-                        <Label HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Canvas.Left="95" Canvas.Top="127" Width="84">
+                        <Label HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Canvas.Left="292" Canvas.Top="35" Width="84">
                             <TextBlock Text="Tangible User Interface" TextWrapping="Wrap" TextAlignment="Center" FontSize="12" />
                         </Label>
-                        <Slider x:Name="UserPreferenceSlider" Height="24" Width="60" Canvas.Left="37" Canvas.Top="134" Minimum="-1" Maximum="1" SmallChange="1" IsSnapToTickEnabled="True" Ticks="-1,0,1" Value="1"/>
-                        <TextBox x:Name="NodSim" Height="23" TextWrapping="Wrap" Text="1" Width="50" Canvas.Left="580" Canvas.Top="73"/>
-                        <TextBox x:Name="DofCov" Height="23" TextWrapping="Wrap" Text="1" Width="50" Canvas.Left="580" Canvas.Top="101"/>
-                        <TextBox x:Name="ComRan" Height="23" TextWrapping="Wrap" Text="1" Width="50" Canvas.Left="580" Canvas.Top="129"/>
-                        <TextBox x:Name="ComAnn" Height="23" TextWrapping="Wrap" Text="1" Width="50" Canvas.Left="580" Canvas.Top="157"/>
-                        <TextBox x:Name="PosInC" Height="23" TextWrapping="Wrap" Text="1" Width="50" Canvas.Left="580" Canvas.Top="185"/>
-                        <TextBox x:Name="Sym" Height="23" TextWrapping="Wrap" Text="1" Width="50" Canvas.Left="580" Canvas.Top="213"/>
-                        <TextBox x:Name="ParCou" Height="23" TextWrapping="Wrap" Text="1" Width="50" Canvas.Left="580" Canvas.Top="241"/>
-                        <Label x:Name="NodeSimilarityFactorLabel" Content="Node Similarity" Canvas.Left="450" Canvas.Top="71" Width="120"/>
-                        <Label x:Name="DofCoverageFactorLabel" Content="DofCoverage" Canvas.Left="450" Canvas.Top="99" Width="108"/>
-                        <Label x:Name="CompRangeFactorLabel" Content="CompRange " Canvas.Left="450" Canvas.Top="127" Width="108"/>
-                        <Label x:Name="CompAnnoyanceFactorLabel" Content="CompAnnoyance" Canvas.Left="450" Canvas.Top="155" Width="136"/>
-                        <Label x:Name="PositionInChainFactorLabel" Content="PositionInChain" Canvas.Left="450" Canvas.Top="183" Width="122"/>
-                        <Label x:Name="SymmetryFactorLabel" Content="Symmetry" Canvas.Left="450" Canvas.Top="211" Width="92"/>
-                        <Label x:Name="PartitionCountFactorLabel" Content="PartitionCount" Canvas.Left="450" Canvas.Top="239" Width="116"/>
+                        <Slider x:Name="UserPreferenceSlider" Height="24" Width="60" Canvas.Left="234" Canvas.Top="42" Minimum="-1" Maximum="1" SmallChange="1" IsSnapToTickEnabled="True" Ticks="-1,0,1" Value="1"/>
+                        <TextBox x:Name="NodSim" Height="23" TextWrapping="Wrap" Text="1" Width="50" Canvas.Left="793" Canvas.Top="-23"/>
+                        <TextBox x:Name="DofCov" Height="23" TextWrapping="Wrap" Text="1" Width="50" Canvas.Left="793" Canvas.Top="5"/>
+                        <TextBox x:Name="ComRan" Height="23" TextWrapping="Wrap" Text="1" Width="50" Canvas.Left="793" Canvas.Top="33"/>
+                        <TextBox x:Name="ComAnn" Height="23" TextWrapping="Wrap" Text="1" Width="50" Canvas.Left="793" Canvas.Top="61"/>
+                        <TextBox x:Name="PosInC" Height="23" TextWrapping="Wrap" Text="1" Width="50" Canvas.Left="793" Canvas.Top="89"/>
+                        <TextBox x:Name="Sym" Height="23" TextWrapping="Wrap" Text="1" Width="50" Canvas.Left="793" Canvas.Top="117"/>
+                        <TextBox x:Name="ParCou" Height="23" TextWrapping="Wrap" Text="1" Width="50" Canvas.Left="793" Canvas.Top="145"/>
+                        <Label x:Name="NodeSimilarityFactorLabel" Content="Node Similarity" Canvas.Left="663" Canvas.Top="-25" Width="120"/>
+                        <Label x:Name="DofCoverageFactorLabel" Content="DofCoverage" Canvas.Left="663" Canvas.Top="3" Width="108"/>
+                        <Label x:Name="CompRangeFactorLabel" Content="CompRange " Canvas.Left="663" Canvas.Top="31" Width="108"/>
+                        <Label x:Name="CompAnnoyanceFactorLabel" Content="CompAnnoyance" Canvas.Left="663" Canvas.Top="59" Width="136"/>
+                        <Label x:Name="PositionInChainFactorLabel" Content="PositionInChain" Canvas.Left="663" Canvas.Top="87" Width="122"/>
+                        <Label x:Name="SymmetryFactorLabel" Content="Symmetry" Canvas.Left="663" Canvas.Top="115" Width="92"/>
+                        <Label x:Name="PartitionCountFactorLabel" Content="PartitionCount" Canvas.Left="663" Canvas.Top="143" Width="116"/>
                         <ProgressBar x:Name="ProgressBar" Height="22" Width="491" Canvas.Left="139" Canvas.Top="471" Minimum="0" Maximum="100"/>
                         <Label x:Name="StartTime" Content="START AT:" Canvas.Left="23" Canvas.Top="470" Width="116"/>
                         <Label x:Name="EndTime" Content="FINISH AT:" Canvas.Left="635" Canvas.Top="470" Width="116"/>
-                        <Label x:Name="Progress" Content="0 %" Canvas.Left="365" Canvas.Top="467" Width="55"/>
+                        <Label x:Name="Progress" Content="0 %" Canvas.Left="365" Canvas.Top="467" Width="Auto"/>
                     </Canvas >
                 </TabItem>
 

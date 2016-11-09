@@ -783,7 +783,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         float newValue = 0;
                         
                         if (filterOn)
-                        {
+                        {                            
                             newValue = sf.Value + alpha * (legoBrick.Ports[sf.InputPort].SIValue - sf.Value);
                             //newMotion.vectorPos.locX = newValue - sf.Offset + sf.LocPos;
                             //newMotion.vectorPos.locY = newValue - sf.Offset + sf.LocPos;
@@ -1028,6 +1028,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             
 
         }
+
+       
 
         private Matrix4x4 UpdateObjectRotMatrix(string axes, string name, float angle, int index)
         {
@@ -1707,14 +1709,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     this.statusBarText.Text = "Low Pass Filter On ";
                 else
                     this.statusBarText.Text = "Low Pass Filter Off ";
-            }
-
-
-
-            if (e.Key == Key.D && Keyboard.IsKeyDown(Key.LeftCtrl))
-            {
-                
-            }
+            }            
             
             /* 
             if (e.Key == Key.L && Keyboard.IsKeyDown(Key.RightCtrl))
