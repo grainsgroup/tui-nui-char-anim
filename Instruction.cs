@@ -384,7 +384,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         {
             name = name.Replace(" ", "");
             List<string> bricks = name.Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries).ToList();
-            bricks.RemoveAll(x => x.Contains("_NUI"));
+            //bricks.RemoveAll(x => x.Contains("_NUI"));
             return bricks;
         }
 
@@ -412,12 +412,19 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             {
                 foreach (Bone currentBone in levels[i])
                 {
-                    jointToAdd = new LegoJoint();
-                    jointToAdd.name = currentBone.name.Substring(0, currentBone.name.IndexOf("(PORT-")) + "_" +
-                        currentBone.name.Substring(currentBone.name.IndexOf("ROT"), 6);
-                    jointToAdd.port = currentBone.name.Substring(currentBone.name.IndexOf("(PORT-") + 6, 2);
+                    jointToAdd = new LegoJoint();                    
+                    if (currentBone.name.Contains("_NUI"))
+                    {
+                        jointToAdd.name = currentBone.name.Substring(0, currentBone.name.IndexOf("_NUI"));
+                        jointToAdd.port = currentBone.name.Substring(currentBone.name.IndexOf("_NUI") + 5, 6 ); 
+                    }
+                    else
+                    {
+                        jointToAdd.name = currentBone.name.Substring(0, currentBone.name.IndexOf("(PORT-")) + "_" +
+                            currentBone.name.Substring(currentBone.name.IndexOf("ROT"), 6);
+                        jointToAdd.port = currentBone.name.Substring(currentBone.name.IndexOf("(PORT-") + 6, 2);
+                    }
                     jointToAdd.split = currentBone.children.Count;
-
 
                     if (currentBone.level == 0)
                     {
@@ -429,15 +436,24 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     }
                     else
                     {
-                        jointToAdd.name = currentBone.name.Substring(0, currentBone.name.IndexOf("(PORT-")) + "_" +
-                        currentBone.name.Substring(currentBone.name.IndexOf("ROT"), 6);
-
-                        string jointParent = currentBone.parent.Substring(0, currentBone.parent.IndexOf("(PORT-")) + "_" +
+                        string jointParent = string.Empty;
+                        int parentLegoJointIndex = 0;
+                        if (currentBone.parent.Contains("_NUI"))
+                        {
+                            jointParent = currentBone.parent.Substring(0, currentBone.parent.IndexOf("_NUI"));
+                            parentLegoJointIndex = result.FindIndex(
+                            x => x.name.Equals(jointParent) &&
+                            x.port.Equals(currentBone.parent.Substring(currentBone.parent.IndexOf("_NUI") + 5, 6)));
+                        }
+                        else 
+                        {
+                            jointParent = currentBone.parent.Substring(0, currentBone.parent.IndexOf("(PORT-")) + "_" +
                         currentBone.parent.Substring(currentBone.parent.IndexOf("ROT"), 6);
-
-                        int parentLegoJointIndex = result.FindIndex(
+                            parentLegoJointIndex = result.FindIndex(
                             x => x.name.Equals(jointParent) &&
                             x.port.Equals(currentBone.parent.Substring(currentBone.parent.IndexOf("(PORT-") + 6, 2)));
+                        }
+                                                
                         int parentBoneIndex = armature.FindIndex(x => x.name.Equals(currentBone.parent));
 
                         //
@@ -480,10 +496,14 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
         public static void UpdateDeltaFromJointType(LegoJoint jointToAdd, string jointType)
         {
-
+            //"Hip_NUI_DoF(x):LOC(L)"
             //string legoJoint = GetLegoJoint(b.name);
             switch (jointType)
             {
+                case "Hip":
+                    jointToAdd.position[0] += 4f;
+                    break;
+
                 case "LMotor_ROT(x)":
                     jointToAdd.position[0] += 16;
                     break;

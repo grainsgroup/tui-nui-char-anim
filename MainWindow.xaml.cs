@@ -641,8 +641,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                             this.statusBarText.Text = capturedText;
                             sensorKinectInfo = preset.sensorKinectInfoSet;
                             sensorLegoInfo = preset.sensorLegoInfoSet;
-
-
+                            
                             rotationMatrix.Clear();
                             foreach (SensorLegoInfo slf in sensorLegoInfo)
                             {
@@ -759,7 +758,12 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         {
             if (captureFlag)
             {
-                Packet packet = new Packet();                
+                Packet packet = new Packet();
+                Joint hipJoint = new Joint();
+                if (skeletonTracked != null)
+                {
+                    hipJoint = skeletonTracked.Joints[JointType.HipCenter];
+                }                                
 
                 if (!virtualArmature)
                 {
@@ -783,20 +787,30 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         float newValue = 0;
                         
                         if (filterOn)
-                        {                            
-                            newValue = sf.Value + alpha * (legoBrick.Ports[sf.InputPort].SIValue - sf.Value);
-                            //newMotion.vectorPos.locX = newValue - sf.Offset + sf.LocPos;
-                            //newMotion.vectorPos.locY = newValue - sf.Offset + sf.LocPos;
-                            //newMotion.vectorPos.locZ = newValue - sf.Offset + sf.LocPos;
+                        {
+                            if (sf.InputPort >= 20)
+                            {
+                                newValue = sf.Value + alpha * (GetHipValue(sf.InputPort, hipJoint) * factor - sf.Value);            
+                            }
+                            else
+                            {
+                                newValue = sf.Value + alpha * (legoBrick.Ports[(InputPort)sf.InputPort].SIValue - sf.Value);
+                            }
+
                             sf.Value = newValue;
                         }
                         else
                         {
                             // No-fiter
-                            newValue = legoBrick.Ports[sf.InputPort].SIValue;
-                            //newMotion.vectorPos.locX = legoBrick.Ports[sf.InputPort].SIValue - sf.Offset + sf.LocPos;
-                            //newMotion.vectorPos.locY = legoBrick.Ports[sf.InputPort].SIValue - sf.Offset + sf.LocPos;
-                            //newMotion.vectorPos.locZ = legoBrick.Ports[sf.InputPort].SIValue - sf.Offset + sf.LocPos;
+                            
+                            if (sf.InputPort > 20)
+                            {
+                                newValue = GetHipValue(sf.InputPort, hipJoint) * factor;                                
+                            }
+                            else
+                            {
+                                newValue = legoBrick.Ports[(InputPort)sf.InputPort].SIValue;
+                            }
                         }
 
                         switch (sf.Axis)
@@ -810,10 +824,18 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                 if (sf.OrientationTrack)
                                 {
                                     newMotion.rotTrack = true;
-                                    
+                                    float rotValue = 0;
+                                    if (sf.InputPort >= 20)
+                                    {
+                                        rotValue = GetHipValue(sf.InputPort, hipJoint) * factor;                                                                            
+                                    }                                    
+                                    else
+                                    {
+                                        rotValue = legoBrick.Ports[(InputPort)sf.InputPort].SIValue;
+                                    }
                                     // UUpdates the rotation matrix depending on the order of rotations
-                                    Matrix4x4 rotToApply = UpdateObjectRotMatrix(sf.Axis, sf.ObjectName + ":" + sf.BoneName,
-                                        (legoBrick.Ports[sf.InputPort].SIValue - sf.Offset) / accuracy, sf.RotationOrder);
+                                    Matrix4x4 rotToApply = rotToApply = UpdateObjectRotMatrix(sf.Axis, sf.ObjectName + ":" + sf.BoneName,
+                                        (rotValue - sf.Offset) / accuracy, sf.RotationOrder);
                                     
                                     // Computes quaternion representation (w,x,y,z) and updates the new motion
                                     newMotion.vectorOr.W = 
@@ -824,9 +846,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                         (rotToApply.M13 - rotToApply.M31) / (4 * newMotion.vectorOr.W);
                                     newMotion.vectorOr.Z = 
                                         (rotToApply.M21 - rotToApply.M12) / (4 * newMotion.vectorOr.W);
-                                    
-                                    // Old version
-                                    //newMotion.vectorOr.X = (legoBrick.Ports[sf.InputPort].SIValue - sf.Offset) / accuracy;
+                                                                        
                                 }
                                 break;
 
@@ -840,10 +860,19 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                 if (sf.OrientationTrack)
                                 {
                                     newMotion.rotTrack = true;
+                                    float rotValue = 0;
+                                    if (sf.InputPort >= 20)
+                                    {
+                                        rotValue = GetHipValue(sf.InputPort, hipJoint) * factor;                                        
+                                    }
+                                    else
+                                    {
+                                        rotValue = legoBrick.Ports[(InputPort)sf.InputPort].SIValue;
+                                    }
 
                                     // Updates rotation matrix
                                     Matrix4x4 rotToApply = UpdateObjectRotMatrix(sf.Axis, sf.ObjectName + ":" + sf.BoneName,
-                                        (-legoBrick.Ports[sf.InputPort].SIValue + sf.Offset) / accuracy, sf.RotationOrder);
+                                        (-rotValue + sf.Offset) / accuracy, sf.RotationOrder);
 
                                     // Compute w,x,y,z coordinates the new rotation matrix
                                     newMotion.vectorOr.W = 
@@ -877,10 +906,18 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                 if (sf.OrientationTrack)
                                 {
                                     newMotion.rotTrack = true;
-                                    //newMotion.vectorOr.Y = (legoBrick.Ports[sf.InputPort].SIValue - sf.Offset) / accuracy;
+                                    float rotValue = 0;
+                                    if (sf.InputPort >= 20)
+                                    {
+                                        rotValue = GetHipValue(sf.InputPort, hipJoint) * factor;
+                                    }
+                                    else
+                                    {
+                                        rotValue = legoBrick.Ports[(InputPort)sf.InputPort].SIValue;
+                                    }
                                     
                                     Matrix4x4 rotToApply = UpdateObjectRotMatrix(sf.Axis, sf.ObjectName + ":" + sf.BoneName,
-                                        (legoBrick.Ports[sf.InputPort].SIValue - sf.Offset) / accuracy, sf.RotationOrder);
+                                        (rotValue - sf.Offset) / accuracy, sf.RotationOrder);
                                     
                                     newMotion.vectorOr.W = 
                                         (float)Math.Sqrt(Convert.ToDouble(1.0f + rotToApply.M11 + rotToApply.M22 + rotToApply.M33))/2;
@@ -914,10 +951,18 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                 if (sf.OrientationTrack)
                                 {
                                     newMotion.rotTrack = true;
-                                    //newMotion.vectorOr.Y = (-legoBrick.Ports[sf.InputPort].SIValue + sf.Offset) / accuracy;
+                                    float rotValue = 0;
+                                    if (sf.InputPort >= 20)
+                                    {
+                                        rotValue = GetHipValue(sf.InputPort, hipJoint) * factor;
+                                    }
+                                    else
+                                    {
+                                        rotValue = legoBrick.Ports[(InputPort)sf.InputPort].SIValue;
+                                    }
                                     
                                     Matrix4x4 rotToApply = UpdateObjectRotMatrix(sf.Axis, sf.ObjectName + ":" + sf.BoneName,
-                                        (-legoBrick.Ports[sf.InputPort].SIValue + sf.Offset) / accuracy, sf.RotationOrder);
+                                        (-rotValue + sf.Offset) / accuracy, sf.RotationOrder);
                                     
                                     newMotion.vectorOr.W = 
                                         (float)Math.Sqrt(Convert.ToDouble(1.0f + rotToApply.M11 + rotToApply.M22 + rotToApply.M33))/2;
@@ -947,13 +992,19 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                 if (sf.OrientationTrack)
                                 {
                                     newMotion.rotTrack = true;
-                                    //newMotion.vectorOr.Z = (legoBrick.Ports[sf.InputPort].SIValue - sf.Offset) / accuracy;
-
-                                    // Aggiornare la matrice di rotazione dell'oggetto in funzione dell'ordine
+                                    float rotValue = 0;
+                                    if (sf.InputPort >= 20)
+                                    {
+                                        rotValue = GetHipValue(sf.InputPort, hipJoint) * factor;
+                                    }
+                                    else
+                                    {
+                                        rotValue = legoBrick.Ports[(InputPort)sf.InputPort].SIValue;
+                                    }
+                                    
                                     Matrix4x4 rotToApply = UpdateObjectRotMatrix(sf.Axis, sf.ObjectName + ":" + sf.BoneName,
-                                        (legoBrick.Ports[sf.InputPort].SIValue - sf.Offset) / accuracy, sf.RotationOrder);
-
-                                    // calcolare le coordinate w,x,y,z -> scriverle in motion
+                                        (rotValue - sf.Offset) / accuracy, sf.RotationOrder);
+                                    
                                     newMotion.vectorOr.W = 
                                         (float)Math.Sqrt(Convert.ToDouble(1.0f + rotToApply.M11 + rotToApply.M22 + rotToApply.M33))/2;
                                     newMotion.vectorOr.X = 
@@ -978,21 +1029,24 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                         newMotion.locYTrack = true;
                                         newMotion.vectorPos.locZ = -newValue + sf.Offset;
                                     }
-                                    
-                                    /* No filter value
-                                     * newMotion.vectorPos.locZ = -legoBrick.Ports[sf.InputPort].SIValue + sf.Offset;
-                                     */
+                                                                        
                                 }
                                 if (sf.OrientationTrack)
                                 {
                                     newMotion.rotTrack = true;
-                                    //newMotion.vectorOr.Z = (-legoBrick.Ports[sf.InputPort].SIValue + sf.Offset) / accuracy;
-
-                                    // Aggiornare la matrice di rotazione dell'oggetto in funzione dell'ordine
+                                    float rotValue = 0;
+                                    if (sf.InputPort >= 20)
+                                    {
+                                        rotValue = GetHipValue(sf.InputPort, hipJoint) * factor;
+                                    }
+                                    else
+                                    {
+                                        rotValue = legoBrick.Ports[(InputPort)sf.InputPort].SIValue;
+                                    }                                    
+                                    
                                     Matrix4x4 rotToApply = UpdateObjectRotMatrix(sf.Axis, sf.ObjectName + ":" + sf.BoneName,
-                                        (-legoBrick.Ports[sf.InputPort].SIValue + sf.Offset) / accuracy, sf.RotationOrder);
-
-                                    // calcolare le coordinate w,x,y,z -> scriverle in motion
+                                        (-rotValue) / accuracy, sf.RotationOrder);
+                                    
                                     newMotion.vectorOr.W = 
                                         (float)Math.Sqrt(Convert.ToDouble(1.0f + rotToApply.M11 + rotToApply.M22 + rotToApply.M33))/2;
                                     newMotion.vectorOr.X = 
@@ -1024,11 +1078,24 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 {
                     Console.WriteLine("Virtual Armature mode not implemented yet");
                 }
-            }   
-            
-
+            }               
         }
 
+        private float GetHipValue(int hipDofSelected, Joint hipJoint)
+        {
+            switch (hipDofSelected)
+            {
+                case 20:
+                    return hipJoint.Position.X;                    
+                case 21:
+                    return hipJoint.Position.Y;
+                case 22:
+                    return hipJoint.Position.Z;                    
+            }
+            return 0;
+        }
+
+        
        
 
         private Matrix4x4 UpdateObjectRotMatrix(string axes, string name, float angle, int index)
@@ -1092,7 +1159,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             {
                 packet.payload.Add(new SensorInfo(sf.BoneName, sf.ObjectName, false));
             }
-
+            
             string jsontToSend = JsonManager.CreateJson((Object)packet);
             try
             {
@@ -1118,8 +1185,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 {
                     if (sf.BoneName.Equals(association[i+1]))
                     {
-                        sensorKinectInfo.Add(new SensorKinectInfo(sf.Joint, CurrentBoneAssociation, sf.ObjectName, sf.LocationXTrack, sf.LocationYTrack, sf.LocationZTrack, sf.OrientationTrack, sf.Factor, sf.OffsetW, sf.OffsetX, sf.OffsetY, sf.OffsetZ, sf.OffsetLocX, sf.OffsetLocY, sf.OffsetLocZ,sf.LocPosX,sf.LocPosY,sf.LocPosZ, sf.takeXFrom, sf.takeYFrom, sf.takeZFrom));
-                        
+                        sensorKinectInfo.Add(new SensorKinectInfo(sf.Joint, CurrentBoneAssociation, sf.ObjectName, sf.LocationXTrack, sf.LocationYTrack, sf.LocationZTrack, sf.OrientationTrack, sf.Factor, sf.OffsetW, sf.OffsetX, sf.OffsetY, sf.OffsetZ, sf.OffsetLocX, sf.OffsetLocY, sf.OffsetLocZ,sf.LocPosX,sf.LocPosY,sf.LocPosZ, sf.takeXFrom, sf.takeYFrom, sf.takeZFrom));                        
                         break;
                     }
                 }
@@ -1133,10 +1199,13 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         break;
                     }
                 }
+                
             }
             
             virtualArmature = false;
         }
+
+       
        
         /// <summary>
         /// Handler for rejected speech events.
@@ -1266,8 +1335,13 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
             if (sensorKinectInfo.Count > 0 && captureFlag)
             {
-                SendKinectData();
+                SendKinectData();                
             }
+            if (captureFlag)
+            {
+                SendLegoData();
+            }
+
 
             if (recFlag) 
             {
@@ -1294,7 +1368,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 }
             }             
             
-        }
+        }        
 
         /// <summary>
         /// Maps a SkeletonPoint to lie within our render space and converts to Point
@@ -1535,6 +1609,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     ActiveObject.Add(sf.ObjectName);
                 }
             }
+            
+
             return ActiveObject;
         }
 
@@ -1543,8 +1619,12 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             
             foreach (SensorLegoInfo sf in sensorLegoInfo)
             {
-                sf.Offset = legoBrick.Ports[sf.InputPort].SIValue;
+                if (sf.InputPort >= 20)
+                    sf.Offset = GetHipValue(sf.InputPort, skeletonTracked.Joints[JointType.HipCenter]) * factor;
+                else
+                    sf.Offset = legoBrick.Ports[(InputPort)sf.InputPort].SIValue;
             }
+
             
 
             if(skeletonTracked != null)
@@ -1568,11 +1648,13 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
         }
 
+       
+
         public void ChageCoordinateSystem() 
         {
             foreach (SensorLegoInfo sf in sensorLegoInfo)
             {
-                sf.LocPos =  sf.LocPos + legoBrick.Ports[sf.InputPort].SIValue - sf.Offset;
+                sf.LocPos = sf.LocPos + legoBrick.Ports[(InputPort)sf.InputPort].SIValue - sf.Offset;
 
             }
 
@@ -1583,6 +1665,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                  sf.LocPosY = joint.Position.Y * factor * sf.Factor - sf.OffsetLocY + sf.LocPosY;
                  sf.LocPosZ = -joint.Position.Z * factor * sf.Factor - sf.OffsetLocZ + sf.LocPosZ;
             }
+
+            
         }
 
         public void GetCurrentFrame() 
@@ -1608,6 +1692,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 sf.LocPosY = 0;
                 sf.LocPosZ = 0;
             }
+            
         }
 
         // GUI
@@ -1709,7 +1794,12 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     this.statusBarText.Text = "Low Pass Filter On ";
                 else
                     this.statusBarText.Text = "Low Pass Filter Off ";
-            }            
+            }
+
+            if (e.Key == Key.C && Keyboard.IsKeyDown(Key.LeftCtrl))
+            {
+                captureFlag = !captureFlag;
+            }
             
             /* 
             if (e.Key == Key.L && Keyboard.IsKeyDown(Key.RightCtrl))

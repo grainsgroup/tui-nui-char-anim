@@ -205,7 +205,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
     {
         public float Score {get;set;}
         public float PartCountFact { get; set; }
-        public List<Bone> Handler { get; set; }
+        public List<Bone> Handler { get; set; }        
         
         public PartitionAssignmentTmp()
         {
@@ -232,6 +232,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         public char Type { get; set; }
 
         public List<Bone> SplittedArmature { get; set; }
+        public string combination { get; set; }
 
         public DecompositionAssignment(List<PartitionAssignment> partAss, float score, char type)
         {

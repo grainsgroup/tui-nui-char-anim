@@ -378,7 +378,9 @@
                         <Button Content="Generate" Width="68" Click="ButtonAutoConfig_Click" Canvas.Left="780" Canvas.Top="471"/>
                         <Label Content="Preference" HorizontalAlignment="Left" Margin="7,-15,0,0" VerticalAlignment="Top" FontSize="14"/>
                         <CheckBox x:Name="UseSensorCheckBox" Content="Use Sensor" Canvas.Top="40" Canvas.Left="30" IsChecked="True"/>
-                        <CheckBox x:Name="LocRotCheckBox" Content="Partition Loc+Rot " Canvas.Top="61" Canvas.Left="30" IsChecked="True"/>
+                        <CheckBox x:Name="LocRotCheckBox" Content="Partition Loc+Rot " Canvas.Top="60" Canvas.Left="30" IsChecked="True"/>
+                        <CheckBox x:Name="ConsiderSplitArmatureCheckBox" Content="Split Armature " Canvas.Top="80" Canvas.Left="30" IsChecked="False"/>
+                        <CheckBox x:Name="ReadDecAssignFromFile" Content="Read from file " Canvas.Top="100" Canvas.Left="30" IsChecked="False"/>
                         <Label  HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Canvas.Top="34" Width="56" Canvas.Left="180">
                             <TextBlock Text="Body Tracking" TextWrapping="Wrap" TextAlignment="Center" FontSize="12" />
                         </Label>
@@ -400,10 +402,10 @@
                         <Label x:Name="PositionInChainFactorLabel" Content="PositionInChain" Canvas.Left="663" Canvas.Top="87" Width="122"/>
                         <Label x:Name="SymmetryFactorLabel" Content="Symmetry" Canvas.Left="663" Canvas.Top="115" Width="92"/>
                         <Label x:Name="PartitionCountFactorLabel" Content="PartitionCount" Canvas.Left="663" Canvas.Top="143" Width="116"/>
-                        <ProgressBar x:Name="ProgressBar" Height="22" Width="491" Canvas.Left="139" Canvas.Top="471" Minimum="0" Maximum="100"/>
-                        <Label x:Name="StartTime" Content="START AT:" Canvas.Left="23" Canvas.Top="470" Width="116"/>
-                        <Label x:Name="EndTime" Content="FINISH AT:" Canvas.Left="635" Canvas.Top="470" Width="116"/>
-                        <Label x:Name="Progress" Content="0 %" Canvas.Left="365" Canvas.Top="467" Width="Auto"/>
+                        <ProgressBar x:Name="ProgressBar" Height="22" Width="491" Canvas.Left="139" Canvas.Top="442" Minimum="0" Maximum="100"/>
+                        <Label x:Name="StartTime" Content="START AT:" Canvas.Left="23" Canvas.Top="441" Width="116"/>
+                        <Label x:Name="EndTime" Content="FINISH AT:" Canvas.Left="635" Canvas.Top="441" Width="116"/>
+                        <Label x:Name="Progress" Content="0 %" Canvas.Left="30" Canvas.Top="467" Width="Auto"/>
                     </Canvas >
                 </TabItem>
 

@@ -9,6 +9,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
     {
         public bool LocRotCheckBox;
         public bool UseSensorCheckBox;
+        public bool ConsiderSplitSourceCheckBox;
         public float NodSim;
         public float DofCov;
         public float ComRan;
@@ -17,11 +18,12 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         public float Sym;
         public float ParCou;
 
-        public UserPreference(bool locRotCheckBox, bool useSensorCheckBox, float nodSim, float dofCov, float comRan, float comAnn, float posInC, float sym, float parCou)
+        public UserPreference(bool locRotCheckBox, bool useSensorCheckBox, bool considerSplitSource, float nodSim, float dofCov, float comRan, float comAnn, float posInC, float sym, float parCou)
         {
             // TODO: Complete member initialization
             this.LocRotCheckBox = locRotCheckBox;
             this.UseSensorCheckBox = useSensorCheckBox;
+            this.ConsiderSplitSourceCheckBox = considerSplitSource;
             this.NodSim = nodSim;
             this.DofCov = dofCov;
             this.ComRan = comRan;

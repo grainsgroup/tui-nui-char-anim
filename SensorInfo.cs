@@ -35,7 +35,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
     class SensorLegoInfo : SensorInfo
      {
-        public Lego.Ev3.Core.InputPort InputPort { get; set; }
+        public int InputPort { get; set; }
          
         public string Axis { get; set; }
 
@@ -49,7 +49,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
         public float Value { get; set; }
 
-        public SensorLegoInfo(Lego.Ev3.Core.InputPort inputPort, string boneName, string objectName, bool locationTrack, bool orientationTrack, string axis, float offset, float locPos, int rotationOrder) 
+        public SensorLegoInfo(int inputPort, string boneName, string objectName, bool locationTrack, bool orientationTrack, string axis, float offset, float locPos, int rotationOrder) 
          {
             this.InputPort = inputPort;
             this.ObjectName = objectName;
@@ -130,6 +130,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
         public ArrayList sensorLegoInfoSet { get; set; }
 
+        
         public Preset(string name)
         {
             this.Name = name;
