@@ -130,7 +130,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         public static LXFML ReadLXFML(LegoJoint joint)
         {
 
-            string jointName = joint.name;
+            string jointName = joint.name;            
             if(joint.split>1)
                 jointName += "_SPLIT[" + joint.split.ToString() + "]";
             LXFML myResponseData = new LXFML();
@@ -420,8 +420,18 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     }
                     else
                     {
-                        jointToAdd.name = currentBone.name.Substring(0, currentBone.name.IndexOf("(PORT-")) + "_" +
-                            currentBone.name.Substring(currentBone.name.IndexOf("ROT"), 6);
+                        if(currentBone.name.Contains("ROT"))
+                        {
+                            jointToAdd.name = currentBone.name.Substring(0, currentBone.name.IndexOf("(PORT-")) + "_" +
+                                currentBone.name.Substring(currentBone.name.IndexOf("ROT"), 6);
+                        }
+                        if (currentBone.name.Contains("LOC"))
+                        {
+                            jointToAdd.name = currentBone.name.Substring(0, currentBone.name.IndexOf("(PORT-")) + "_" +
+                                currentBone.name.Substring(currentBone.name.IndexOf("LOC"), 6);
+                            jointToAdd.name = jointToAdd.name.Replace("LOC(L)", "ROT(x)");
+                        }
+
                         jointToAdd.port = currentBone.name.Substring(currentBone.name.IndexOf("(PORT-") + 6, 2);
                     }
                     jointToAdd.split = currentBone.children.Count;
@@ -447,8 +457,18 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         }
                         else 
                         {
-                            jointParent = currentBone.parent.Substring(0, currentBone.parent.IndexOf("(PORT-")) + "_" +
-                        currentBone.parent.Substring(currentBone.parent.IndexOf("ROT"), 6);
+                            if (currentBone.parent.Contains("ROT"))
+                            {
+                                jointParent = currentBone.parent.Substring(0, currentBone.parent.IndexOf("(PORT-")) + "_" +
+                                    currentBone.parent.Substring(currentBone.parent.IndexOf("ROT"), 6);
+                            }
+                            if (currentBone.parent.Contains("LOC"))
+                            {
+                                jointParent = currentBone.parent.Substring(0, currentBone.parent.IndexOf("(PORT-")) + "_" +
+                                    currentBone.parent.Substring(currentBone.parent.IndexOf("LOC"), 6);
+                                jointParent = jointParent.Replace("LOC(L)", "ROT(x)");
+                            }
+
                             parentLegoJointIndex = result.FindIndex(
                             x => x.name.Equals(jointParent) &&
                             x.port.Equals(currentBone.parent.Substring(currentBone.parent.IndexOf("(PORT-") + 6, 2)));

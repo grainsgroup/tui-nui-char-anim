@@ -379,7 +379,7 @@
                         <Label Content="Preference" HorizontalAlignment="Left" Margin="7,-15,0,0" VerticalAlignment="Top" FontSize="14"/>
                         <CheckBox x:Name="UseSensorCheckBox" Content="Use Sensor" Canvas.Top="40" Canvas.Left="30" IsChecked="True"/>
                         <CheckBox x:Name="LocRotCheckBox" Content="Partition Loc+Rot " Canvas.Top="60" Canvas.Left="30" IsChecked="True"/>
-                        <CheckBox x:Name="ConsiderSplitArmatureCheckBox" Content="Split Armature " Canvas.Top="80" Canvas.Left="30" IsChecked="False"/>
+                        <CheckBox x:Name="ConsiderSplitArmatureCheckBox" Content="Consider Split Armature " Canvas.Top="80" Canvas.Left="30" IsChecked="False"/>
                         <CheckBox x:Name="ReadDecAssignFromFile" Content="Read from file " Canvas.Top="100" Canvas.Left="30" IsChecked="False"/>
                         <Label  HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Canvas.Top="34" Width="56" Canvas.Left="180">
                             <TextBlock Text="Body Tracking" TextWrapping="Wrap" TextAlignment="Center" FontSize="12" />

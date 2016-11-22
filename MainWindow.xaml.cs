@@ -1620,13 +1620,16 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             foreach (SensorLegoInfo sf in sensorLegoInfo)
             {
                 if (sf.InputPort >= 20)
-                    sf.Offset = GetHipValue(sf.InputPort, skeletonTracked.Joints[JointType.HipCenter]) * factor;
+                {
+                    if (skeletonTracked != null)
+                    {
+                        sf.Offset = GetHipValue(sf.InputPort, skeletonTracked.Joints[JointType.HipCenter]) * factor;
+                    }
+                }
                 else
                     sf.Offset = legoBrick.Ports[(InputPort)sf.InputPort].SIValue;
             }
-
             
-
             if(skeletonTracked != null)
             {
                 foreach (SensorKinectInfo sf in sensorKinectInfo)
@@ -1654,10 +1657,19 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         {
             foreach (SensorLegoInfo sf in sensorLegoInfo)
             {
-                sf.LocPos = sf.LocPos + legoBrick.Ports[(InputPort)sf.InputPort].SIValue - sf.Offset;
-
+                if (sf.InputPort >= 20)
+                {
+                    if (skeletonTracked != null)
+                    {
+                        sf.LocPos = sf.LocPos + GetHipValue(sf.InputPort, skeletonTracked.Joints[JointType.HipCenter])*factor - sf.Offset;
+                    }
+                }
+                else
+                {
+                    sf.LocPos = sf.LocPos + legoBrick.Ports[(InputPort)sf.InputPort].SIValue - sf.Offset;
+                }
             }
-
+            
             foreach (SensorKinectInfo sf in sensorKinectInfo)
             {
                  Joint joint = skeletonTracked.Joints[sf.Joint];
