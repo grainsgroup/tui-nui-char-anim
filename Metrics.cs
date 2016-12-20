@@ -263,7 +263,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         foreach (var c in disp)
                         {
                             threeDofSequence.Add(handler.rot_DoF[Convert.ToInt32(c)]);
-                            positions.Add(Convert.ToInt32(c));
+                            positions.Add(Convert.ToInt32(c) + handler.loc_DoF.Count);
                         }
 
                         if (dictionary[Metrics.GetDofString(bone.rot_DoF)].FindIndex

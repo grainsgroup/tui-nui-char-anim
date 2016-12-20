@@ -33,6 +33,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         public const string ACTIVE_GHOST_FRAME = "ACTIVE_GHOST_FRAME";
         public const string DISABLE_GHOST_FRAME = "DISABLE_GHOST_FRAME";
         public const string START_TEST = "START_TEST";
+        public const string TERMINATE_TEST = "TERMINATE_TEST";
 
         public const string MORE_ACCURACY = "MORE_ACCURACY";
         public const string LESS_ACCURACY = "LESS_ACCURACY";
@@ -46,6 +47,14 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
         public const string AUTO_CONFIG = "AUTO_CONFIG";
         public const string ARMATURE_SELECTED = "ARMATURE_SELECTED";
+
+        public const string CHANGE_CAMERA = "CHANGE_CAMERA";
+        public const string COPY_FRAME = "COPY_FRAME";
+        public const string PASTE_FRAME = "PASTE_FRAME";
+        public const string PASTE_REVERSE_FRAME = "PASTE_FLIP_FRAME";
+        
+
+        
     }
     public class FrameType
     {

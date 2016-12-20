@@ -159,7 +159,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             else 
             {
                 comb = InitilizeComb(comb, comb.Length);
-                dofSequence.Add(Enumerable.Range(0, comb.Length).ToList());
             }                                     
             
             List<string> combAssigned = new List<string>();
@@ -191,7 +190,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 dofAssigned.Add(sequenceToAdd);
                 sourceSequence.Add(source);
             }
-            
+                dofSequence.Add(Enumerable.Range(0, comb.Length).ToList());
+                        
             // Converts typed dof sequence into possible armatures
             List<List<List<Bone>>> armatures = CreateArmature(sourceSequence, dofAssigned);            
             return armatures;
@@ -203,15 +203,24 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         {
             char[] newComb = new char[componentAvailable];
             // Adds Loc Dof to the sequence
-            for (int i = 0; i < componentAvailable; i++)
+            for (int i = 0, pos=0; i < componentAvailable; i++)
             {
-                if (i < comb.Length)
+                //if (i < comb.Length)
+                //{
+                //    newComb[i] = comb[i];
+                //}
+                //else
+                //{
+                //    newComb[i] = 'L';
+                //}
+                if (i < componentAvailable - comb.Length)
                 {
-                    newComb[i] = comb[i];
+                    newComb[i] = 'L';
                 }
                 else
                 {
-                    newComb[i] = 'L';
+                    newComb[i] = comb[pos];
+                    pos++;
                 }
             }
             comb = newComb;
@@ -234,7 +243,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 char[] array = c.ToCharArray();
                 operationsOrder.Add(array);
             }
-
+           
             // Combines dof and componentes permutation with all possible operation order to obtain armature
             List<List<string>> dofSequences = new List<List<string>>();
             for (int seq = 0; seq < dofAssigned.Count; seq++)
@@ -266,7 +275,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             List<List<Bone>> splittedArm = new List<List<Bone>>();
             
             for (int i = 0; i < dofSequences.Count; i++)
-            {
+            {                
                 // initialization
                 List<string> sequenceItem = dofSequences[i];
                 List<Bone> virtualArmature = new List<Bone>();
@@ -277,6 +286,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 Bone firstBone = InitializeBoneFromItem(sequenceItem[0]);
                 firstBone.level = level;
                 partialArmatures.Add(new PartialArmature(new List<Bone>() { firstBone }, firstBone));
+                
 
                 // For each item of the sequence
                 for (int j = 1; j < sequenceItem.Count; j = j + 2)
@@ -897,7 +907,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             for (int level = 0; level < GetMaxLengthChain(armature); level++)
             {
                 if (CountArmatureDofs(neighborsAtLevel) <= motorAvailable && 
-                    neighborsAtLevel.Count + currPartitionCount < limitBoneCount &&
+                    neighborsAtLevel.Count + currPartitionCount <= limitBoneCount &&
                     SymmetricSplitCheck(neighborsAtLevel) )
                 {
                     result = neighborsAtLevel.ToList();

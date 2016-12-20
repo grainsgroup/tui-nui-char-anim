@@ -61,7 +61,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
         Skeleton skeletonTracked;
 
-        public int currentFrame { get; set; }        
+        public int currentFrame { get; set; }
+        public List<FrameBufferItem> FrameBuffer { get; set; }
         public float factor { get; set;}
         private Position startPosition { get; set; }
         private Position endPosition { get; set; }
@@ -201,8 +202,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             virtualArmature = false;
             currentPreset = string.Empty;
             startPosition = new Position();
-            endPosition = new Position();            
-            
+            endPosition = new Position();
+            FrameBuffer = new List<FrameBufferItem>();            
         }
 
         private void InitializeList()
@@ -471,29 +472,113 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             {
                 case Command.POSITION:
                     captureFlag = true;
+                    this.CaptureCheckBox.IsChecked = true;
                     SendKinectData();
                     System.Media.SystemSounds.Asterisk.Play();
                     break;
 
+                case Command.COPY_FRAME:
+                    Packet request = new Packet();
+                    request.header = Command.COPY_FRAME;
+                    request.payload.Add(0);
+                    request.payload.Add(FrameType.ROTATION);
+                    activeObject = getActiveObject();
+                    foreach (string obj in activeObject)
+                    {
+                        request.payload.Add(obj);
+                    }
+                    SendPacket(request);
+
+                    // Receives frameBuffer from Blender
+                    string stringReceived = AsynSocket.SyncReceiver();
+                    FrameBuffer = JsonManager.GetFrameBufferList(stringReceived);                                        
+                    break;
+                    
+                case Command.PASTE_FRAME:                    
+                    if (FrameBuffer.Count > 0)
+                    {
+                        packet.header = Command.PASTE_FRAME;
+                        foreach (FrameBufferItem fb in FrameBuffer)
+                            packet.payload.Add(fb);
+                    }
+                    break;
+                
+                case Command.PASTE_REVERSE_FRAME:
+                    if (FrameBuffer.Count > 0)
+                    {
+                        List<FrameBufferItem> reverseFrameBuffer = new List<FrameBufferItem>();
+                        packet.header = Command.PASTE_FRAME;
+                        foreach (FrameBufferItem fb in FrameBuffer)
+                        {
+                            FrameBufferItem itemToAdd = new FrameBufferItem();
+                            itemToAdd.objectName = fb.objectName;
+                            itemToAdd.boneName = fb.boneName;
+                            itemToAdd.frameType = fb.frameType;
+                            itemToAdd.locX = fb.locX;
+                            itemToAdd.locY = fb.locY;
+                            itemToAdd.locZ = fb.locZ;
+                            itemToAdd.rotW = fb.rotW;
+                            itemToAdd.rotX = fb.rotX;
+                            itemToAdd.rotY = fb.rotY;
+                            itemToAdd.rotZ = fb.rotZ;
+                            if (itemToAdd.boneName.Contains(".L"))
+                                itemToAdd.boneName = itemToAdd.boneName.Replace(".L", ".R");
+                            else if (itemToAdd.boneName.Contains(".R"))
+                                itemToAdd.boneName = itemToAdd.boneName.Replace(".R", ".L");
+                            packet.payload.Add(itemToAdd);
+                        }
+                    }
+                    break;
+                    
                 case Command.FRAME:
                     GetCurrentFrame();
                     this.currentFrameText.Text = "frame: " + currentFrame.ToString();                    
                     packet.header = Command.FRAME;
                     packet.payload.Add(0);
                     packet.payload.Add(FrameType.LOCATION_ROTATION);
+                    List<string> boneSelected = new List<string>();
+                    if (this.OnlySelectedBoneCheckBox.IsChecked.Value)
+                    {
+                        foreach (SensorLegoInfo slf in sensorLegoInfo)
+                        {
+                            if (!boneSelected.Contains(slf.BoneName))
+                                boneSelected.Add(slf.BoneName);
+                        }
+                    }
+                    packet.payload.Add(boneSelected);                                        
                     activeObject = getActiveObject();
                     foreach (string obj in activeObject)
                     {
                         packet.payload.Add(obj);
                     }
+
+                    if (this.TestCheckBox.IsChecked.Value)
+                    {
+                        captureFlag = false;
+                        this.CaptureCheckBox.IsChecked = false;
+                        //this.TestCheckBox.IsChecked = false;
+                    }                    
                     break;
 
                 case Command.FRAME_LOC:
                     GetCurrentFrame();
                     this.currentFrameText.Text = "frame: " + currentFrame.ToString();
                     packet.header = Command.FRAME;
+                    // Specifies the number of the frame where the key frame will be inserted 
                     packet.payload.Add(0);
+                    // Specifies the frame type
                     packet.payload.Add(FrameType.LOCATION);
+                    //                                         
+                    List<string> boneSelectedLoc = new List<string>();
+                    if (this.OnlySelectedBoneCheckBox.IsChecked.Value)
+                    {
+                        foreach (SensorLegoInfo slf in sensorLegoInfo)
+                        {
+                            if (!boneSelectedLoc.Contains(slf.BoneName))
+                                boneSelectedLoc.Add(slf.BoneName);
+                        }
+                    }
+                    packet.payload.Add(boneSelectedLoc);
                     activeObject = getActiveObject();
                     foreach (string obj in activeObject)
                     {
@@ -507,6 +592,16 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     packet.header = Command.FRAME;
                     packet.payload.Add(0);
                     packet.payload.Add(FrameType.ROTATION);
+                    List<string> boneSelectedRot = new List<string>();
+                    if (this.OnlySelectedBoneCheckBox.IsChecked.Value)
+                    {
+                        foreach (SensorLegoInfo slf in sensorLegoInfo)
+                        {
+                            if (!boneSelectedRot.Contains(slf.BoneName))
+                                boneSelectedRot.Add(slf.BoneName);
+                        }
+                    }
+                    packet.payload.Add(boneSelectedRot);
                     activeObject = getActiveObject();
                     foreach (string obj in activeObject)
                     {
@@ -576,6 +671,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     if (TestCheckBox.IsChecked.Value)
                     {
                         captureFlag = true;
+                        this.CaptureCheckBox.IsChecked =  true;
                     }
 
                     //GetCurrentFrame();
@@ -607,6 +703,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         //SendCommand(Command.FRAME, "");
                         //captureFlag = false;
                         SendCommand(Command.START_TEST, "");
+                        //System.Threading.Thread.Sleep(100);
+                        SendCommand(Command.CHANGE_PRESET, "Coda");
+                        //System.Threading.Thread.Sleep(100);
                     }
                     break;
 
@@ -623,6 +722,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
                 case Command.HIDE_CAPTURE:
                     captureFlag = false;
+                    this.CaptureCheckBox.IsChecked = false;
                     System.Media.SystemSounds.Asterisk.Play();
                     GetCurrentFrame();
                     break;
@@ -633,6 +733,23 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     break;
 
                 case Command.CHANGE_PRESET:
+                    if (capturedText.Equals("Testa") || capturedText.Equals("Mascella"))
+                        SendCommand(Command.CHANGE_CAMERA, "Testa");
+                    if (capturedText.Equals("Anteriore Destra Superiore") || capturedText.Equals("Anteriore Destra Inferiore"))
+                        SendCommand(Command.CHANGE_CAMERA, "ZampeAnterioriDestra");
+                    if(capturedText.Equals("Anteriore Sinistra Superiore") || capturedText.Equals("Anteriore Sinistra Inferiore"))
+                        SendCommand(Command.CHANGE_CAMERA, "ZampeAnterioriSinistra");                   
+                    if (capturedText.Equals("Posteriore Destra Superiore") || capturedText.Equals("Posteriore Destra Inferiore"))
+                        SendCommand(Command.CHANGE_CAMERA, "ZampePosterioriDestra");
+                    if (capturedText.Equals("Posteriore Sinistra Superiore") || capturedText.Equals("Posteriore Sinistra Inferiore"))
+                        SendCommand(Command.CHANGE_CAMERA, "ZampePosterioriSinistra");
+                    if (capturedText.Equals("Coda"))
+                        SendCommand(Command.CHANGE_CAMERA, capturedText);
+                    if (capturedText.Equals("Busto"))
+                        SendCommand(Command.CHANGE_CAMERA, capturedText);
+
+                    //System.Threading.Thread.Sleep(100);
+
                     System.Media.SystemSounds.Asterisk.Play();                   
                     foreach (Preset preset in this.presetConfig)
                     {
@@ -658,9 +775,10 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
                     if (TestCheckBox.IsChecked.Value)
                     {
-                        captureFlag = false;
                         packet.header = Command.CHANGE_PRESET;
                         packet.payload.Add(currentPreset);
+                        captureFlag = false;
+                        this.CaptureCheckBox.IsChecked = false;
                     }
                     
                     break;
@@ -701,6 +819,10 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     packet.payload.Add(currentFrame);
                     break;
 
+                case Command.TERMINATE_TEST:
+                    packet.header = Command.TERMINATE_TEST;
+                    break;
+
                 case Command.MORE_ACCURACY:
                     accuracy = accuracy * 2;
                     break;
@@ -739,6 +861,11 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 case Command.UNLOCK_POSE:
                     UnLockPos();
                     break;
+
+                case Command.CHANGE_CAMERA:
+                    packet.header = Command.CHANGE_CAMERA;
+                    packet.payload.Add(capturedText);
+                    break;                                               
             }
 
             if (packet.header != null)
@@ -1143,6 +1270,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             string jsontToSend = JsonManager.CreateJson((Object)packet);
             AsynSocket.Send(jsontToSend);
             System.Media.SystemSounds.Asterisk.Play();
+            // DEBUG
+            System.Diagnostics.Debug.WriteLine(jsontToSend + "\n -------------------");
         }
 
         private void BonesAssociation()
@@ -1742,6 +1871,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
             // stop bones tracking 
             captureFlag = false;
+            this.CaptureCheckBox.IsChecked = false;
 
             ConfigurationPanel win2 = new ConfigurationPanel(this, legoBrick, objects);
             win2.Show();
@@ -1769,10 +1899,21 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         
         // Starts the test
         private void CheckBox_Checked(object sender, RoutedEventArgs e)
-        {            
-            SendCommand(Command.START_TEST, "");
-            SendCommand(Command.CHANGE_PRESET, currentPreset);
-            captureFlag = true;
+        {
+
+            if (this.TestCheckBox.IsChecked.Value)
+            {
+                SendCommand(Command.START_TEST, "");
+                System.Threading.Thread.Sleep(100);
+                SendCommand(Command.CHANGE_PRESET, currentPreset);
+                System.Threading.Thread.Sleep(100);
+                captureFlag = false;
+                this.CaptureCheckBox.IsChecked = false;
+            }
+            else 
+            {
+                SendCommand(Command.TERMINATE_TEST, "");
+            }
         }
 
         // Handles the shortcut maping to launch animation features
@@ -1794,9 +1935,19 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 GetCurrentFrame();
             }            
             
-            if (e.Key == Key.A && Keyboard.IsKeyDown(Key.LeftCtrl))
+            if (e.Key == Key.T && Keyboard.IsKeyDown(Key.LeftCtrl))
             {
                 SendCommand(Command.FAST_FORWARD, "");
+            }
+
+            if (e.Key == Key.P && Keyboard.IsKeyDown(Key.LeftCtrl))
+            {
+                SendCommand(Command.FAST_BACKWARD, "");
+            }
+
+            if (e.Key == Key.Q && Keyboard.IsKeyDown(Key.LeftCtrl))
+            {
+                SendCommand(Command.TERMINATE_TEST, "");
             }
 
             if (e.Key == Key.B && Keyboard.IsKeyDown(Key.LeftCtrl))
@@ -1810,9 +1961,34 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
             if (e.Key == Key.C && Keyboard.IsKeyDown(Key.LeftCtrl))
             {
-                captureFlag = !captureFlag;
+                SendCommand(Command.COPY_FRAME, "");
             }
-            
+
+            if (e.Key == Key.V && Keyboard.IsKeyDown(Key.LeftCtrl))
+            {
+                SendCommand(Command.PASTE_FRAME, "");
+            }
+
+            if (e.Key == Key.V && Keyboard.IsKeyDown(Key.LeftShift))
+            {
+                SendCommand(Command.PASTE_REVERSE_FRAME, "");
+            }
+
+            if (e.Key == Key.A && Keyboard.IsKeyDown(Key.LeftCtrl))
+            {
+                SendCommand(Command.PLAY_ANIMATION, "");
+            }
+
+            if (e.Key == Key.L && Keyboard.IsKeyDown(Key.LeftCtrl))
+            {
+                SendCommand(Command.FRAME_LOC, "");
+            }
+
+            if (e.Key == Key.K && Keyboard.IsKeyDown(Key.LeftCtrl))
+            {
+                SendCommand(Command.FRAME_ROT, "");
+            }
+
             /* 
             if (e.Key == Key.L && Keyboard.IsKeyDown(Key.RightCtrl))
             {
@@ -2000,6 +2176,82 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             }
         }
          */
+
+        public void UpdateChangePresetList()
+        {            
+            ArrayList itemToShow = new ArrayList();
+            foreach (Preset p in presetConfig)
+            {
+                itemToShow.Add(p.Name);
+            }
+            this.ChangePresetListBox.ItemsSource = itemToShow;
+        }
+
+        private void ChangePresetListBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            if (this.ChangePresetListBox.SelectedItem != null)
+            {
+                SendCommand(Command.CHANGE_PRESET, this.ChangePresetListBox.SelectedItem.ToString());    
+            }
+            
+        }
+
+        private void ButtonFrame_Click(object sender, RoutedEventArgs e)
+        {
+            SendCommand(Command.FRAME, "");
+        }
+
+        private void checkBoxCaptureMode_Checked(object sender, RoutedEventArgs e)
+        {
+            captureFlag = this.CaptureCheckBox.IsChecked.Value;            
+        }
+
+        private void ButtonNextFrame_Click(object sender, RoutedEventArgs e)
+        {
+            SendCommand(Command.FAST_FORWARD, "");
+        }
+
+        private void ButtonRotFrame_Click(object sender, RoutedEventArgs e)
+        {
+            SendCommand(Command.FRAME_ROT, "");
+        }
+
+        private void ButtonLocFrame_Click(object sender, RoutedEventArgs e)
+        {
+            SendCommand(Command.FRAME_LOC, "");
+        }
+
+        private void ButtonReset_Click(object sender, RoutedEventArgs e)
+        {
+            SendCommand(Command.RESET, "");
+        }
+
+        private void ButtonPrev_Click(object sender, RoutedEventArgs e)
+        {
+            SendCommand(Command.FAST_BACKWARD,"");
+        }
+
+        private void ButtonReverseFrame_Click(object sender, RoutedEventArgs e)
+        {
+            SendCommand(Command.PASTE_REVERSE_FRAME, "");
+        }
+
+        private void ButtonCopy_Click(object sender, RoutedEventArgs e)
+        {
+            SendCommand(Command.COPY_FRAME, "");
+        }
+
+        private void ButtonPaste_Click(object sender, RoutedEventArgs e)
+        {
+            SendCommand(Command.PASTE_FRAME, "");
+        }
+
+        private void ButtonPlayAnimation_Click(object sender, RoutedEventArgs e)
+        {
+            SendCommand(Command.PLAY_ANIMATION, "");
+        }
+
+
     }
     
 }

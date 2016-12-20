@@ -59,6 +59,25 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         }
     }
 
+    public class FrameBufferItem
+    {
+        public string frameType { get; set; }
+        public string objectName{get;set;}
+        public string boneName{get;set;}
+        public float locX{get;set;}
+        public float locY{get;set;}
+        public float locZ{get;set;}
+        public float rotW{get;set;}
+        public float rotX{get;set;}
+        public float rotY{get;set;}
+        public float rotZ { get; set; }
+
+        public FrameBufferItem() 
+        {
+
+        }
+    }
+
     public class Bone 
     {
         public string name { get; set; }

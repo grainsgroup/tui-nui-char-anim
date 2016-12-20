@@ -10,7 +10,7 @@ using System.Windows.Forms;
 namespace Microsoft.Samples.Kinect.SkeletonBasics
 {
 
-    class GraphVisualizatio
+    class GraphVisualization
     {
         public static void ShowGraph(BidirectionalGraph <Bone, Edge<Bone>> quickGraph, string graphName)
         {           
