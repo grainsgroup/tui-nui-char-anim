@@ -31,7 +31,11 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
         internal static Config LoadConfig(string filename)
         {
-            string jsonText = System.IO.File.ReadAllText("config//" + filename + ".json");
+            string jsonText = "";
+            if(filename.Contains("C:\\"))
+                jsonText = System.IO.File.ReadAllText(filename);
+            else
+                jsonText = System.IO.File.ReadAllText("config//" + filename + ".json");
             return JsonConvert.DeserializeObject<Config>(jsonText);            
         }
 

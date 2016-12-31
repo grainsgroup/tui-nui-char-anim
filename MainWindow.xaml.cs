@@ -551,13 +551,14 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     {
                         packet.payload.Add(obj);
                     }
-
+                    
                     if (this.TestCheckBox.IsChecked.Value)
                     {
                         captureFlag = false;
                         this.CaptureCheckBox.IsChecked = false;
-                        //this.TestCheckBox.IsChecked = false;
-                    }                    
+                        this.TestCheckBox.IsChecked = false;
+                    } 
+                                       
                     break;
 
                 case Command.FRAME_LOC:
@@ -667,13 +668,13 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
                     packet.header = Command.RESET;
                     packet.payload.Add(0);
-
+                    
                     if (TestCheckBox.IsChecked.Value)
                     {
                         captureFlag = true;
                         this.CaptureCheckBox.IsChecked =  true;
                     }
-
+                    
                     //GetCurrentFrame();
                     
                     break;
@@ -698,6 +699,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     packet.payload.Add(24);
                     currentFrame += 24;
                     this.currentFrameText.Text = "frame: " + currentFrame.ToString();
+                    
                     if (this.TestCheckBox.IsChecked.Value)
                     {
                         //SendCommand(Command.FRAME, "");
@@ -707,6 +709,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         SendCommand(Command.CHANGE_PRESET, "Coda");
                         //System.Threading.Thread.Sleep(100);
                     }
+                    
                     break;
 
                 case Command.FAST_BACKWARD:
@@ -772,7 +775,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                             break;
                         }
                     }
-
+                    
                     if (TestCheckBox.IsChecked.Value)
                     {
                         packet.header = Command.CHANGE_PRESET;
@@ -815,7 +818,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 
                 case Command.START_TEST:
                     packet.header = Command.START_TEST;
-                    packet.payload.Add(this.TestName.Text);
+                    //packet.payload.Add(this.TestName.Text);
                     packet.payload.Add(currentFrame);
                     break;
 
@@ -1886,6 +1889,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         {
             if (null != this.sensor)
             {
+                
                 if (this.checkBoxSeatedMode.IsChecked.GetValueOrDefault())
                 {
                     this.sensor.SkeletonStream.TrackingMode = SkeletonTrackingMode.Seated;
@@ -1894,13 +1898,13 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 {
                     this.sensor.SkeletonStream.TrackingMode = SkeletonTrackingMode.Default;
                 }
+                
             }
         }      
         
         // Starts the test
         private void CheckBox_Checked(object sender, RoutedEventArgs e)
-        {
-
+        {            
             if (this.TestCheckBox.IsChecked.Value)
             {
                 SendCommand(Command.START_TEST, "");

@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         KeyDown="Window_KeyDown"
-        Title="Skeleton Basics" Height="500" Width="646" Loaded="WindowLoaded" Closing="WindowClosing" WindowStartupLocation="CenterScreen">
+        Title="Application" Height="500" Width="716.5" Loaded="WindowLoaded" Closing="WindowClosing" WindowStartupLocation="CenterScreen">
 
     <Window.Resources>
         <SolidColorBrush x:Key="MediumGreyBrush" Color="#ff6e6e6e"/>
@@ -47,41 +47,42 @@
         </Style>
     </Window.Resources>
 
-    <Grid Name="layoutGrid" Margin="10 0 10 0">
+    <Grid Name="layoutGrid" Margin="10,0,2,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <Viewbox Grid.Row="1" Stretch="Uniform" HorizontalAlignment="Left" Width="447">
+        <Viewbox Grid.Row="1" Stretch="Uniform" HorizontalAlignment="Left" Width="447" Margin="0,0,0,74">
             <Image Name="Image" Width="634" Height="512"/>
         </Viewbox>
-        <CheckBox Grid.Row="0" Style="{StaticResource SquareCheckBox}" Content="Seated Mode" Height="Auto" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0 0 0 0" Name="checkBoxSeatedMode" Checked="CheckBoxSeatedModeChanged" Unchecked="CheckBoxSeatedModeChanged"/>
 
-        <CheckBox x:Name="CaptureCheckBox" Grid.Row="1" Style="{StaticResource SquareCheckBox}" Content="Capture" Height="Auto" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,258,73,0" Checked="checkBoxCaptureMode_Checked" Unchecked="checkBoxCaptureMode_Checked" />
-        <ListBox x:Name="ChangePresetListBox" HorizontalAlignment="Right" Height="211" Margin="0,39,0,0" Grid.Row="1" VerticalAlignment="Top" Width="154" SelectionChanged="ChangePresetListBox_SelectionChanged"/>
+        <CheckBox x:Name="CaptureCheckBox" Grid.Row="1" Style="{StaticResource SquareCheckBox}" Content="Enable interface" Height="Auto" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,264,83,0" Checked="checkBoxCaptureMode_Checked" Unchecked="checkBoxCaptureMode_Checked" />
+        <ListBox x:Name="ChangePresetListBox" HorizontalAlignment="Right" Height="197" Margin="0,60,45,0" Grid.Row="1" VerticalAlignment="Top" Width="135" SelectionChanged="ChangePresetListBox_SelectionChanged"/>
         <StatusBar Grid.Row="2" HorizontalAlignment="Stretch" Name="statusBar" VerticalAlignment="Center" Background="White" Foreground="{StaticResource MediumGreyBrush}">
             <StatusBarItem Padding="0 0 0 0">
-                <TextBlock Name="statusBarText" Margin="-1 0 0 0" FontSize="20">Click 'Seated' to change skeletal pipeline type!</TextBlock>
+                <TextBlock Name="statusBarText" Margin="-1 0 0 0" FontSize="20">Click configuration to set up the interface</TextBlock>
             </StatusBarItem>
         </StatusBar>
-
-        <CheckBox  Grid.Row="0" Style="{StaticResource SquareCheckBox}" Content="Test Mode" Height="Auto" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="160,0,0,0" Checked="CheckBox_Checked" Unchecked="CheckBox_Checked" x:Name="TestCheckBox" ToolTip="CTRL + F : Insert frame; CTRL + Q : Teminate test"/>
-        <TextBox Grid.Row="0" x:Name="TestName" HorizontalAlignment="Left" Height="23" Margin="275,0,0,0" TextWrapping="Wrap" Text="User" VerticalAlignment="Center" Width="120" Background="White" Foreground="{DynamicResource MediumGreyBrush}"/>
-        <Button Grid.Row="0" Content="Configuration" HorizontalAlignment="Right" Margin="0,10,10,10" VerticalAlignment="Center" Width="90" Click="ButtonConfig_Click" />
+        <CheckBox Grid.Row="1" Style="{StaticResource SquareCheckBox}" Content="Seated Mode" Height="Auto" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,404,0,10" Name="checkBoxSeatedMode" Checked="CheckBoxSeatedModeChanged" Unchecked="CheckBoxSeatedModeChanged" Visibility="Collapsed"/>
+        <CheckBox Grid.Row="1" Style="{StaticResource SquareCheckBox}" Content="Test Mode" Height="Auto" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="139,404,0,10" Checked="CheckBox_Checked" Unchecked="CheckBox_Checked" x:Name="TestCheckBox" ToolTip="CTRL + F : Insert frame; CTRL + Q : Teminate test" Visibility="Collapsed"/>
+        <TextBox Grid.Row="1" x:Name="TestName" HorizontalAlignment="Left" Height="24" Margin="254,404,0,10" TextWrapping="Wrap" Text="User" VerticalAlignment="Center" Width="120" Background="White" Foreground="{DynamicResource MediumGreyBrush}" Visibility="Collapsed"/>
         <TextBlock Grid.Row="2" x:Name="currentFrameText" HorizontalAlignment="Right" VerticalAlignment="Center" TextWrapping="Wrap" FontSize="24" TextAlignment="Center" Foreground="{DynamicResource MediumGreyBrush}" Width="164"/>
-        <Button Content="Loc" HorizontalAlignment="Right" Margin="0,315,110,0" Grid.Row="1" VerticalAlignment="Top" Width="50" Click="ButtonLocFrame_Click" ToolTip="CTRL + L"/>
-        <Button Content="Prev" HorizontalAlignment="Right" Margin="0,369,110,0" Grid.Row="1" VerticalAlignment="Top" Width="50" Click="ButtonPrev_Click" ToolTip="CTRL + P"/>
-        <Button Content="Rot" HorizontalAlignment="Right" Margin="0,315,0,0" Grid.Row="1" VerticalAlignment="Top" Width="50" Click="ButtonRotFrame_Click" ToolTip="CTRL + K"/>
-        <Button Content="Frame" HorizontalAlignment="Right" Margin="0,315,55,0" Grid.Row="1" VerticalAlignment="Top" Width="50" Click="ButtonFrame_Click" ToolTip="CTRL + F"/>
-        <Button Content="Reset" HorizontalAlignment="Right" Margin="0,260,0,0" Grid.Row="1" VerticalAlignment="Top" Width="50" Click="ButtonReset_Click" ToolTip="CTRL + R"/>
-        <Button Content="Next" HorizontalAlignment="Right" Margin="0,369,0,0" Grid.Row="1" VerticalAlignment="Top" Width="50" Click="ButtonNextFrame_Click" ToolTip="CTRL + T"/>
-        <Button Content="Flip" HorizontalAlignment="Right" Margin="0,342,0,0" Grid.Row="1" VerticalAlignment="Top" Width="50" Click="ButtonReverseFrame_Click" ToolTip="Shift + V"/>
-        <Button Content="Copy" HorizontalAlignment="Right" Margin="0,342,110,0" Grid.Row="1" VerticalAlignment="Top" Width="50" Click="ButtonCopy_Click" ToolTip="CTRL + C"/>
-        <Button Content="Paste" HorizontalAlignment="Right" Margin="0,342,55,0" Grid.Row="1" VerticalAlignment="Top" Width="50" Click="ButtonPaste_Click" ToolTip="CTRL + V"/>
-        <Button Content="Play" HorizontalAlignment="Right" Margin="0,369,55,0" Grid.Row="1" VerticalAlignment="Top" Width="50" Click="ButtonPlayAnimation_Click" ToolTip="CTRL + A"/>
-        <CheckBox x:Name="OnlySelectedBoneCheckBox" Grid.Row="1" Style="{StaticResource SquareCheckBox}" Content="Only selected bone" Height="Auto" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,286,-2,0"/>
+        <Button Content="Loc. only" HorizontalAlignment="Right" Margin="0,323,77,0" Grid.Row="1" VerticalAlignment="Top" Width="70
+                " Click="ButtonLocFrame_Click" ToolTip="CTRL + L"/>
+        <Button Content="Prev. frame" HorizontalAlignment="Right" Margin="0,377,152,0" Grid.Row="1" VerticalAlignment="Top" Width="70" Click="ButtonPrev_Click" ToolTip="CTRL + P"/>
+        <Button Content="Rot. only" HorizontalAlignment="Right" Margin="0,323,3,0" Grid.Row="1" VerticalAlignment="Top" Width="70
+                " Click="ButtonRotFrame_Click" ToolTip="CTRL + K"/>
+        <Button Content="Ins. frame" HorizontalAlignment="Right" Margin="0,323,152,0" Grid.Row="1" VerticalAlignment="Top" Width="70" Click="ButtonFrame_Click" ToolTip="CTRL + F"/>
+        <Button Content="Reset" HorizontalAlignment="Right" Margin="0,404,77,0" Grid.Row="1" VerticalAlignment="Top" Width="70" Click="ButtonReset_Click" ToolTip="CTRL + R"/>
+        <Button Content="Next frame" HorizontalAlignment="Right" Margin="0,377,3,0" Grid.Row="1" VerticalAlignment="Top" Width="70" Click="ButtonNextFrame_Click" ToolTip="CTRL + T"/>
+        <Button Content="Flip frame" HorizontalAlignment="Right" Margin="0,350,3,0" Grid.Row="1" VerticalAlignment="Top" Width="70" Click="ButtonReverseFrame_Click" ToolTip="Shift + V"/>
+        <Button Content="Copy frame" HorizontalAlignment="Right" Margin="0,350,152,0" Grid.Row="1" VerticalAlignment="Top" Width="70" Click="ButtonCopy_Click" ToolTip="CTRL + C"/>
+        <Button Content="Paste frame" HorizontalAlignment="Right" Margin="0,350,77,0" Grid.Row="1" VerticalAlignment="Top" Width="70" Click="ButtonPaste_Click" ToolTip="CTRL + V"/>
+        <Button Content="Play" HorizontalAlignment="Right" Margin="0,377,77,0" Grid.Row="1" VerticalAlignment="Top" Width="70" Click="ButtonPlayAnimation_Click" ToolTip="CTRL + A"/>
+        <CheckBox x:Name="OnlySelectedBoneCheckBox" Grid.Row="1" Style="{StaticResource SquareCheckBox}" Content="Key frame sel. bone" Height="Auto" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,293,60,0"/>
+        <Button Content="Configuration" HorizontalAlignment="Right" Margin="0,22,45,0" Grid.Row="1" VerticalAlignment="Top" Width="135" Click="ButtonConfig_Click"/>
 
     </Grid>
 </Window>

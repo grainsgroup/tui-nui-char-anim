@@ -114,7 +114,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         }
         
         public static List<List<List<Bone>>> CreateArmaturesFromComb 
-            (char[] comb, Brick brick, int componentAvailable, bool locRotArm, bool useSensor, bool computeSplittedSource) 
+            (char[] comb, Brick brick, int componentAvailable, bool locRotArm, bool useSensor, bool computeSplittedSource, bool useHip) 
         {            
             List<List<int>> dofSequence = new List<List<int>>();
             if (locRotArm)
@@ -173,7 +173,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     combAssigned.Add("LOC(L)");
                 }
             }
-            combAssigned = Metrics.AssignName (new List<List<string>>() { combAssigned }, brick, useSensor, useSensor);
+            combAssigned = Metrics.AssignName(new List<List<string>>() { combAssigned }, brick, useSensor, useHip);
             
             // Assigns the components to the remaining sequences
             List<List<string>> dofAssigned = new List<List<string>>();

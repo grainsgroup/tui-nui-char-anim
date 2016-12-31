@@ -227,15 +227,33 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
         public static float ComponentRangeAnnoyanceScore2(Bone bone, Bone handler, float RangeWeight, float AnnoyanceWeight, Dictionary<string, List<List<char>>> dictionary)
         {
-
+            
             List<Bone> components = new List<Bone>();
-            if (handler.name.Contains(" | "))
+            if (handler.name.Contains("_TUI") || handler.name.Contains("_NUI_DoF("))
             {
-                components = DecomposeHandler(handler);
+                if (handler.name.Contains(" | "))
+                {
+                    components = DecomposeHandler(handler);
+                }
+                else
+                {
+                    components.Add(handler);
+                }
             }
-            else
+            else 
             {
-                components.Add(handler);
+                foreach(char c in handler.loc_DoF)
+                {
+                    Bone handlerDof = new Bone(handler.name + "_DoF(" + c + "):LOC(" + c + ")");
+                    handlerDof.loc_DoF = new List<char>() { c };
+                    components.Add(handlerDof);
+                }
+                foreach (char c in handler.rot_DoF)
+                {
+                    Bone handlerDof = new Bone(handler.name + "_DoF(" + c + "):ROT(" + c + ")");
+                    handlerDof.rot_DoF = new List<char>() { c };
+                    components.Add(handlerDof);
+                }
             }
 
             if (bone.rot_DoF.Count + bone.loc_DoF.Count > handler.rot_DoF.Count + handler.loc_DoF.Count)
@@ -243,7 +261,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 return MAX_COST;
             }
             else
-            {
+            {                                
                 List<List<int>> handlerRotDofPos = new List<List<int>>();
                 List<List<char>> handlerRotDof = new List<List<char>>();
                 List<float> costs = new List<float>();
@@ -284,9 +302,14 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 else 
                 {
                     foreach (char c in bone.rot_DoF)
-                    {
-                        List<int> result = Enumerable.Range(0, handler.rot_DoF.Count).Where(i => handler.rot_DoF[i] == c).ToList();
-                        
+                    {                        
+                        List<int> result = 
+                            Enumerable.Range(0, handler.rot_DoF.Count).Where(i => handler.rot_DoF[i] == c).ToList();
+                        for(int i = 0; i<result.Count;i++)
+                        {
+                            result[i] += handler.loc_DoF.Count;
+                        }
+                       
                         if (handlerRotDofPos.Count == 0)
                         {
                             foreach (int dofIndex in result)
@@ -299,8 +322,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         {
                             int itemToModify = handlerRotDofPos.Count;
                             for (int i = 0; i < itemToModify; i++)
-                            {
-                                
+                            {                                
                                 foreach (int dofIndex in result)
                                 {
                                     List<int> newPos = handlerRotDofPos[0].ToList();
@@ -449,7 +471,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     float tempScore = 0;
                     for (int j = 0; j < item.Count; j++)
                     {
-                        if (item[j] == 0) { tempScore+=0.2f; continue; }
+                        if (item[j] == 0) { tempScore+=0.2f; continue;}
                         if (item[j] == 'x' && handlerDof[j] != 'x') { tempScore++; continue; }
                         if (item[j] == 'y' && handlerDof[j] != 'y') { tempScore++; continue; }
                         if (item[j] == 'z' && handlerDof[j] != 'z') { tempScore++; continue; }
@@ -470,10 +492,13 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     return MAX_COST;
                 else
                 {
+                    
                     locCost = Math.Max(0, bone.loc_DoF.Count - 
                         (handler.rot_DoF.Count - bone.rot_DoF.Count)/2 - 
                         handler.loc_DoF.Count);
                     locCost = locCost / (bone.loc_DoF.Count) * MAX_COST;
+                    
+                    //locCost = Math.Max(0, bone.loc_DoF.Count - handler.loc_DoF.Count);
                 }
             }
 
