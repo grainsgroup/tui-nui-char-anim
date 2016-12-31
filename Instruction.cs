@@ -137,7 +137,11 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
             System.Xml.Serialization.XmlSerializer mySerializer = new System.Xml.Serialization.XmlSerializer(typeof(LXFML));
             // StreamReader myStreamReader = new StreamReader(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "//Instruction.LXFML");
-            StreamReader myStreamReader = new StreamReader("LegoJoint\\" + jointName + ".LXFML");
+            //StreamReader myStreamReader = new StreamReader("LegoJoint\\" + jointName + ".LXFML");
+
+            string _filePath = Path.GetDirectoryName(System.AppDomain.CurrentDomain.BaseDirectory);
+            _filePath = Directory.GetParent(Directory.GetParent(_filePath).FullName).FullName;
+            StreamReader myStreamReader = new StreamReader(_filePath + "\\LegoJoint\\" + jointName + ".LXFML");
             myResponseData = (LXFML)mySerializer.Deserialize(myStreamReader);
             return myResponseData;
         }

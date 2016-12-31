@@ -196,6 +196,29 @@
     </EmbeddedResource>
     <None Include="Blender\Drone.blend" />
     <None Include="docs\LEGO Mindstorms EV3 - Desktop.chm" />
+    <None Include="LegoJoint\Gyroscope_ROT%28x%29.LXFML" />
+    <None Include="LegoJoint\Gyroscope_ROT%28x%29_SPLIT[2].LXFML" />
+    <None Include="LegoJoint\Gyroscope_ROT%28y%29.LXFML" />
+    <None Include="LegoJoint\Gyroscope_ROT%28y%29_SPLIT[2].LXFML" />
+    <None Include="LegoJoint\Gyroscope_ROT%28z%29.LXFML" />
+    <None Include="LegoJoint\Gyroscope_ROT%28z%29_SPLIT[2].LXFML" />
+    <None Include="LegoJoint\Hip.LXFML" />
+    <None Include="LegoJoint\Hip_SPLIT[2].LXFML" />
+    <None Include="LegoJoint\LMotor_ROT%28x%29.LXFML" />
+    <None Include="LegoJoint\LMotor_ROT%28x%29_SPLIT[2].LXFML" />
+    <None Include="LegoJoint\LMotor_ROT%28y%29.LXFML" />
+    <None Include="LegoJoint\LMotor_ROT%28y%29_SPLIT[2].LXFML" />
+    <None Include="LegoJoint\LMotor_ROT%28z%29.LXFML" />
+    <None Include="LegoJoint\LMotor_ROT%28z%29_SPLIT[2].LXFML" />
+    <None Include="LegoJoint\MMotor_ROT%28x%29.LXFML" />
+    <None Include="LegoJoint\MMotor_ROT%28x%29_SPLIT[2].LXFML" />
+    <None Include="LegoJoint\MMotor_ROT%28y%29.LXFML" />
+    <None Include="LegoJoint\MMotor_ROT%28y%29_SPLIT[2].LXFML" />
+    <None Include="LegoJoint\MMotor_ROT%28z%29.LXFML" />
+    <None Include="LegoJoint\MMotor_ROT%28z%29_SPLIT[2].LXFML" />
+    <None Include="LegoJoint\Ultrasonic_ROT%28x%29.LXFML" />
+    <None Include="LegoJoint\Ultrasonic_ROT%28y%29.LXFML" />
+    <None Include="LegoJoint\Ultrasonic_ROT%28z%29.LXFML" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -273,7 +296,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Config\" />
-    <Folder Include="LegoJoint\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

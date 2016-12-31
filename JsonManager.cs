@@ -16,7 +16,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             string jsonString = JsonConvert.SerializeObject(obj);
 
             // write string into file
-            System.IO.File.WriteAllText("config\\"+ FileName + ".json", jsonString);
+            string _filePath = System.IO.Path.GetDirectoryName(System.AppDomain.CurrentDomain.BaseDirectory);
+            _filePath = System.IO.Directory.GetParent(System.IO.Directory.GetParent(_filePath).FullName).FullName + "\\Config\\";
+            System.IO.File.WriteAllText(_filePath + FileName + ".json", jsonString);
 
             return jsonString;
 
@@ -24,7 +26,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
         public static Setting LoadSetting(string filename)
         {
-            string jsonText = System.IO.File.ReadAllText("config//"+ filename + ".json");
+            string _filePath = System.IO.Path.GetDirectoryName(System.AppDomain.CurrentDomain.BaseDirectory);
+            _filePath = System.IO.Directory.GetParent(System.IO.Directory.GetParent(_filePath).FullName).FullName + "\\Config\\";
+            string jsonText = System.IO.File.ReadAllText(_filePath + filename + ".json");
             //return JsonConvert.DeserializeObject<Setting>(jsonText);
             return JsonConvert.DeserializeObject<Setting>(jsonText);            
         }

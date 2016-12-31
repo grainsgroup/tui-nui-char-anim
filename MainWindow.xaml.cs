@@ -441,7 +441,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
             foreach (Preset p in presetConfig) 
             {
-                File.Delete("config\\" + p.Name + ".json");
+                string _filePath = System.IO.Path.GetDirectoryName(System.AppDomain.CurrentDomain.BaseDirectory);
+                _filePath = System.IO.Directory.GetParent(System.IO.Directory.GetParent(_filePath).FullName).FullName + "\\Config\\";
+                File.Delete(_filePath + p.Name + ".json");
             }            
 
 
